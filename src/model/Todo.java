@@ -5,13 +5,15 @@ public class Todo {
 	private int type;
 	private String content;
 	private long startTime, endTime;
+	private boolean isCompleted; 
 	
-	public Todo(int id, int type, String content, long startTime, long endTime) {
+	public Todo(int id, int type, String content, long startTime, long endTime, boolean isCompleted) {
 		this.id = id;
 		this.type = type;
 		this.content = content;
 		this.startTime = startTime;
 		this.endTime = endTime;
+		this.isCompleted = isCompleted;
 	}
 	
 	public long getStartTime() {
@@ -32,6 +34,10 @@ public class Todo {
 	
 	public String getContent() {
 		return this.content;
+	}
+	
+	public boolean isCompleted() {
+		return this.isCompleted;
 	}
 	
 }
