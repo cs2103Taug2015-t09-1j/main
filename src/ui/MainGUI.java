@@ -19,7 +19,7 @@ import java.util.*;
  */
 public class MainGUI {
 
-	private JFrame frame;
+	private JFrame frmTodokoro;
 	private JTextField tfUserInput;
 	private JTable eventsTable, todosTable;
 	private Vector<DeadlineTask> dummy;
@@ -37,7 +37,7 @@ public class MainGUI {
 			public void run() {
 				try {
 					MainGUI window = new MainGUI();
-					window.frame.setVisible(true);
+					window.frmTodokoro.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -62,12 +62,12 @@ public class MainGUI {
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() throws Exception {
-		frame = new JFrame();
-		frame.setType(Type.UTILITY);
-		frame.setResizable(false);
-		frame.setBounds(100, 100, 644, 560);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.getContentPane().setLayout(null);
+		frmTodokoro = new JFrame();
+		frmTodokoro.setTitle("Todokoro");
+		frmTodokoro.setResizable(false);
+		frmTodokoro.setBounds(100, 100, 644, 560);
+		frmTodokoro.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frmTodokoro.getContentPane().setLayout(null);
 
 		tfUserInput = new JTextField();
 		tfUserInput.addActionListener(new ActionListener() {
@@ -78,21 +78,21 @@ public class MainGUI {
 			}
 		});
 		tfUserInput.setBounds(12, 488, 614, 26);
-		frame.getContentPane().add(tfUserInput);
+		frmTodokoro.getContentPane().add(tfUserInput);
 		tfUserInput.setColumns(10);
 
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-		tabbedPane.setBounds(12, 19, 614, 457);
-		frame.getContentPane().add(tabbedPane);
+		tabbedPane.setBounds(12, 12, 614, 464);
+		frmTodokoro.getContentPane().add(tabbedPane);
 
 		JScrollPane scrollPane = new JScrollPane();
-		tabbedPane.addTab("Events", null, scrollPane, null);
+		tabbedPane.addTab("<html><body leftmargin=15 topmargin=8 marginwidth=15 marginheight=5><b>Events</b></body></html>", null, scrollPane, null);
 
 		setupTasksTable();
 		scrollPane.setViewportView(eventsTable);
 
 		JScrollPane todosScrollPane = new JScrollPane();
-		tabbedPane.addTab("Todos", null, todosScrollPane, null);
+		tabbedPane.addTab("<html><body leftmargin=15 topmargin=8 marginwidth=15 marginheight=5><b>Todos</b></body></html>", null, todosScrollPane, null);
 
 		todosTable = new JTable();
 		todosTable.setShowVerticalLines(false);
