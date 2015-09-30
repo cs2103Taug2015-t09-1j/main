@@ -1,5 +1,12 @@
+/**
+ *
+ */
 package ui;
 
+/**
+ * @author Dalton
+ *
+ */
 public abstract class Task {
 	protected int taskID;
 	protected String taskDesc;
