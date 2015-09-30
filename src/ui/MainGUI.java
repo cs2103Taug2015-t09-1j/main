@@ -22,7 +22,11 @@ public class MainGUI {
 	private JFrame frmTodokoro;
 	private JTextField tfUserInput;
 	private JTable eventsTable, todosTable;
-	private Vector<DeadlineTask> dummy;
+	private JTabbedPane tabbedPane;
+	private JScrollPane eventsScrollPane, todosScrollPane;
+	private Vector<DeadlineTask> deadlineDummy;
+	private Vector<FloatingTask> floatingDummy;
+
 	/**
 	 * Launch the application.
 	 */
@@ -78,46 +82,37 @@ public class MainGUI {
 			}
 		});
 		tfUserInput.setBounds(12, 488, 614, 26);
-		frmTodokoro.getContentPane().add(tfUserInput);
 		tfUserInput.setColumns(10);
+		frmTodokoro.getContentPane().add(tfUserInput);
 
-		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		tabbedPane.setBounds(12, 12, 614, 464);
 		frmTodokoro.getContentPane().add(tabbedPane);
 
-		JScrollPane scrollPane = new JScrollPane();
-		tabbedPane.addTab("<html><body leftmargin=15 topmargin=8 marginwidth=15 marginheight=5><b>Events</b></body></html>", null, scrollPane, null);
-
 		setupTasksTable();
-		scrollPane.setViewportView(eventsTable);
-
-		JScrollPane todosScrollPane = new JScrollPane();
+		tabbedPane.addTab("<html><body leftmargin=15 topmargin=8 marginwidth=15 marginheight=5><b>Events</b></body></html>", null, eventsScrollPane, null);
 		tabbedPane.addTab("<html><body leftmargin=15 topmargin=8 marginwidth=15 marginheight=5><b>Todos</b></body></html>", null, todosScrollPane, null);
-
-		todosTable = new JTable();
-		todosTable.setShowVerticalLines(false);
-		todosTable.setShowGrid(false);
-		todosTable.setRowHeight(30);
-		todosTable.setFont(new Font("Segoe UI", Font.PLAIN, 15));
-		todosTable.setFillsViewportHeight(true);
-		todosTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-		todosScrollPane.setViewportView(todosTable);
 	}
 
 	private void setupTempVec() {
-		dummy = new Vector<DeadlineTask>();
+		deadlineDummy = new Vector<DeadlineTask>();
+		floatingDummy = new Vector<FloatingTask>();
 		for (int i = 0; i < 10; i++) {
-			dummy.add(new DeadlineTask(i+1, LocalDateTime.now(), LocalDateTime.now(), LocalDateTime.now(), "Test"+i, true));
+			deadlineDummy.add(new DeadlineTask(i+1, LocalDateTime.now(), LocalDateTime.now(), LocalDateTime.now(), "Test"+i, true));
+			floatingDummy.add(new FloatingTask(i+1, "Test"+i, false));
 		}
 	}
 
 	private void setupTasksTable() {
+		DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+
+		eventsScrollPane = new JScrollPane();
 		eventsTable = new JTable();
 		eventsTable.setFont(new Font("Segoe UI", Font.PLAIN, 12));
 		eventsTable.setShowVerticalLines(false);
 		eventsTable.setShowGrid(false);
 		eventsTable.setFillsViewportHeight(true);
-		eventsTable.setModel(new TasksTableModel(dummy));
+		eventsTable.setModel(new TasksTableModel(deadlineDummy, "Deadline"));
 		eventsTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		eventsTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
 		eventsTable.setRowHeight(40);
@@ -130,10 +125,29 @@ public class MainGUI {
 		eventsTable.getColumnModel().getColumn(3).setMaxWidth(70);
 		eventsTable.getColumnModel().getColumn(4).setMinWidth(200);
 		eventsTable.getColumnModel().getColumn(5).setMaxWidth(40);
-		DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
-		centerRenderer.setHorizontalAlignment( SwingConstants.CENTER );
+		centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
 		eventsTable.setDefaultRenderer(Integer.class, centerRenderer);
 		eventsTable.setDefaultRenderer(LocalDateTime.class, centerRenderer);
 		eventsTable.setDefaultRenderer(String.class, centerRenderer);
+		eventsScrollPane.setViewportView(eventsTable);
+
+		todosScrollPane = new JScrollPane();
+		todosTable = new JTable();
+		todosTable.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+		todosTable.setShowVerticalLines(false);
+		todosTable.setShowGrid(false);
+		todosTable.setFillsViewportHeight(true);
+		todosTable.setModel(new TasksTableModel(floatingDummy, "Floating"));
+		todosTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		todosTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+		todosTable.setRowHeight(40);
+		todosTable.getColumnModel().getColumn(0).setMaxWidth(45);
+		todosTable.getColumnModel().getColumn(1).setMinWidth(200);
+		todosTable.getColumnModel().getColumn(2).setMaxWidth(40);
+		centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
+		todosTable.setDefaultRenderer(Integer.class, centerRenderer);
+		todosTable.setDefaultRenderer(LocalDateTime.class, centerRenderer);
+		todosTable.setDefaultRenderer(String.class, centerRenderer);
+		todosScrollPane.setViewportView(todosTable);
 	}
 }
