@@ -10,37 +10,38 @@ import org.joda.time.DateTimeZone;
 import org.ocpsoft.prettytime.nlp.*;
 import org.ocpsoft.prettytime.nlp.parse.DateGroup;
 
+import models.Event;
 import models.Task;
 
 public class MainParser {
 	public static ArrayList<Task> ParseCommand(String input) {
 		//StringFinder strFinder = new StringFinder(input);
 		//if (strFinder.containsAll("at", "on")
-		if (input.startsWith("add")) {
-			// add
-			ArrayList<String> dates = ParseDates(input);
-			String event = input.split("by")[0].trim().replace("add ", "");
-			String date = dates.get(0);
-			switch (dates.size()) {
-			case 1: //Deadline Task
-				
-				break;
-			case 2: //Event
-				String event = input.split("at")[0].trim().replace("add ", "");
-				String date = dates.get(0);
-				String startTime = dates.get(1);
-				String endTime = dates.get(2);
-				
-				
-			}
-		} else if (input.startsWith("update")) {
+		String event = "";
+		String date = "";
+
+		if (input.startsWith("update")) {
 			// update
 		} else if (input.startsWith("delete")) {
 			// delete
 		} else if (input.startsWith("search")) {
 			// search
 		} else {
-			// undo
+			// add
+			ArrayList<String> dates = ParseDates(input);
+			switch (dates.size()) {
+			case 1: //Deadline Task
+				event = input.split("by")[0].trim();
+				date = dates.get(0);
+				break;
+			case 2: //Event
+				event = input.split("at")[0].trim();
+				date = dates.get(0);
+				String startTime = dates.get(1);
+				String endTime = dates.get(2);
+				Event e = new Event(startTime, endTime, event, false);
+				break;
+			}
 		}
 	}
 
@@ -54,12 +55,10 @@ public class MainParser {
 				for (Date d : parsedInput) {
 					dates.add(new SimpleDateFormat("h:mm a").format(d));
 				}
-			} else if (parsedInput.size() == 1) {
-				dates.add(new SimpleDateFormat("h:mm a").format(d));
 			}
 		}
 		return dates;
 	}
 
-	public static
+	//public static
 }

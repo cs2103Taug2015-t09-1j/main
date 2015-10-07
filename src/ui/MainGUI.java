@@ -106,7 +106,7 @@ public class MainGUI {
 		floatingDummy = new Vector<FloatingTask>();
 		for (int i = 0; i < 10; i++) {
 			//eventDummy.add(new Events(i+1, new Date(), LocalDateTime.now(), "Test"+i, true));
-			floatingDummy.add(new FloatingTask(i+1, "Test"+i, false));
+			floatingDummy.add(new FloatingTask("Test"+i, false));
 		}
 	}
 

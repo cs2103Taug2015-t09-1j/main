@@ -8,12 +8,12 @@ import java.util.Date;
  * @author Dalton
  *
  */
-public class Events extends Task{
+public class Event extends Task{
 	private String startTime;
 	private String endTime;
 
-	public Events(int taskID, String startTime, String endTime, String taskDesc, boolean isDone) {
-		super(taskID, taskDesc, isDone);
+	public Event(String startTime, String endTime, String taskDesc, boolean isDone) {
+		super(taskDesc, isDone);
 		this.startTime = startTime;
 		this.endTime = endTime;
 	}

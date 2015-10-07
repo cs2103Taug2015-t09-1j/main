@@ -8,7 +8,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Vector;
 import javax.swing.table.AbstractTableModel;
 
-import models.Events;
+import models.Event;
 import models.FloatingTask;
 
 /**
@@ -68,7 +68,7 @@ public class TasksTableModel extends AbstractTableModel {
 
 	public void setValueAt(Object value, int row, int col) {
 		if (taskType.equals("Event")) {
-			Events t = (Events)tasksVector.elementAt(row);
+			Event t = (Event)tasksVector.elementAt(row);
 			switch (col) {
 				case 0:
 						t.setTaskID((Integer) value);
@@ -107,7 +107,7 @@ public class TasksTableModel extends AbstractTableModel {
 
 	public Object getValueAt(int row, int col) {
 		if (taskType.equals("Event")) {
-			Events t = (Events)tasksVector.elementAt(row);
+			Event t = (Event)tasksVector.elementAt(row);
 			switch (col) {
 				case 0:
 						return t.getTaskID();

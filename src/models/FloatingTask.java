@@ -8,7 +8,7 @@ package models;
  *
  */
 public class FloatingTask extends Task {
-	public FloatingTask(int taskID, String taskDesc, boolean isDone) {
-		super(taskID, taskDesc, isDone);
+	public FloatingTask(String taskDesc, boolean isDone) {
+		super(taskDesc, isDone);
 	}
 }
