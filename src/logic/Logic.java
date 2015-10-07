@@ -3,75 +3,29 @@ package logic;
 import java.util.ArrayList;
 import java.util.Vector;
 
-import models.Task;
+import models.*;
+import parser.MainParser;
 
 public class Logic {
-	//private static final Vector<Task> currentList = Storage.getList();
+	public Vector<Task> processCommand(String input) {
+		ArrayList<String> cmdContents = MainParser.ParseCommand(input);
 
-	public static Vector<Task> processLine(String inputLine) {
-		if(newList.isSuccessful()) {
-			switch (Parser.getCommand(inputLine)) {
-			case "add" :
-				newList = addEvent(newList, newTask));
-				break;
-
-			case "delete" :
-				newList = deleteEvent(newTask.getIndex());
-				break;
-
-			case "display" :
-				newList = displayList();
-				break;
-
-			case "undo" :
-				newList = undoLastAction();
-				break;
-
-			default :
-				showError();
-			}
-
-			return newList;
+		switch (cmdContents.get(0)) {
+		case "add":
+			return addTask(cmdContents);
 		}
 	}
 
-	public static void setInput(String newInput) {
-		inputLine = newInput;
-	}
-
-	private static Vector<Task> addEvent(TaskBook newList, Task newTask) {
-		newList.addTask(newTask);
-		Storage.setList(newList.getTaskList());
-		return newList;
-	}
-
-	private static Vector<Task> deleteEvent(TaskBook newList, int index) {
-		newList.removeTask(index);
-		Storage.setList(newList.getTaskList());
-		return newList;
-	}
-
-	private static Vector<Task> displayList() {
-		return new TaskBook(currentList, Parser.isSuccessful())
-	}
-	/*
-	private static Vector<Task> undoLastAction() {
-		String prevCommand = Parser.getPrevCommand();
-		String prevTask = Parser.getPrevTask();
-		switch (prevCommand) {
-		case "add" :
-			currentList.remove(prevTask.getIndex());
+	private Vector<Task> addTask(ArrayList<String> cmdContents) {
+		switch (cmdContents.get(1)) {
+		case "deadline":
 			break;
-
-		case "delete" :
-			currentList.add(prevTask, prevTask.getIndex());
-			break;
-
-		case "undo" :
-
-
-		default :
+		case "event":
+			Event evt = new Event(cmdContents.get(4), cmdContents.get(2), cmdContents.get(3), cmdContents.get(5), false);
+			//return Storage.addTask();
 			break;
 		}
-	}*/
+	}
+
+
 }

@@ -10,8 +10,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  */
 public abstract class Task {
-	static AtomicInteger nextId = new AtomicInteger();
-	protected int taskID;
+	private static AtomicInteger nextId = new AtomicInteger();
+	protected final int taskID;
 	protected String taskDesc;
 	protected boolean isDone;
 
@@ -23,10 +23,6 @@ public abstract class Task {
 
 	public int getTaskID() {
 		return taskID;
-	}
-
-	public void setTaskID(int taskID) {
-		this.taskID = taskID;
 	}
 
 	public String getTaskDesc() {

@@ -10,39 +10,53 @@ import org.joda.time.DateTimeZone;
 import org.ocpsoft.prettytime.nlp.*;
 import org.ocpsoft.prettytime.nlp.parse.DateGroup;
 
+import models.DeadlineTask;
 import models.Event;
 import models.Task;
 
 public class MainParser {
-	public static ArrayList<Task> ParseCommand(String input) {
+	public static ArrayList<String> ParseCommand(String input) {
 		//StringFinder strFinder = new StringFinder(input);
 		//if (strFinder.containsAll("at", "on")
-		String event = "";
+		ArrayList<String> cmdContents = new ArrayList<String>();
+		String taskDesc = "";
 		String date = "";
 
 		if (input.startsWith("update")) {
 			// update
+			cmdContents.add("update");
 		} else if (input.startsWith("delete")) {
 			// delete
+			cmdContents.add("delete");
 		} else if (input.startsWith("search")) {
 			// search
+			cmdContents.add("search");
 		} else {
 			// add
 			ArrayList<String> dates = ParseDates(input);
+			cmdContents.add("add");
 			switch (dates.size()) {
 			case 1: //Deadline Task
-				event = input.split("by")[0].trim();
+				taskDesc = input.split("by")[0].trim();
+				cmdContents.add("deadline");
 				date = dates.get(0);
 				break;
 			case 2: //Event
-				event = input.split("at")[0].trim();
+				taskDesc = input.split("at")[0].trim();
 				date = dates.get(0);
 				String startTime = dates.get(1);
 				String endTime = dates.get(2);
-				Event e = new Event(startTime, endTime, event, false);
+				cmdContents.add("event");
+				cmdContents.add(startTime);
+				cmdContents.add(endTime);
 				break;
 			}
+
+			cmdContents.add(taskDesc);
+			cmdContents.add(date);
 		}
+
+		return cmdContents;
 	}
 
 	public static ArrayList<String> ParseDates(String input) {
@@ -59,6 +73,4 @@ public class MainParser {
 		}
 		return dates;
 	}
-
-	//public static
 }
