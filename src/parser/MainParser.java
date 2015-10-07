@@ -61,5 +61,4 @@ public class MainParser {
 		return dates;
 	}
 
-	public static
 }

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javafx.scene.chart.PieChart.Data;
-import model.Todo;
 import models.DeadlineTask;
 import models.Events;
 import models.FloatingTask;
