@@ -1,13 +1,10 @@
 package storage;
 
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.List;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-
-import model.Todo;
 
 public class DataParser {
 	
@@ -24,15 +21,15 @@ public class DataParser {
         return gson;
 	}
 	
-	public static String serialize(List<Todo> todos) {
+	public static <E> String serialize(List<E> tasks) {
 		Gson gson = getGson();
-		Type listType = new TypeToken<List<Todo>>() {}.getType();
-		return gson.toJson(todos, listType);
+		Type listType = new TypeToken<List<E>>() {}.getType();
+		return gson.toJson(tasks, listType);
 	}
 	
-	public static List<Todo> deserialize(String data) {
+	public static <E> List<E> deserialize(String data) {
 		Gson gson = getGson();
-		Type listType = new TypeToken<List<Todo>>() {}.getType();
+		Type listType = new TypeToken<List<E>>() {}.getType();
 		return gson.fromJson(data, listType);
 	}
 }

@@ -3,35 +3,46 @@ package storage;
 import java.util.ArrayList;
 import java.util.List;
 
+import javafx.scene.chart.PieChart.Data;
 import model.Todo;
+import models.DeadlineTask;
+import models.Events;
+import models.FloatingTask;
+import models.Task;
 
 public class Storage {
-	
-	private String storeDir = null;
-	private static volatile  Storage instance = null;
-	private List<Todo> todos;
-	
-	public static Storage getInstance(String storeDir) {
-        if (instance == null) {
-            synchronized (Storage.class) {
-                if (instance == null) {
-                    instance = new Storage(storeDir);
-                }
-            }
-        }
-        return instance;
+	public static interface storageDir {
+		String floatingTask = "Floating.txt";
+		String deadline = "Deadline.txt";
+		String event = "Event.txt";
 	}
 	
-	public Storage(String storeDir) {
-		this.storeDir = storeDir;
-		this.todos = new ArrayList<>();
+	public static List<Task> getAllTask() {
+		List<FloatingTask> floatingTasks = DataParser.deserialize(FileHandler.readFromFile(storageDir.floatingTask));
+		List<Events> events = DataParser.deserialize(FileHandler.readFromFile(storageDir.event));
+		List<DeadlineTask> deadlines = DataParser.deserialize(FileHandler.readFromFile(storageDir.deadline));
+		List<Task> allTask = new ArrayList<>();
+		allTask.addAll(floatingTasks);
+		allTask.addAll(events);
+		allTask.addAll(deadlines);
+		return allTask;
 	}
 	
-	public void addNewTask(Todo todo) {
-		this.todos.add(todo);
-	}
-	
-	public List<Todo> getAll() {
-		return this.todos;
+	public static void saveAllTask(List<Task> tasks) {
+		List<FloatingTask> floatingTasks = new ArrayList<>();
+		List<Events> events = new ArrayList<>();
+		List<DeadlineTask> deadlines = new ArrayList<>();
+		for(Task task : tasks) {
+			if (task instanceof FloatingTask) {
+				floatingTasks.add((FloatingTask)task);
+			} else if (task instanceof Events) {
+				events.add((Events)tasks);
+			} else if (task instanceof DeadlineTask) {
+				deadlines.add((DeadlineTask)task);
+			}
+		}
+		FileHandler.writeToFile(storageDir.floatingTask, DataParser.serialize(floatingTasks));
+		FileHandler.writeToFile(storageDir.event, DataParser.serialize(events));
+		FileHandler.writeToFile(storageDir.deadline, DataParser.serialize(deadlines));
 	}
 }
