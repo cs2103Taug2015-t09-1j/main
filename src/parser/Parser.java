@@ -18,6 +18,7 @@ public class Parser {
 	
 	public static String removeFirstWord(String command) {
 		int cutPosition = command.indexOf(" ");
+		if (cutPosition == -1) return EMPTY_STRING;
 		return command.substring(cutPosition).trim();
 	}
 	

@@ -6,6 +6,10 @@ import java.util.List;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import models.Event;
+import models.FloatingTask;
+import models.Task;
+
 public class DataParser {
 	
 	private static volatile Gson gson = null;
@@ -21,15 +25,28 @@ public class DataParser {
         return gson;
 	}
 	
-	public static <E> String serialize(List<E> tasks) {
+	public static String serializeFloatingTask(List<FloatingTask> tasks) {
 		Gson gson = getGson();
-		Type listType = new TypeToken<List<E>>() {}.getType();
+		Type listType = new TypeToken<List<FloatingTask>>() {}.getType();
 		return gson.toJson(tasks, listType);
 	}
 	
-	public static <E> List<E> deserialize(String data) {
+	public static String serializeEvent(List<Event> tasks) {
 		Gson gson = getGson();
-		Type listType = new TypeToken<List<E>>() {}.getType();
+		Type listType = new TypeToken<List<Event>>() {}.getType();
+		return gson.toJson(tasks, listType);
+	}
+	
+	public static List<FloatingTask> deserializeFloatingTask(String data) {
+		Gson gson = getGson();
+		Type listType = new TypeToken<List<FloatingTask>>() {}.getType();
+		if (data.isEmpty()) data = "[]";
+		return gson.fromJson(data, listType);
+	}
+	public static List<Event> deserializeEvent(String data) {
+		Gson gson = getGson();
+		Type listType = new TypeToken<List<Event>>() {}.getType();
+		if (data.isEmpty()) data = "[]";
 		return gson.fromJson(data, listType);
 	}
 }

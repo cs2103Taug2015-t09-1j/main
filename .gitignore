@@ -2,6 +2,7 @@
 .metadata
 .gradle
 lib/*
+data/*
 bin/
 tmp/
 *.tmp

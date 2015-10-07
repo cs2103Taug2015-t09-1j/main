@@ -10,19 +10,19 @@ import models.Task;
 
 public class Storage {
 	public static interface storageDir {
-		String floatingTask = "Floating.txt";
-		String deadline = "Deadline.txt";
-		String event = "Event.txt";
+		String floatingTask = "data/Floating.txt";
+		String deadline = "data/Deadline.txt";
+		String event = "data/Event.txt";
 	}
 	
 	public static List<Task> getAllTask() {
-		List<FloatingTask> floatingTasks = DataParser.deserialize(FileHandler.readFromFile(storageDir.floatingTask));
-		List<Event> events = DataParser.deserialize(FileHandler.readFromFile(storageDir.event));
-		List<DeadlineTask> deadlines = DataParser.deserialize(FileHandler.readFromFile(storageDir.deadline));
+		List<FloatingTask> floatingTasks = DataParser.deserializeFloatingTask(FileHandler.readFromFile(storageDir.floatingTask));
+		List<Event> events = DataParser.deserializeEvent(FileHandler.readFromFile(storageDir.event));
+		//List<DeadlineTask> deadlines = DataParser.deserialize(DeadlineTask.class, FileHandler.readFromFile(storageDir.deadline));
 		List<Task> allTask = new ArrayList<>();
 		allTask.addAll(floatingTasks);
 		allTask.addAll(events);
-		allTask.addAll(deadlines);
+		//allTask.addAll(deadlines);
 		return allTask;
 	}
 	
@@ -34,13 +34,13 @@ public class Storage {
 			if (task instanceof FloatingTask) {
 				floatingTasks.add((FloatingTask)task);
 			} else if (task instanceof Event) {
-				events.add((Event)tasks);
+				events.add((Event)task);
 			} else if (task instanceof DeadlineTask) {
 				deadlines.add((DeadlineTask)task);
 			}
 		}
-		FileHandler.writeToFile(storageDir.floatingTask, DataParser.serialize(floatingTasks));
-		FileHandler.writeToFile(storageDir.event, DataParser.serialize(events));
-		FileHandler.writeToFile(storageDir.deadline, DataParser.serialize(deadlines));
+		FileHandler.writeToFile(storageDir.floatingTask, DataParser.serializeFloatingTask(floatingTasks));
+		FileHandler.writeToFile(storageDir.event, DataParser.serializeEvent(events));
+		//FileHandler.writeToFile(storageDir.deadline, DataParser.serialize(deadlines));
 	}
 }

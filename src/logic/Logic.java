@@ -7,6 +7,7 @@ import java.util.Vector;
 import models.*;
 import parser.Parser;
 import storage.Storage;
+import ui.MainGUI;
 
 public class Logic {
 
@@ -15,6 +16,7 @@ public class Logic {
 	// need to be call when the app start
 	public static void init() {
 		tasks = Storage.getAllTask();
+		List<Task> _tasks = tasks;
 		int maxId = 0;
 		for (Task task: tasks) {
 			maxId = Math.max(maxId, task.getTaskID());
@@ -22,27 +24,37 @@ public class Logic {
 		Task.nextId.set(maxId);
 	}
 	
-	public static Vector<Task> processCommand(String command) {
-		
-		Storage.saveAllTask(tasks);
+	public static void processCommand(String command, MainGUI uiRef) {
+		Vector<Task> data = new Vector<>();
+		String message = null;
 		
 		String commandType = Parser.getFirstWord(command);
 		command = Parser.removeFirstWord(command);
 		switch (commandType) {
-			case "add": return addTask(command); 
-			case "update": return updateTask(command);
-			case "display": return display(command);
-			case "delete": return deleteTask(command);
-			case "search": return search(command);
-			default: break;
+			case "add": data = addTask(command); break;
+			case "update": data = updateTask(command); break;
+			case "display": data = display(command); break;
+			case "delete": data = deleteTask(command); break;
+			case "search": data = search(command); break;
+			case "done": data = markTask(command, true); break;
+			case "undone": data = markTask(command, false); break;
+			default: message = "Incorrect format!";
 		}
-		return null;
+		
+		Storage.saveAllTask(tasks);
+		
+		if (message == null) {
+			uiRef.updateTables(data, "All");
+		}
 	}
 	
 	private static Vector<Task> addTask(String command) {
-		Vector<Task> tasks = new Vector<>(); 
-		tasks.addElement(Parser.getTask(command));
-		return tasks;
+		Vector<Task> result = new Vector<>();
+		Task newTask = Parser.getTask(command);
+		result.addElement(newTask);
+		tasks.add(newTask);
+		System.out.println(tasks.size());
+		return result;
 	}
 	
 	private static Vector<Task> updateTask(String command) {
@@ -76,6 +88,14 @@ public class Logic {
 			matchedTasks.addElement(task);
 		}
 		return matchedTasks;
+	}
+	
+	private static Vector<Task> markTask(String command, boolean isDone)  {
+		List<Integer> markIds = Parser.getTaskIds(command);
+		for (Task task: tasks) if (markIds.contains(task.getTaskID())){
+			task.setDone(isDone);
+		}
+		return new Vector<Task>(tasks); 
 	}
 	
 	private static Task findTaskById(int id) {

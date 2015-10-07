@@ -11,7 +11,10 @@ import java.awt.Window.Type;
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 
+import com.sun.org.apache.bcel.internal.generic.FLOAD;
+
 import logic.Logic;
+import models.Event;
 import models.FloatingTask;
 import models.Task;
 import parser.MainParser;
@@ -71,6 +74,7 @@ public class MainGUI {
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() throws Exception {
+		Logic.init();
 		setupMainFrame();
 		setupTabbedPane();
 		setupTextField();
@@ -97,11 +101,12 @@ public class MainGUI {
 
 		tfUserInput.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				//updateTables(Logic.processCommand(tfUserInput.getText()));
+				Logic.processCommand(tfUserInput.getText(), MainGUI.this);
+				tfUserInput.setText("");
 				//List<Date> test = MainParser.ParseCommand(input);(tfUserInput.getText());
-				ArrayList<String> test = MainParser.ParseCommand(tfUserInput.getText());
-				System.out.println(test);
-				tfUserInput.setText(null);
+				//ArrayList<String> test = MainParser.ParseCommand(tfUserInput.getText());
+				//System.out.println(test);
+				//tfUserInput.setText(null);
 				//tfUserInput.setText(MainParser.ParseCommand(tfUserInput.getText()));
 			}
 		});
@@ -183,9 +188,22 @@ public class MainGUI {
 			todosTable.setModel(new TasksTableModel(tasks, type));
 			break;
 		default:
-			eventsTable.setModel(new TasksTableModel(new Vector<Task>(), "Event"));
-			todosTable.setModel(new TasksTableModel(new Vector<Task>(), "Floating"));
+			this.showAll(tasks);
 		}
+	}
+	
+	private void showAll(Vector<Task> tasks) {
+		Vector<Task> events = new Vector<>();
+		Vector<Task> floatingTasks = new Vector<>();
+		for (Task task: tasks) {
+			if (task instanceof Event) {
+				events.addElement(task);
+			} else if (task instanceof FloatingTask) {
+				floatingTasks.addElement(task);
+			}
+		}
+		eventsTable.setModel(new TasksTableModel(events, "Event"));
+		todosTable.setModel(new TasksTableModel(floatingTasks, "Floating"));
 	}
 
 	public void updateStatusMsg(String msg) {
