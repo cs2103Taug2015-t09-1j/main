@@ -10,6 +10,10 @@ import java.awt.Window.Type;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
+
+import models.FloatingTask;
+import parser.MainParser;
+
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -24,7 +28,7 @@ public class MainGUI {
 	private JTable eventsTable, todosTable;
 	private JTabbedPane tabbedPane;
 	private JScrollPane eventsScrollPane, todosScrollPane;
-	private Vector<DeadlineTask> deadlineDummy;
+	//private Vector<Events> deadlineDummy;
 	private Vector<FloatingTask> floatingDummy;
 
 	/**
@@ -82,8 +86,11 @@ public class MainGUI {
 		tfUserInput.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				System.out.println("Call Logic method here");
-				tfUserInput.setText(null);
 				populateTables();
+				//List<Date> test = MainParser.ParseCommand(input);(tfUserInput.getText());
+				//System.out.println(test);
+				//tfUserInput.setText(null);
+				//tfUserInput.setText(MainParser.ParseCommand(tfUserInput.getText()));
 			}
 		});
 	}
@@ -95,10 +102,10 @@ public class MainGUI {
 	}
 
 	private void setupTempVec() {
-		deadlineDummy = new Vector<DeadlineTask>();
+		//eventDummy = new Vector<Events>();
 		floatingDummy = new Vector<FloatingTask>();
 		for (int i = 0; i < 10; i++) {
-			deadlineDummy.add(new DeadlineTask(i+1, LocalDateTime.now(), LocalDateTime.now(), LocalDateTime.now(), "Test"+i, true));
+			//eventDummy.add(new Events(i+1, new Date(), LocalDateTime.now(), "Test"+i, true));
 			floatingDummy.add(new FloatingTask(i+1, "Test"+i, false));
 		}
 	}
@@ -151,7 +158,7 @@ public class MainGUI {
 	}
 
 	private void populateTables() {
-		eventsTable.setModel(new TasksTableModel(deadlineDummy, "Deadline"));
+		//eventsTable.setModel(new TasksTableModel(eventDummy, "Event"));
 		eventsTable.getColumnModel().getColumn(0).setMaxWidth(45);
 		eventsTable.getColumnModel().getColumn(1).setMinWidth(100);
 		eventsTable.getColumnModel().getColumn(1).setMaxWidth(100);

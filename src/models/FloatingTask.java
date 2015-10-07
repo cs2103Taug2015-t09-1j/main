@@ -1,7 +1,7 @@
 /**
  *
  */
-package ui;
+package models;
 
 /**
  * @author Dalton
