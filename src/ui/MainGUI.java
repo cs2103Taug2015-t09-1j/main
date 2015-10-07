@@ -11,7 +11,9 @@ import java.awt.Window.Type;
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 
+import logic.Logic;
 import models.FloatingTask;
+import models.Task;
 import parser.MainParser;
 
 import java.time.LocalDateTime;
@@ -25,11 +27,11 @@ public class MainGUI {
 
 	private JFrame frmTodokoro;
 	private JTextField tfUserInput;
+	private JLabel lblStatusMsg;
 	private JTable eventsTable, todosTable;
 	private JTabbedPane tabbedPane;
 	private JScrollPane eventsScrollPane, todosScrollPane;
-	//private Vector<Events> deadlineDummy;
-	private Vector<FloatingTask> floatingDummy;
+	private JLabel lblStatus;
 
 	/**
 	 * Launch the application.
@@ -72,23 +74,34 @@ public class MainGUI {
 		setupMainFrame();
 		setupTabbedPane();
 		setupTextField();
-		setupTempVec();
 		setupTasksTable();
-		populateTables();
 	}
 
 	private void setupTextField() {
 		tfUserInput = new JTextField();
-		tfUserInput.setBounds(12, 488, 614, 26);
+		tfUserInput.setFont(new Font("Dialog", Font.BOLD, 14));
+		tfUserInput.setBounds(12, 502, 614, 29);
 		tfUserInput.setColumns(10);
 		frmTodokoro.getContentPane().add(tfUserInput);
 
+		JLabel lblStatusMsg = new JLabel("");
+		lblStatusMsg.setHorizontalAlignment(SwingConstants.CENTER);
+		lblStatusMsg.setFont(new Font("Dialog", Font.BOLD, 13));
+		lblStatusMsg.setBounds(67, 476, 559, 27);
+		frmTodokoro.getContentPane().add(lblStatusMsg);
+
+		lblStatus = new JLabel("Status:");
+		lblStatus.setFont(new Font("Dialog", Font.BOLD, 13));
+		lblStatus.setBounds(12, 474, 43, 29);
+		frmTodokoro.getContentPane().add(lblStatus);
+
 		tfUserInput.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				populateTables();
+				//updateTables(Logic.processCommand(tfUserInput.getText()));
 				//List<Date> test = MainParser.ParseCommand(input);(tfUserInput.getText());
-				//System.out.println(test);
-				//tfUserInput.setText(null);
+				ArrayList<String> test = MainParser.ParseCommand(tfUserInput.getText());
+				System.out.println(test);
+				tfUserInput.setText(null);
 				//tfUserInput.setText(MainParser.ParseCommand(tfUserInput.getText()));
 			}
 		});
@@ -100,20 +113,11 @@ public class MainGUI {
 		frmTodokoro.getContentPane().add(tabbedPane);
 	}
 
-	private void setupTempVec() {
-		//eventDummy = new Vector<Events>();
-		floatingDummy = new Vector<FloatingTask>();
-		for (int i = 0; i < 10; i++) {
-			//eventDummy.add(new Events(i+1, new Date(), LocalDateTime.now(), "Test"+i, true));
-			floatingDummy.add(new FloatingTask("Test"+i, false));
-		}
-	}
-
 	private void setupMainFrame() {
 		frmTodokoro = new JFrame();
 		frmTodokoro.setTitle("Todokoro");
 		frmTodokoro.setResizable(false);
-		frmTodokoro.setBounds(100, 100, 644, 560);
+		frmTodokoro.setBounds(100, 100, 644, 571);
 		frmTodokoro.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frmTodokoro.getContentPane().setLayout(null);
 	}
@@ -137,6 +141,16 @@ public class MainGUI {
 		eventsTable.setDefaultRenderer(LocalDateTime.class, centerRenderer);
 		eventsTable.setDefaultRenderer(String.class, centerRenderer);
 		eventsScrollPane.setViewportView(eventsTable);
+		eventsTable.setModel(new TasksTableModel(new Vector<Task>(), "Event"));
+		eventsTable.getColumnModel().getColumn(0).setMaxWidth(45);
+		eventsTable.getColumnModel().getColumn(1).setMinWidth(100);
+		eventsTable.getColumnModel().getColumn(1).setMaxWidth(100);
+		eventsTable.getColumnModel().getColumn(2).setMinWidth(70);
+		eventsTable.getColumnModel().getColumn(2).setMaxWidth(70);
+		eventsTable.getColumnModel().getColumn(3).setMinWidth(70);
+		eventsTable.getColumnModel().getColumn(3).setMaxWidth(70);
+		eventsTable.getColumnModel().getColumn(4).setMinWidth(200);
+		eventsTable.getColumnModel().getColumn(5).setMaxWidth(40);
 
 		todosScrollPane = new JScrollPane();
 		tabbedPane.addTab("<html><body leftmargin=15 topmargin=8 marginwidth=15 marginheight=5><b>Todos</b></body></html>", null, todosScrollPane, null);
@@ -154,23 +168,27 @@ public class MainGUI {
 		todosTable.setDefaultRenderer(LocalDateTime.class, centerRenderer);
 		todosTable.setDefaultRenderer(String.class, centerRenderer);
 		todosScrollPane.setViewportView(todosTable);
-	}
-
-	private void populateTables() {
-		eventsTable.setModel(new TasksTableModel(eventDummy, "Event"));
-		eventsTable.getColumnModel().getColumn(0).setMaxWidth(45);
-		eventsTable.getColumnModel().getColumn(1).setMinWidth(100);
-		eventsTable.getColumnModel().getColumn(1).setMaxWidth(100);
-		eventsTable.getColumnModel().getColumn(2).setMinWidth(70);
-		eventsTable.getColumnModel().getColumn(2).setMaxWidth(70);
-		eventsTable.getColumnModel().getColumn(3).setMinWidth(70);
-		eventsTable.getColumnModel().getColumn(3).setMaxWidth(70);
-		eventsTable.getColumnModel().getColumn(4).setMinWidth(200);
-		eventsTable.getColumnModel().getColumn(5).setMaxWidth(40);
-
-		todosTable.setModel(new TasksTableModel(floatingDummy, "Floating"));
+		todosTable.setModel(new TasksTableModel(new Vector<Task>(), "Floating"));
 		todosTable.getColumnModel().getColumn(0).setMaxWidth(45);
 		todosTable.getColumnModel().getColumn(1).setMinWidth(200);
 		todosTable.getColumnModel().getColumn(2).setMaxWidth(40);
+	}
+
+	public void updateTables(Vector<Task> tasks, String type) {
+		switch (type.toLowerCase()) {
+		case "event":
+			eventsTable.setModel(new TasksTableModel(tasks, type));
+			break;
+		case "floating":
+			todosTable.setModel(new TasksTableModel(tasks, type));
+			break;
+		default:
+			eventsTable.setModel(new TasksTableModel(new Vector<Task>(), "Event"));
+			todosTable.setModel(new TasksTableModel(new Vector<Task>(), "Floating"));
+		}
+	}
+
+	public void updateStatusMsg(String msg) {
+		lblStatusMsg.setText(msg);
 	}
 }
