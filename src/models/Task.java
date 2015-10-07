@@ -3,27 +3,26 @@
  */
 package models;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * @author Dalton
  *
  */
 public abstract class Task {
-	protected int taskID;
+	private static AtomicInteger nextId = new AtomicInteger();
+	protected final int taskID;
 	protected String taskDesc;
 	protected boolean isDone;
 
-	public Task(int taskID, String taskDesc, boolean isDone) {
-		this.taskID = taskID;
+	public Task(String taskDesc, boolean isDone) {
+		this.taskID = nextId.incrementAndGet();
 		this.taskDesc = taskDesc;
 		this.isDone = isDone;
 	}
 
 	public int getTaskID() {
 		return taskID;
-	}
-
-	public void setTaskID(int taskID) {
-		this.taskID = taskID;
 	}
 
 	public String getTaskDesc() {

@@ -8,7 +8,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Vector;
 import javax.swing.table.AbstractTableModel;
 
-import models.Events;
+import models.Event;
 import models.FloatingTask;
 
 /**
@@ -68,13 +68,13 @@ public class TasksTableModel extends AbstractTableModel {
 
 	public void setValueAt(Object value, int row, int col) {
 		if (taskType.equals("Event")) {
-			Events t = (Events)tasksVector.elementAt(row);
+			Event t = (Event)tasksVector.elementAt(row);
 			switch (col) {
 				case 0:
-						t.setTaskID((Integer) value);
+						//t.setTaskID((Integer) value);
 				break;
 				case 1:
-						//t.setDate((Date) value);
+						t.setDate((String) value);
 				break;
 				case 2:
 						t.setStartTime((String) value);
@@ -93,7 +93,7 @@ public class TasksTableModel extends AbstractTableModel {
 			FloatingTask t = (FloatingTask)tasksVector.elementAt(row);
 			switch (col) {
 				case 0:
-						t.setTaskID((Integer) value);
+						//t.setTaskID((Integer) value);
 				break;
 				case 1:
 						t.setTaskDesc((String) value);
@@ -107,19 +107,22 @@ public class TasksTableModel extends AbstractTableModel {
 
 	public Object getValueAt(int row, int col) {
 		if (taskType.equals("Event")) {
-			Events t = (Events)tasksVector.elementAt(row);
+			Event t = (Event)tasksVector.elementAt(row);
 			switch (col) {
 				case 0:
 						return t.getTaskID();
 				case 1:
 						//return t.getDate().format(DateTimeFormatter.ofPattern("E, d MMM y"));
-						return new Date();
+						return t.getDate();
 				case 2:
 						//return t.getStartTime().format(DateTimeFormatter.ofPattern("HH:mm a"));
+						return t.getStartTime();
 				case 3:
 						//return t.getEndTime().format(DateTimeFormatter.ofPattern("HH:mm a"));
+						return t.getEndTime();
 				case 4:
 						//return t.getTaskDesc();
+						return t.getTaskDesc();
 				case 5:
 						return t.isDone();
 			}
