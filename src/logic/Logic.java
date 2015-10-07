@@ -6,15 +6,26 @@ import java.util.Vector;
 
 import models.*;
 import parser.Parser;
+import storage.Storage;
 
 public class Logic {
 
 	public static List<Task> tasks;
 	
+	// need to be call when the app start
 	public static void init() {
+		tasks = Storage.getAllTask();
+		int maxId = 0;
+		for (Task task: tasks) {
+			maxId = Math.max(maxId, task.getTaskID());
+		}
+		Task.nextId.set(maxId);
 	}
 	
 	public static Vector<Task> processCommand(String command) {
+		
+		Storage.saveAllTask(tasks);
+		
 		String commandType = Parser.getFirstWord(command);
 		command = Parser.removeFirstWord(command);
 		switch (commandType) {
@@ -22,7 +33,7 @@ public class Logic {
 			case "update": return updateTask(command);
 			case "display": return display(command);
 			case "delete": return deleteTask(command);
-			case "search": break;
+			case "search": return search(command);
 			default: break;
 		}
 		return null;
