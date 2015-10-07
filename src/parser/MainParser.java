@@ -5,14 +5,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import org.ocpsoft.prettytime.nlp.*;
-import org.ocpsoft.prettytime.nlp.parse.DateGroup;
-
-import models.DeadlineTask;
-import models.Event;
-import models.Task;
 
 public class MainParser {
 	public static ArrayList<String> ParseCommand(String input) {
@@ -28,21 +21,23 @@ public class MainParser {
 		} else if (input.startsWith("delete")) {
 			// delete
 			cmdContents.add("delete");
+			cmdContents.add(input.split("delete ")[1].trim());
 		} else if (input.startsWith("search")) {
 			// search
 			cmdContents.add("search");
+			cmdContents.add(input.split("search ")[1].trim());
 		} else {
 			// add
 			ArrayList<String> dates = ParseDates(input);
 			cmdContents.add("add");
 			switch (dates.size()) {
 			case 1: //Deadline Task
-				taskDesc = input.split("by")[0].trim();
+				taskDesc = input.split(" by ")[0].trim();
 				cmdContents.add("deadline");
 				date = dates.get(0);
 				break;
 			case 2: //Event
-				taskDesc = input.split("at")[0].trim();
+				taskDesc = input.split(" at ")[0].trim();
 				date = dates.get(0);
 				String startTime = dates.get(1);
 				String endTime = dates.get(2);

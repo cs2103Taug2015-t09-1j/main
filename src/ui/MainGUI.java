@@ -85,7 +85,6 @@ public class MainGUI {
 
 		tfUserInput.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				System.out.println("Call Logic method here");
 				populateTables();
 				//List<Date> test = MainParser.ParseCommand(input);(tfUserInput.getText());
 				//System.out.println(test);
@@ -158,7 +157,7 @@ public class MainGUI {
 	}
 
 	private void populateTables() {
-		//eventsTable.setModel(new TasksTableModel(eventDummy, "Event"));
+		eventsTable.setModel(new TasksTableModel(eventDummy, "Event"));
 		eventsTable.getColumnModel().getColumn(0).setMaxWidth(45);
 		eventsTable.getColumnModel().getColumn(1).setMinWidth(100);
 		eventsTable.getColumnModel().getColumn(1).setMaxWidth(100);
