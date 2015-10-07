@@ -7,12 +7,12 @@ import models.*;
 import parser.MainParser;
 
 public class Logic {
-	public Vector<Task> processCommand(String input) {
+	public static Vector<Task> processCommand(String input) {
 		ArrayList<String> cmdContents = MainParser.ParseCommand(input);
 
 		switch (cmdContents.get(0)) {
 		case "add":
-			return addTask(cmdContents);
+			//return addTask(cmdContents);
 		default:
 			return new Vector<Task>();
 		}
@@ -32,9 +32,10 @@ public class Logic {
 		return new Vector<Task>();
 	}
 
+	/*
 	private Vector<Task> searchTask(ArrayList<String> cmdContents) {
 
-	}
+	}*/
 
 
 }

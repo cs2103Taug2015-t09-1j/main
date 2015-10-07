@@ -36,8 +36,8 @@ public class MainParser {
 				cmdContents.add("deadline");
 				date = dates.get(0);
 				break;
-			case 2: //Event
-				taskDesc = input.split(" at ")[0].trim();
+			case 3: //Event
+				taskDesc = input.split("on|at|between|today|tomorrow|[0-9][a|p][m]")[0].trim();
 				date = dates.get(0);
 				String startTime = dates.get(1);
 				String endTime = dates.get(2);
