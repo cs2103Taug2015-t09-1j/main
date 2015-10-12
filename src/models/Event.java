@@ -9,38 +9,28 @@ import java.util.Date;
  *
  */
 public class Event extends Task {
-	private String date;
-	private String startTime;
-	private String endTime;
+	private Date fromDate;
+	private Date toDate;
 
-	public Event(String date, String startTime, String endTime, String taskDesc, boolean isDone) {
+	public Event(Date fromDate, Date toDate, String taskDesc, boolean isDone) {
 		super(taskDesc, isDone);
-		this.date = date;
-		this.startTime = startTime;
-		this.endTime = endTime;
+		this.fromDate = fromDate;
+		this.toDate = toDate;
 	}
 
-	public String getStartTime() {
-		return startTime;
+	public Date getFromDate() {
+		return fromDate;
 	}
 
-	public void setStartTime(String startTime) {
-		this.startTime = startTime;
+	public void setFromDate(Date fromDate) {
+		this.fromDate = fromDate;
 	}
 
-	public String getEndTime() {
-		return endTime;
+	public Date getToDate() {
+		return toDate;
 	}
 
-	public void setEndTime(String endTime) {
-		this.endTime = endTime;
-	}
-
-	public String getDate() {
-		return date;
-	}
-
-	public void setDate(String date) {
-		this.date = date;
+	public void setToDate(Date toDate) {
+		this.toDate = toDate;
 	}
 }
