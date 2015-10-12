@@ -3,23 +3,25 @@
  */
 package models;
 
+import java.util.Date;
+
 /**
  * @author Dalton
  *
  */
 public class DeadlineTask extends Task {
-	private String date;
+	private Date date;
 
-	public DeadlineTask(String date, String taskDesc, boolean isDone) {
+	public DeadlineTask(Date date, String taskDesc, boolean isDone) {
 		super(taskDesc, isDone);
 		this.date = date;
 	}
 
-	public String getDate() {
+	public Date getDate() {
 		return date;
 	}
 
-	public void setDate(String date) {
+	public void setDate(Date date) {
 		this.date = date;
 	}
 }
