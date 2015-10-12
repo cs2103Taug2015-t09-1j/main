@@ -13,6 +13,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 
 import logic.Logic;
 import models.FloatingTask;
+import models.ParsedObject;
 import models.Task;
 import parser.MainParser;
 
@@ -79,7 +80,7 @@ public class MainGUI {
 
 	private void setupTextField() {
 		tfUserInput = new JTextField();
-		tfUserInput.setFont(new Font("Dialog", Font.BOLD, 14));
+		tfUserInput.setFont(new Font("Dialog", Font.PLAIN, 14));
 		tfUserInput.setBounds(12, 502, 614, 29);
 		tfUserInput.setColumns(10);
 		frmTodokoro.getContentPane().add(tfUserInput);
@@ -95,12 +96,20 @@ public class MainGUI {
 		lblStatus.setBounds(12, 474, 43, 29);
 		frmTodokoro.getContentPane().add(lblStatus);
 
+
+		frmTodokoro.addWindowListener(new WindowAdapter() {
+		    public void windowOpened(WindowEvent e) {
+		    	tfUserInput.requestFocusInWindow();
+		    }
+		});
+
 		tfUserInput.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				//updateTables(Logic.processCommand(tfUserInput.getText()));
 				//List<Date> test = MainParser.ParseCommand(input);(tfUserInput.getText());
-				ArrayList<String> test = MainParser.ParseCommand(tfUserInput.getText());
-				System.out.println(test);
+				ParsedObject test = MainParser.getInstance().parseCommand(tfUserInput.getText());
+				//System.out.println(test);
+				lblStatusMsg.setText(null);
 				tfUserInput.setText(null);
 				//tfUserInput.setText(MainParser.ParseCommand(tfUserInput.getText()));
 			}
@@ -145,12 +154,16 @@ public class MainGUI {
 		eventsTable.getColumnModel().getColumn(0).setMaxWidth(45);
 		eventsTable.getColumnModel().getColumn(1).setMinWidth(100);
 		eventsTable.getColumnModel().getColumn(1).setMaxWidth(100);
-		eventsTable.getColumnModel().getColumn(2).setMinWidth(70);
-		eventsTable.getColumnModel().getColumn(2).setMaxWidth(70);
-		eventsTable.getColumnModel().getColumn(3).setMinWidth(70);
-		eventsTable.getColumnModel().getColumn(3).setMaxWidth(70);
-		eventsTable.getColumnModel().getColumn(4).setMinWidth(200);
-		eventsTable.getColumnModel().getColumn(5).setMaxWidth(40);
+		eventsTable.getColumnModel().getColumn(2).setMinWidth(100);
+		eventsTable.getColumnModel().getColumn(2).setMaxWidth(100);
+		eventsTable.getColumnModel().getColumn(3).setMinWidth(200);
+		eventsTable.getColumnModel().getColumn(4).setMaxWidth(40);
+		//eventsTable.getColumnModel().getColumn(2).setMinWidth(70);
+		//eventsTable.getColumnModel().getColumn(2).setMaxWidth(70);
+		//eventsTable.getColumnModel().getColumn(3).setMinWidth(70);
+		//eventsTable.getColumnModel().getColumn(3).setMaxWidth(70);
+		//eventsTable.getColumnModel().getColumn(4).setMinWidth(200);
+		//eventsTable.getColumnModel().getColumn(5).setMaxWidth(40);
 
 		todosScrollPane = new JScrollPane();
 		tabbedPane.addTab("<html><body leftmargin=15 topmargin=8 marginwidth=15 marginheight=5><b>Todos</b></body></html>", null, todosScrollPane, null);

@@ -3,42 +3,57 @@
  */
 package models;
 
+import java.util.ArrayList;
+
 /**
  * @author Dalton
  *
  */
 public class ParsedObject {
-	private Task t;
-	private String type;
-	private String msg;
+	private String command;
+	private String commandType;
+	private ArrayList<String> commandInfo;
+	private String message;
 
-	public ParsedObject(Task t, String type, String msg) {
-		this.t = t;
-		this.type = type;
-		this.msg = msg;
+	public ParsedObject() {
 	}
 
-	public Task getTask() {
-		return t;
+	public ParsedObject(String command, String commandType, ArrayList<String> commandInfo, String message) {
+		this.command = command;
+		this.commandType = commandType;
+		this.commandInfo = commandInfo;
+		this.message = message;
 	}
 
-	public void setTask(Task t) {
-		this.t = t;
+	public String getCommand() {
+		return command;
 	}
 
-	public String getType() {
-		return type;
+	public void setCommand(String command) {
+		this.command = command;
 	}
 
-	public void setType(String type) {
-		this.type = type;
+	public String getCommandType() {
+		return commandType;
 	}
 
-	public String getMsg() {
-		return msg;
+	public void setCommandType(String commandType) {
+		this.commandType = commandType;
 	}
 
-	public void setMsg(String msg) {
-		this.msg = msg;
+	public ArrayList<String> getCommandInfo() {
+		return commandInfo;
+	}
+
+	public void setCommandInfo(ArrayList<String> commandInfo) {
+		this.commandInfo = commandInfo;
+	}
+
+	public String getMessage() {
+		return message;
+	}
+
+	public void setMessage(String message) {
+		this.message = message;
 	}
 }

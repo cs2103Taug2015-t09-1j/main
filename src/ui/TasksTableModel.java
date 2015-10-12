@@ -4,6 +4,7 @@
 package ui;
 
 import java.util.Date;
+import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.Vector;
 import javax.swing.table.AbstractTableModel;
@@ -16,8 +17,8 @@ import models.FloatingTask;
  *
  */
 public class TasksTableModel extends AbstractTableModel {
-	private String[] eventCols = { "ID", "Date", "Start", "End", "Task Description", "Done" };
-	private Class[] eventTypes = { Integer.class, String.class, String.class, String.class, String.class, Boolean.class };
+	private String[] eventCols = { "ID", "Start Date", "End Date", "Task Description", "Done" };
+	private Class[] eventTypes = { Integer.class, String.class, String.class, String.class, Boolean.class };
 	private String[] floatingCols = { "ID", "Task Description", "Done" };
 	private Class[] floatingTypes = { Integer.class, String.class, Boolean.class };
 
@@ -74,13 +75,13 @@ public class TasksTableModel extends AbstractTableModel {
 						//t.setTaskID((Integer) value);
 				break;
 				case 1:
-						t.setDate((String) value);
+						//t.setDate((String) value);
 				break;
 				case 2:
-						t.setStartTime((String) value);
+						//t.setStartTime((String) value);
 				break;
 				case 3:
-						t.setEndTime((String) value);
+						//t.setEndTime((String) value);
 				break;
 				case 4:
 						t.setTaskDesc((String) value);
@@ -113,18 +114,19 @@ public class TasksTableModel extends AbstractTableModel {
 						return t.getTaskID();
 				case 1:
 						//return t.getDate().format(DateTimeFormatter.ofPattern("E, d MMM y"));
-						return t.getDate();
+						//return t.getDate();
+					return new SimpleDateFormat("EEE, d MMM yyyy h:mm a").format(t.getFromDate()).toString();
 				case 2:
 						//return t.getStartTime().format(DateTimeFormatter.ofPattern("HH:mm a"));
-						return t.getStartTime();
+						//return t.getStartTime();
+					return new SimpleDateFormat("EEE, d MMM yyyy h:mm a").format(t.getToDate()).toString();
 				case 3:
-						//return t.getEndTime().format(DateTimeFormatter.ofPattern("HH:mm a"));
-						return t.getEndTime();
+					return t.getTaskDesc();
 				case 4:
 						//return t.getTaskDesc();
-						return t.getTaskDesc();
+					return t.isDone();
 				case 5:
-						return t.isDone();
+						return null;
 			}
 		} else {
 			FloatingTask t = (FloatingTask)tasksVector.elementAt(row);

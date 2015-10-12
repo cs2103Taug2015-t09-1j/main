@@ -4,32 +4,45 @@ import java.util.ArrayList;
 import java.util.Vector;
 
 import models.*;
+import models.Commands.ADD_TYPE;
+import models.Commands.COMMAND_TYPE;
 import parser.MainParser;
 
 public class Logic {
-	public static Vector<Task> processCommand(String input) {
-		ArrayList<String> cmdContents = MainParser.ParseCommand(input);
+	private static Logic logic = null;
+	private static final MainParser parser = MainParser.getInstance();
 
-		switch (cmdContents.get(0)) {
-		case "add":
-			//return addTask(cmdContents);
+	private Logic() { }
+
+	public static Logic getInstance() {
+		if (logic == null) {
+			logic = new Logic();
+		}
+		return logic;
+	}
+
+	public Vector<Task> processCommand(String input) {
+		COMMAND_TYPE cmdType = parser.determineCommandType(input);
+
+		switch (cmdType) {
+		case ADD:
+			return addTask(input);
+		case SEARCH:
+			return addTask(input);
+		case UPDATE:
+			return addTask(input);
+		case DELETE:
+			return addTask(input);
+		case UNDO:
+			return addTask(input);
 		default:
 			return new Vector<Task>();
 		}
 	}
 
-	private Vector<Task> addTask(ArrayList<String> cmdContents) {
-		switch (cmdContents.get(1)) {
-		case "deadline":
-			break;
-		case "event":
-			Event evt = new Event(cmdContents.get(4), cmdContents.get(2), cmdContents.get(3), cmdContents.get(5), false);
-			//Storage.addTask(evt);
-			break;
-		default:
-
-		}
-		return new Vector<Task>();
+	private Vector<Task> addTask(String input) {
+		//Vector<Task> tasks = Storage.addTask(parser.getTaskType(input));
+		return null;
 	}
 
 	/*
