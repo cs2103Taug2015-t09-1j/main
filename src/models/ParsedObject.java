@@ -3,57 +3,66 @@
  */
 package models;
 
-import java.util.ArrayList;
+import java.util.Vector;
+import models.Commands.*;
 
 /**
  * @author Dalton
  *
  */
 public class ParsedObject {
-	private String command;
-	private String commandType;
-	private ArrayList<String> commandInfo;
-	private String message;
+	private COMMAND_TYPE commandType;
+	private TASK_TYPE taskType;
+	private Vector objects;
 
 	public ParsedObject() {
 	}
 
-	public ParsedObject(String command, String commandType, ArrayList<String> commandInfo, String message) {
-		this.command = command;
+	public ParsedObject(COMMAND_TYPE commandType, TASK_TYPE taskType, Vector objects) {
 		this.commandType = commandType;
-		this.commandInfo = commandInfo;
-		this.message = message;
+		this.taskType = taskType;
+		this.objects = objects;
 	}
 
-	public String getCommand() {
-		return command;
-	}
-
-	public void setCommand(String command) {
-		this.command = command;
-	}
-
-	public String getCommandType() {
+	/**
+	 * @return the commandType
+	 */
+	public COMMAND_TYPE getCommandType() {
 		return commandType;
 	}
 
-	public void setCommandType(String commandType) {
+	/**
+	 * @param commandType the commandType to set
+	 */
+	public void setCommandType(COMMAND_TYPE commandType) {
 		this.commandType = commandType;
 	}
 
-	public ArrayList<String> getCommandInfo() {
-		return commandInfo;
+	/**
+	 * @return the taskType
+	 */
+	public TASK_TYPE getTaskType() {
+		return taskType;
 	}
 
-	public void setCommandInfo(ArrayList<String> commandInfo) {
-		this.commandInfo = commandInfo;
+	/**
+	 * @param taskType the taskType to set
+	 */
+	public void setTaskType(TASK_TYPE taskType) {
+		this.taskType = taskType;
 	}
 
-	public String getMessage() {
-		return message;
+	/**
+	 * @return the tasks
+	 */
+	public Vector getObjects() {
+		return objects;
 	}
 
-	public void setMessage(String message) {
-		this.message = message;
+	/**
+	 * @param tasks the tasks to set
+	 */
+	public void setTasks(Vector objects) {
+		this.objects = objects;
 	}
 }
