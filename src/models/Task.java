@@ -10,10 +10,10 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  */
 public abstract class Task {
-	private static AtomicInteger nextId = new AtomicInteger();
-	protected final int taskID;
-	protected String taskDesc;
-	protected boolean isDone;
+	public static AtomicInteger nextId = new AtomicInteger();
+	private final int taskID;
+	private String taskDesc;
+	private boolean isDone;
 
 	public Task(String taskDesc, boolean isDone) {
 		this.taskID = nextId.incrementAndGet();
