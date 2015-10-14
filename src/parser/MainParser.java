@@ -1,8 +1,9 @@
 package parser;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
+import java.util.ArrayList;
 import java.util.Date;
 
 import org.ocpsoft.prettytime.nlp.*;
@@ -64,15 +65,23 @@ public class MainParser {
 		return input;
 	}
 
+	public String formatDate(Date d, String format) {
+		return new SimpleDateFormat(format).format(d);
+	}
+
 	public List<DateGroup> parseDates(String input) {
+		if (input.contains("+")) {
+			input = input.split("\\+")[1];
+		}
 		return ptParser.parseSyntax(input);
 	}
 
 	private String getTaskDesc(String input) {
-		String test = input.split("\\+")[1];
-		String date = new PrettyTimeParser().parseSyntax(test).get(0).getText();
-		input = input.toLowerCase().replaceAll("((due by)|due|by|before|from|on|at)\\s*" + date, "");
-		input = input.replaceAll("((due by)|due|by|from|on|at)\\s*$", "");
+		List<DateGroup> temp = parseDates(input);
+		String date = temp.get(0).getText();
+		input = input.toLowerCase().replaceAll("\\++((due by)|due|by|before|from|on|at)\\s*" + date, "");
+		input = input.replaceAll("\\s*" + date + "\\s*", "");
+		input = input.replaceAll("\\s+((due by)|due|by|from|on|at)\\s*$", "");
 		input = input.replaceAll("^\\s*((due by)|due|by|from|on|at)", "");
 		input = input.replaceAll("^\\s+|\\s+$", "");
 		return input.trim();
@@ -80,7 +89,7 @@ public class MainParser {
 
 	public ParsedObject getAddParsedObject(String input) {
 		List<DateGroup> parsedInput = parseDates(input);
-		Vector<Task> tasks = new Vector<Task>();
+		ArrayList<Task> tasks = new ArrayList<Task>();
 
 		if (!parsedInput.isEmpty()) {
 			switch (parsedInput.get(0).getDates().size()) {
@@ -104,7 +113,7 @@ public class MainParser {
 			}
 		} else {
 			// Floating Task
-			tasks.add(new FloatingTask(getTaskDesc(input), false));
+			tasks.add(new FloatingTask(input.trim(), false));
 			return new ParsedObject(COMMAND_TYPE.ADD, TASK_TYPE.FLOATING_TASK, tasks);
 		}
 	}
@@ -128,7 +137,7 @@ public class MainParser {
 	public ParsedObject getDeleteParsedObject(String input) {
 		String params = removeCommandWord(input, deleteCmdList);
 
-		Vector<Integer> taskIDs = new Vector<Integer>();
+		ArrayList<Integer> taskIDs = new ArrayList<Integer>();
 		String[] taskIDArray = getCommandParameters(params, COMMAND_TYPE.DELETE);
 		for (String idStr : taskIDArray) {
 			if (!idStr.trim().isEmpty()) {
@@ -148,7 +157,7 @@ public class MainParser {
 	public ParsedObject getDisplayParsedObject(String input) {
 		String params = removeCommandWord(input, displayCmdList);
 
-		Vector<String> columns = new Vector<String>();
+		ArrayList<String> columns = new ArrayList<String>();
 		String[] colArray = getCommandParameters(params, COMMAND_TYPE.DISPLAY);
 		for (String colName : colArray) {
 			if (!colName.trim().isEmpty()) {
@@ -162,7 +171,7 @@ public class MainParser {
 	public ParsedObject getSearchParsedObject(String input) {
 		String params = removeCommandWord(input, searchCmdList);
 
-		Vector<String> searchTerms = new Vector<String>();
+		ArrayList<String> searchTerms = new ArrayList<String>();
 		String[] termArray = getCommandParameters(params, COMMAND_TYPE.SEARCH);
 		for (String term : termArray) {
 			if (!term.trim().isEmpty()) {
@@ -176,7 +185,7 @@ public class MainParser {
 	public ParsedObject getUpdateParsedObject(String input) {
 		String params = removeCommandWord(input, searchCmdList);
 
-		Vector<String> searchTerms = new Vector<String>();
+		ArrayList<String> searchTerms = new ArrayList<String>();
 		String[] termArray = getCommandParameters(params, COMMAND_TYPE.SEARCH);
 		for (String term : termArray) {
 			if (!term.trim().isEmpty()) {
