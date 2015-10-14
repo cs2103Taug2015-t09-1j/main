@@ -60,12 +60,9 @@ public class EventsTableModel extends AbstractTableModel {
 					//t.setStartTime((String) value);
 			break;
 			case 3:
-					//t.setEndTime((String) value);
-			break;
-			case 4:
 					evt.setTaskDesc((String) value);
 			break;
-			case 5:
+			case 4:
 					evt.setDone((Boolean) value);
 			break;
 		}
@@ -92,8 +89,6 @@ public class EventsTableModel extends AbstractTableModel {
 				return sb.toString();
 			case 4:
 				return evt.isDone();
-			case 5:
-				return null;
 		}
 		return new String();
 	}
