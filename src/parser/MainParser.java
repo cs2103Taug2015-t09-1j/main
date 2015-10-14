@@ -69,11 +69,12 @@ public class MainParser {
 	}
 
 	private String getTaskDesc(String input) {
-		input = input.replaceAll("\\s?" + new PrettyTimeParser().parseSyntax(input).get(0).getText(), "");
-		input = input.toLowerCase().replaceAll("((due by)|between|due|by|from|on|at)\\s\\d", "");
-		input = input.toLowerCase().replaceAll("((due by)|between|due|by|from|on|at)\\s\\w\\d", "");
-		input = input.replaceAll("((due by)|between|due|by|from|on|at)$", "");
-		input = input.replaceAll("^((due by)|between|due|by|from|on|at)\\s", "");
+		String test = input.split("\\+")[1];
+		String date = new PrettyTimeParser().parseSyntax(test).get(0).getText();
+		input = input.toLowerCase().replaceAll("((due by)|due|by|before|from|on|at)\\s*" + date, "");
+		input = input.replaceAll("((due by)|due|by|from|on|at)\\s*$", "");
+		input = input.replaceAll("^\\s*((due by)|due|by|from|on|at)", "");
+		input = input.replaceAll("^\\s+|\\s+$", "");
 		return input.trim();
 	}
 
@@ -84,7 +85,7 @@ public class MainParser {
 		if (!parsedInput.isEmpty()) {
 			switch (parsedInput.get(0).getDates().size()) {
 			case 1:
-				if (input.contains("by") || input.contains("due")) {
+				if (input.contains("by") || input.contains("due") || input.contains("before")) {
 					// Deadline Task
 					tasks.add(new DeadlineTask(parsedInput.get(0).getDates().get(0), getTaskDesc(input), false));
 					return new ParsedObject(COMMAND_TYPE.ADD, TASK_TYPE.DEADLINE_TASK, tasks);
