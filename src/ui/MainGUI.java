@@ -5,18 +5,30 @@ package ui;
 
 import java.awt.Color;
 import java.awt.EventQueue;
-import java.awt.event.*;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
-import javax.swing.*;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.EtchedBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableModel;
 
 import logic.Logic;
 import models.DeadlineTask;
@@ -25,12 +37,7 @@ import models.Event;
 import models.EventsTableModel;
 import models.FloatingTask;
 import models.FloatingTasksTableModel;
-import models.ParsedObject;
 import models.Task;
-import parser.MainParser;
-
-import java.time.LocalDateTime;
-import java.util.*;
 
 /**
  * @author Dalton

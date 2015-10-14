@@ -50,4 +50,8 @@ public abstract class Task {
 	public void setDone(boolean isDone) {
 		this.isDone = isDone;
 	}
+	
+	public static void setNextId(int initState) {
+		nextId = new AtomicInteger(initState);
+	}
 }

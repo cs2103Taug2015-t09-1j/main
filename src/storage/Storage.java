@@ -1,13 +1,13 @@
 package storage;
 
+import static models.Commands.TASK_TYPE.DEADLINE_TASK;
+import static models.Commands.TASK_TYPE.EVENT;
+import static models.Commands.TASK_TYPE.FLOATING_TASK;
+
 import java.util.ArrayList;
 import java.util.List;
-import static models.Commands.TASK_TYPE.*;
 
 import models.Commands.TASK_TYPE;
-import models.DeadlineTask;
-import models.Event;
-import models.FloatingTask;
 import models.Task;
 
 public class Storage {
@@ -25,6 +25,16 @@ public class Storage {
 		floatingTasks = DataParser.deserialize(FileHandler.readFromFile(storageDir.floatingTask), FLOATING_TASK);
 		events = DataParser.deserialize(FileHandler.readFromFile(storageDir.event), EVENT);
 		deadlines = DataParser.deserialize(FileHandler.readFromFile(storageDir.deadline), DEADLINE_TASK);
+		int curMaxId = Math.max(getMaxId(floatingTasks), Math.max(getMaxId(events), getMaxId(deadlines)));
+		Task.setNextId(curMaxId);
+	}
+	
+	private static int getMaxId(List<Task> tasks) {
+		int res = 0;
+		for (Task task : tasks) {
+			res = Math.max(task.getTaskID(), res);
+		}
+		return res;
 	}
 	
 	public static void addTask(Task task, TASK_TYPE type) {
@@ -32,6 +42,7 @@ public class Storage {
 			case FLOATING_TASK: floatingTasks.add(task); break;
 			case EVENT: events.add(task); break;
 			case DEADLINE_TASK: deadlines.add(task); break;
+			default: break;
 		}
 	}
 	
@@ -57,7 +68,7 @@ public class Storage {
 		return null;
 	}
 	
-	public static void delete(int id) {
+	private static void delete(int id) {
 		Task task = getTaskById(id);
 		if (task == null) {
 			return;
@@ -70,6 +81,15 @@ public class Storage {
 	public static void delete(List<Integer> ids) {
 		for (int id : ids) {
 			delete(id);
+		}
+	}
+	
+	public static void changeStatus(List<Integer> ids, boolean status) {
+		for (int id : ids) {
+			Task task = getTaskById(id);
+			if (task != null) {
+				task.setDone(status);
+			}
 		}
 	}
 	
