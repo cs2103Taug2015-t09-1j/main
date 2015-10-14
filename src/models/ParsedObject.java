@@ -3,7 +3,7 @@
  */
 package models;
 
-import java.util.Vector;
+import java.util.ArrayList;
 import models.Commands.*;
 
 /**
@@ -13,12 +13,12 @@ import models.Commands.*;
 public class ParsedObject {
 	private COMMAND_TYPE commandType;
 	private TASK_TYPE taskType;
-	private Vector objects;
+	private ArrayList objects;
 
 	public ParsedObject() {
 	}
 
-	public ParsedObject(COMMAND_TYPE commandType, TASK_TYPE taskType, Vector objects) {
+	public ParsedObject(COMMAND_TYPE commandType, TASK_TYPE taskType, ArrayList objects) {
 		this.commandType = commandType;
 		this.taskType = taskType;
 		this.objects = objects;
@@ -55,14 +55,14 @@ public class ParsedObject {
 	/**
 	 * @return the tasks
 	 */
-	public Vector getObjects() {
+	public ArrayList getObjects() {
 		return objects;
 	}
 
 	/**
 	 * @param tasks the tasks to set
 	 */
-	public void setTasks(Vector objects) {
+	public void setTasks(ArrayList objects) {
 		this.objects = objects;
 	}
 }
