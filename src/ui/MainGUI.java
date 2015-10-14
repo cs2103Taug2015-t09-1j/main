@@ -256,12 +256,12 @@ public class MainGUI {
 	}
 
 	private void updateAllTables() {
-		updateTable(eventsTable, new EventsTableModel(logic.getAllEvents()));
-		setColWidth(eventsTable);
-		updateTable(floatingTasksTable, new FloatingTasksTableModel(logic.getAllFloatingTasks()));
-		setColWidth(floatingTasksTable);
 		updateTable(deadlineTasksTable, new DeadlineTasksTableModel(logic.getAllDeadlineTasks()));
 		setColWidth(deadlineTasksTable);
+		updateTable(floatingTasksTable, new FloatingTasksTableModel(logic.getAllFloatingTasks()));
+		setColWidth(floatingTasksTable);
+		updateTable(eventsTable, new EventsTableModel(logic.getAllEvents()));
+		setColWidth(eventsTable);
 	}
 
 	private void updateTable(JTable table, Object model) {
