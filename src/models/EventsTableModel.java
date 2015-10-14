@@ -6,8 +6,8 @@ package models;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import javax.swing.table.AbstractTableModel;
-
 import models.Event;
+import logic.Logic;
 
 /**
  * @author Dalton
@@ -16,6 +16,7 @@ import models.Event;
 public class EventsTableModel extends AbstractTableModel {
 	private String[] columnNames = { "ID", "Start Date", "End Date", "Task Description", "Done" };
 	private Class[] columnTypes = { Integer.class, String.class, String.class, String.class, Boolean.class };
+	private Logic logic = Logic.getInstance();
 
 	ArrayList<Event> events;
 
@@ -42,8 +43,10 @@ public class EventsTableModel extends AbstractTableModel {
 
 	public boolean isCellEditable(int row, int col) {
         switch (col) {
-            default:
-                return false;
+        	case 4:
+        		return true;
+        	default:
+        		return false;
         }
     }
 
@@ -60,10 +63,11 @@ public class EventsTableModel extends AbstractTableModel {
 					//t.setStartTime((String) value);
 			break;
 			case 3:
-					evt.setTaskDesc((String) value);
+					evt.setTaskDesc((String)value);
 			break;
 			case 4:
-					evt.setDone((Boolean) value);
+					//evt.setDone((Boolean) value);
+					logic.updateTaskStatus(evt.getTaskID(), (Boolean)value);
 			break;
 		}
     }
