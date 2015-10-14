@@ -12,6 +12,7 @@ import models.Task;
 
 public class Storage {
 	public static interface storageDir {
+		String storeFolder = "data";
 		String floatingTask = "data/Floating.txt";
 		String deadline = "data/Deadline.txt";
 		String event = "data/Event.txt";
@@ -22,6 +23,7 @@ public class Storage {
 	private static List<Task> deadlines = new ArrayList<>();
 
 	public static void init() {
+		FileHandler.createNewFolderIfNotExisit(storageDir.storeFolder);
 		floatingTasks = DataParser.deserialize(FileHandler.readFromFile(storageDir.floatingTask), FLOATING_TASK);
 		events = DataParser.deserialize(FileHandler.readFromFile(storageDir.event), EVENT);
 		deadlines = DataParser.deserialize(FileHandler.readFromFile(storageDir.deadline), DEADLINE_TASK);

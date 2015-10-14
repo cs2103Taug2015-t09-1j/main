@@ -8,6 +8,17 @@ import java.io.IOException;
 
 public class FileHandler {
 	
+	public static void createNewFolderIfNotExisit(String folderName) {
+		File file = new File(folderName);
+		if (!file.exists()) {
+			try {
+				file.mkdir();
+			} catch (Exception e) {
+				// error occurs 
+			}
+		}
+	}
+	
 	public static void createNewFileIfNotExisit(String fileName) {
 		File file = new File(fileName);
 		if (!file.exists()) {
