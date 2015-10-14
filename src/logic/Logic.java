@@ -5,9 +5,12 @@ import parser.Parser;
 import storage.Storage;
 import ui.MainGUI;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
+import models.Commands;
 import models.Commands.*;
 import models.DeadlineTask;
 import models.Event;
@@ -16,8 +19,6 @@ import models.ParsedObject;
 import models.Task;
 
 public class Logic {
-
-	public static List<Task> tasks;
 	private static Logic logic = null;
 	private static final MainParser parser = MainParser.getInstance();
 
@@ -30,61 +31,92 @@ public class Logic {
 		return logic;
 	}
 
-	public void processCommand(String input) {
+	public String processCommand(String input) {
 		switch (parser.determineCommandType(input)) {
 		case ADD:
-			add(input);
-			break;
+			return add(input);
+			//break;
 		case DISPLAY:
-			display(input);
+			//display(input);
 			break;
 		case SEARCH:
-			search(input);
+			//search(input);
 			break;
 		case UPDATE:
 			//update(input);
 			break;
 		case DELETE:
-			delete(input);
+			//delete(input);
 			break;
 		case UNDO:
 			//undo(input);
 			break;
 		default:
 		}
+		return null;
 	}
 
-	private void add(String input) {
+	public ArrayList<List<Task>> getAllTaskLists() {
+		ArrayList<List<Task>> taskLists = new ArrayList<List<Task>>();
+		taskLists.add(Storage.getAllTask(Commands.TASK_TYPE.EVENT));
+		taskLists.add(Storage.getAllTask(Commands.TASK_TYPE.FLOATING_TASK));
+		taskLists.add(Storage.getAllTask(Commands.TASK_TYPE.DEADLINE_TASK));
+		return taskLists;
+	}
+
+	public ArrayList<Event> getAllEvents() {
+		return (ArrayList)Storage.getAllTask(Commands.TASK_TYPE.EVENT);
+	}
+
+	public ArrayList<FloatingTask> getAllFloatingTasks() {
+		return (ArrayList)Storage.getAllTask(Commands.TASK_TYPE.FLOATING_TASK);
+	}
+
+	public ArrayList<DeadlineTask> getAllDeadlineTasks() {
+		return (ArrayList)Storage.getAllTask(Commands.TASK_TYPE.DEADLINE_TASK);
+	}
+
+	private String add(String input) {
 		// For Debugging
 		ParsedObject obj = parser.getAddParsedObject(input);
 		System.out.println(obj.getCommandType());
 		System.out.println(obj.getTaskType());
-		Vector<Task> v = obj.getObjects();
+		ArrayList<Task> v = obj.getObjects();
 		for (int i = 0; i < v.size(); i++) {
 			switch (obj.getTaskType()) {
 			case SINGLE_DATE_EVENT:
-				Event se = (Event)v.get(i);
-				System.out.println(se.getTaskID() + ", " + se.getTaskDesc() + ", " + se.getFromDate() + ", " + se.getToDate());
-				break;
+				Event sEvt = (Event)v.get(i);
+				System.out.println(sEvt.getTaskID() + ", " + sEvt.getTaskDesc() + ", " + sEvt.getFromDate() + ", " + sEvt.getToDate());
+				//return Storage.addTask(parser.getAddParsedObject(input), Commands.TASK_TYPE.SINGLE_DATE_EVENT);
+				Storage.addTask(sEvt, Commands.TASK_TYPE.EVENT);
+
+				return "<html><b>\"" + sEvt.getTaskDesc() + "\"</b><br/>has been successfully added as an Event on <b>" + parser.formatDate(sEvt.getFromDate(), "EEE, d MMM yyyy") + "</b> at <b>" + parser.formatDate(sEvt.getFromDate(), "h:mm a") + "</b>.</html>";
+				//break;
 			case DOUBLE_DATE_EVENT:
-				Event de = (Event)v.get(i);
-				System.out.println(de.getTaskID() + ", " + de.getTaskDesc() + ", " + de.getFromDate() + ", " + de.getToDate());
-				break;
+				Event dEvt = (Event)v.get(i);
+				System.out.println(dEvt.getTaskID() + ", " + dEvt.getTaskDesc() + ", " + dEvt.getFromDate() + ", " + dEvt.getToDate());
+				Storage.addTask(dEvt, Commands.TASK_TYPE.EVENT);
+				return "<html><b>\"" + dEvt.getTaskDesc() + "\"</b><br/>has been successfully added as an Event from <b>" + parser.formatDate(dEvt.getFromDate(), "EEE, d MMM yyyy h:mm a") + "</b> to <b>" + parser.formatDate(dEvt.getToDate(), "EEE, d MMM yyyy h:mm a") + "</b>.</html>";
+				//break;
 			case FLOATING_TASK:
-				FloatingTask f = (FloatingTask)v.get(i);
-				System.out.println(f.getTaskID() + ", " + f.getTaskDesc());
-				break;
+				FloatingTask flt = (FloatingTask)v.get(i);
+				System.out.println(flt.getTaskID() + ", " + flt.getTaskDesc());
+				Storage.addTask(flt, Commands.TASK_TYPE.FLOATING_TASK);
+				return "<html><b>\"" + flt.getTaskDesc() + "\"</b><br/>has been successfully added as a Todo task.</html>";
+				//break;
 			case DEADLINE_TASK:
-				DeadlineTask d = (DeadlineTask)v.get(i);
-				System.out.println(d.getTaskID() + ", " + d.getTaskDesc() + ", " + d.getDate());
-				break;
+				DeadlineTask dt = (DeadlineTask)v.get(i);
+				System.out.println(dt.getTaskID() + ", " + dt.getTaskDesc() + ", " + dt.getDate());
+				Storage.addTask(dt, Commands.TASK_TYPE.DEADLINE_TASK);
+				return "<html><b>\"" + dt.getTaskDesc() + "\"</b><br/>has been successfully added as a Deadline task that must be completed by <b>" + parser.formatDate(dt.getDate(), "EEE, d MMM yyyy") + "</b>.</html>";
+				//break;
 			default:
 				// Invalid - return Msg back to UI immediately
+				return "Add command has failed.";
 			}
-
 		}
 		System.out.println();
-		// return Storage.add(parser.getAddParsedObject(input));
+		return "Add command has failed.";
 	}
 
 	private void delete(String input) {
@@ -92,7 +124,7 @@ public class Logic {
 		ParsedObject obj = parser.getDeleteParsedObject(input);
 		System.out.println(obj.getCommandType());
 		System.out.println(obj.getTaskType());
-		Vector<Integer> v = obj.getObjects();
+		ArrayList<Integer> v = obj.getObjects();
 		for (int i = 0; i < v.size(); i++) {
 			System.out.print(v.get(i));
 			if (i < v.size()-1) {
@@ -108,7 +140,7 @@ public class Logic {
 		ParsedObject obj = parser.getDisplayParsedObject(input);
 		System.out.println(obj.getCommandType());
 		System.out.println(obj.getTaskType());
-		Vector<String> v = obj.getObjects();
+		ArrayList<String> v = obj.getObjects();
 		for (int i = 0; i < v.size(); i++) {
 			System.out.print(v.get(i));
 			if (i < v.size()-1) {
@@ -124,7 +156,7 @@ public class Logic {
 			ParsedObject obj = parser.getSearchParsedObject(input);
 			System.out.println(obj.getCommandType());
 			System.out.println(obj.getTaskType());
-			Vector<String> v = obj.getObjects();
+			ArrayList<String> v = obj.getObjects();
 			for (int i = 0; i < v.size(); i++) {
 				System.out.print(v.get(i));
 				if (i < v.size()-1) {
