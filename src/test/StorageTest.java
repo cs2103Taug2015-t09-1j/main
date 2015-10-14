@@ -1,12 +1,12 @@
 package test;
 
-import static org.junit.Assert.*;
 import static models.Commands.TASK_TYPE.*;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+
 import org.junit.Test;
 
 import models.Event;
