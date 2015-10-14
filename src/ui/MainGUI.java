@@ -9,8 +9,14 @@ import java.awt.event.*;
 import java.awt.Font;
 
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
 import javax.swing.border.EtchedBorder;
+import javax.swing.border.LineBorder;
+import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableModel;
 
 import logic.Logic;
 import models.DeadlineTask;
@@ -39,6 +45,7 @@ public class MainGUI {
 	private JTabbedPane tabbedPane;
 	private JScrollPane eventsScrollPane, floatingTasksScrollPane, deadlineTasksScrollPane;
 	private JLabel lblStatus;
+	private final DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
 	private final Logic logic = Logic.getInstance();
 
 	/**
@@ -89,24 +96,27 @@ public class MainGUI {
 
 	private void setupTextField() {
 		tfUserInput = new JTextField();
-		tfUserInput.setFont(new Font("Segoe UI", Font.BOLD, 14));
-		tfUserInput.setBounds(12, 508, 614, 29);
+		tfUserInput.setFont(new Font("Segoe UI Semibold", Font.BOLD, 16));
+		tfUserInput.setBounds(12, 539, 738, 41);
 		tfUserInput.setColumns(10);
-		tfUserInput.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.RAISED, Color.BLACK, Color.BLUE));
+		Border rounded = new LineBorder(new Color(210,210,210), 3, true);
+		Border empty = new EmptyBorder(0, 10, 0, 0);
+		Border border = new CompoundBorder(rounded, empty);
+		tfUserInput.setBorder(border);
+		//tfUserInput.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.RAISED, Color.BLACK, Color.BLUE));
 		frmTodokoro.getContentPane().add(tfUserInput);
-
-		frmTodokoro.addWindowListener(new WindowAdapter() {
-		    public void windowOpened(WindowEvent e) {
-		    	tfUserInput.requestFocusInWindow();
-		    }
-		});
 
 		tfUserInput.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				//ParsedObject test = MainParser.getInstance().parseCommand(tfUserInput.getText());
-				//System.out.println(test);
-				logic.processCommand(tfUserInput.getText());
-				lblStatusMsg.setText(null);
+				String statusMsg = logic.processCommand(tfUserInput.getText());
+				updateStatusMsg(statusMsg);
+				if (statusMsg.contains("Event")) {
+					updateTable(eventsTable, new EventsTableModel(logic.getAllEvents()));
+				} else if (statusMsg.contains("Todo")) {
+					updateTable(floatingTasksTable, new FloatingTasksTableModel(logic.getAllFloatingTasks()));
+				} else {
+					updateTable(deadlineTasksTable, new DeadlineTasksTableModel(logic.getAllDeadlineTasks()));
+				}
 				tfUserInput.setText(null);
 			}
 		});
@@ -114,20 +124,21 @@ public class MainGUI {
 
 	private void setupStatusLabels() {
 		lblStatusMsg = new JLabel("");
-		lblStatusMsg.setHorizontalAlignment(SwingConstants.CENTER);
-		lblStatusMsg.setFont(new Font("Segoe UI", Font.BOLD, 13));
-		lblStatusMsg.setBounds(67, 480, 559, 29);
+		lblStatusMsg.setHorizontalAlignment(SwingConstants.LEFT);
+		lblStatusMsg.setFont(new Font("Segoe UI", Font.PLAIN, 15));
+		lblStatusMsg.setBounds(67, 488, 683, 39);
 		frmTodokoro.getContentPane().add(lblStatusMsg);
 
 		lblStatus = new JLabel("Status:");
-		lblStatus.setFont(new Font("Segoe UI", Font.BOLD, 13));
-		lblStatus.setBounds(12, 480, 43, 29);
+		lblStatusMsg.setLabelFor(lblStatus);
+		lblStatus.setFont(new Font("Segoe UI", Font.BOLD, 15));
+		lblStatus.setBounds(12, 486, 53, 21);
 		frmTodokoro.getContentPane().add(lblStatus);
 	}
 
 	private void setupTabbedPane() {
 		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-		tabbedPane.setBounds(12, 12, 614, 464);
+		tabbedPane.setBounds(12, 12, 738, 464);
 		eventsScrollPane = new JScrollPane();
 		floatingTasksScrollPane = new JScrollPane();
 		deadlineTasksScrollPane = new JScrollPane();
@@ -144,82 +155,24 @@ public class MainGUI {
 		frmTodokoro = new JFrame();
 		frmTodokoro.setTitle("Todokoro");
 		frmTodokoro.setResizable(false);
-		frmTodokoro.setBounds(100, 100, 644, 577);
+		frmTodokoro.setBounds(100, 100, 768, 620);
 		frmTodokoro.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frmTodokoro.getContentPane().setLayout(null);
+
+		frmTodokoro.addWindowListener(new WindowAdapter() {
+		    public void windowOpened(WindowEvent e) {
+		    	tfUserInput.requestFocusInWindow();
+		    }
+		});
 	}
 
 	private void setupTables() {
-		DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
-		eventsTable = new JTable();
-		eventsTable.setAutoCreateRowSorter(true);
-		eventsTable.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-		eventsTable.setShowVerticalLines(false);
-		eventsTable.setShowGrid(false);
-		eventsTable.setFillsViewportHeight(true);
-		eventsTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-		//eventsTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
-		eventsTable.setRowHeight(40);
-		centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
-		eventsTable.setDefaultRenderer(Integer.class, centerRenderer);
-		eventsTable.setDefaultRenderer(LocalDateTime.class, centerRenderer);
-		eventsTable.setDefaultRenderer(String.class, centerRenderer);
-		eventsScrollPane.setViewportView(eventsTable);
-		eventsTable.setModel(new EventsTableModel(new Vector<Event>()));
-		eventsTable.getColumnModel().getColumn(0).setMaxWidth(45);
-		eventsTable.getColumnModel().getColumn(1).setMinWidth(100);
-		eventsTable.getColumnModel().getColumn(1).setMaxWidth(100);
-		eventsTable.getColumnModel().getColumn(2).setMinWidth(100);
-		eventsTable.getColumnModel().getColumn(2).setMaxWidth(100);
-		eventsTable.getColumnModel().getColumn(3).setMinWidth(315);
-		eventsTable.getColumnModel().getColumn(3).setMaxWidth(600);
-		eventsTable.getColumnModel().getColumn(4).setMaxWidth(50);
-		eventsTable.getRowSorter().toggleSortOrder(1);
-
-		floatingTasksTable = new JTable();
-		floatingTasksTable.setAutoCreateRowSorter(true);
-		floatingTasksTable.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-		floatingTasksTable.setShowVerticalLines(false);
-		floatingTasksTable.setShowGrid(false);
-		floatingTasksTable.setFillsViewportHeight(true);
-		floatingTasksTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-		//floatingTasksTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
-		floatingTasksTable.setRowHeight(40);
-		centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
-		floatingTasksTable.setDefaultRenderer(Integer.class, centerRenderer);
-		floatingTasksTable.setDefaultRenderer(LocalDateTime.class, centerRenderer);
-		floatingTasksTable.setDefaultRenderer(String.class, centerRenderer);
-		floatingTasksScrollPane.setViewportView(floatingTasksTable);
-		floatingTasksTable.setModel(new FloatingTasksTableModel(new Vector<FloatingTask>()));
-		floatingTasksTable.getColumnModel().getColumn(0).setMaxWidth(45);
-		floatingTasksTable.getColumnModel().getColumn(1).setMinWidth(515);
-		floatingTasksTable.getColumnModel().getColumn(2).setMaxWidth(50);
-		floatingTasksTable.getRowSorter().toggleSortOrder(0);
-
-		deadlineTasksTable = new JTable();
-		deadlineTasksTable.setAutoCreateRowSorter(true);
-		deadlineTasksTable.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-		deadlineTasksTable.setShowVerticalLines(false);
-		deadlineTasksTable.setShowGrid(false);
-		deadlineTasksTable.setFillsViewportHeight(true);
-		deadlineTasksTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-		//deadlineTasksTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
-		deadlineTasksTable.setRowHeight(40);
-		centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
-		deadlineTasksTable.setDefaultRenderer(Integer.class, centerRenderer);
-		deadlineTasksTable.setDefaultRenderer(LocalDateTime.class, centerRenderer);
-		deadlineTasksTable.setDefaultRenderer(String.class, centerRenderer);
-		deadlineTasksScrollPane.setViewportView(deadlineTasksTable);
-		deadlineTasksTable.setModel(new DeadlineTasksTableModel(new Vector<DeadlineTask>()));
-		deadlineTasksTable.getColumnModel().getColumn(0).setMaxWidth(45);
-		deadlineTasksTable.getColumnModel().getColumn(1).setMinWidth(100);
-		deadlineTasksTable.getColumnModel().getColumn(1).setMaxWidth(100);
-		deadlineTasksTable.getColumnModel().getColumn(2).setMinWidth(415);
-		deadlineTasksTable.getColumnModel().getColumn(3).setMaxWidth(50);
-		deadlineTasksTable.getRowSorter().toggleSortOrder(1);
+		setupEventsTable();
+		setupFloatingTasksTable();
+		setupDeadlineTasksTable();
 	}
 
-	public void updateSingleTable(Vector tasks, String type) {
+	/*public void updateSingleTable(ArrayList tasks, String type) {
 		switch (type.toLowerCase()) {
 		case "event":
 			eventsTable.setModel(new EventsTableModel(tasks));
@@ -230,15 +183,144 @@ public class MainGUI {
 		default:
 			updateAllTables(tasks);
 		}
+	}*/
+
+	private void setupEventsTable() {
+		eventsTable = new JTable();
+		eventsTable.setName("Events");
+		eventsTable.setAutoCreateRowSorter(true);
+		eventsTable.setFont(new Font("Segoe UI Semibold", Font.PLAIN, 14));
+		eventsTable.setShowVerticalLines(false);
+		eventsTable.setShowGrid(false);
+		eventsTable.setFillsViewportHeight(true);
+		eventsTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		//eventsTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+		eventsTable.setRowHeight(40);
+		centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
+		eventsTable.setDefaultRenderer(Integer.class, centerRenderer);
+		eventsTable.setDefaultRenderer(Date.class, centerRenderer);
+		eventsTable.setDefaultRenderer(String.class, centerRenderer);
+		eventsScrollPane.setViewportView(eventsTable);
+		updateTable(eventsTable, new EventsTableModel(logic.getAllEvents()));
+		setColWidth(eventsTable);
 	}
 
-	private void updateAllTables(Vector<Task> tasks) {
-		Vector<Event> events = new Vector<Event>();
-		Vector<FloatingTask> floatingTasks = new Vector<FloatingTask>();
-		Vector<DeadlineTask> deadlineTasks = new Vector<DeadlineTask>();
-		eventsTable.setModel(new EventsTableModel(events));
-		floatingTasksTable.setModel(new FloatingTasksTableModel(floatingTasks));
-		floatingTasksTable.setModel(new DeadlineTasksTableModel(deadlineTasks));
+	private void setupFloatingTasksTable() {
+		floatingTasksTable = new JTable();
+		floatingTasksTable.setName("Todos");
+		floatingTasksTable.setAutoCreateRowSorter(true);
+		floatingTasksTable.setFont(new Font("Segoe UI Semibold", Font.PLAIN, 14));
+		floatingTasksTable.setShowVerticalLines(false);
+		floatingTasksTable.setShowGrid(false);
+		floatingTasksTable.setFillsViewportHeight(true);
+		floatingTasksTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		//floatingTasksTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+		floatingTasksTable.setRowHeight(40);
+		centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
+		floatingTasksTable.setDefaultRenderer(Integer.class, centerRenderer);
+		floatingTasksTable.setDefaultRenderer(Date.class, centerRenderer);
+		floatingTasksTable.setDefaultRenderer(String.class, centerRenderer);
+		floatingTasksScrollPane.setViewportView(floatingTasksTable);
+		updateTable(floatingTasksTable, new FloatingTasksTableModel(logic.getAllFloatingTasks()));
+		setColWidth(floatingTasksTable);
+	}
+
+	private void setupDeadlineTasksTable() {
+		deadlineTasksTable = new JTable();
+		deadlineTasksTable.setName("Deadlines");
+		deadlineTasksTable.setAutoCreateRowSorter(true);
+		deadlineTasksTable.setFont(new Font("Segoe UI Semibold", Font.PLAIN, 14));
+		deadlineTasksTable.setShowVerticalLines(false);
+		deadlineTasksTable.setShowGrid(false);
+		deadlineTasksTable.setFillsViewportHeight(true);
+		deadlineTasksTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		//deadlineTasksTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+		deadlineTasksTable.setRowHeight(40);
+		centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
+		deadlineTasksTable.setDefaultRenderer(Integer.class, centerRenderer);
+		deadlineTasksTable.setDefaultRenderer(Date.class, centerRenderer);
+		deadlineTasksTable.setDefaultRenderer(String.class, centerRenderer);
+		deadlineTasksScrollPane.setViewportView(deadlineTasksTable);
+		updateTable(deadlineTasksTable, new DeadlineTasksTableModel(logic.getAllDeadlineTasks()));
+		setColWidth(deadlineTasksTable);
+	}
+
+	private void updateAllTables() {
+		ArrayList<List<Task>> temp = logic.getAllTaskLists();
+		ArrayList<Event> events = new ArrayList<Event>();
+		ArrayList<FloatingTask> floatingTasks = new ArrayList<FloatingTask>();
+		ArrayList<DeadlineTask> deadlineTasks = new ArrayList<DeadlineTask>();
+		for (int i = 0; i < temp.get(0).size(); i++) {
+			events.add((Event)temp.get(0).get(i));
+		}
+		for (int i = 0; i < temp.get(1).size(); i++) {
+			floatingTasks.add((FloatingTask)temp.get(1).get(i));
+		}
+		for (int i = 0; i < temp.get(2).size(); i++) {
+			deadlineTasks.add((DeadlineTask)temp.get(2).get(i));
+		}
+		//eventsTable.setModel(new EventsTableModel(events));
+		updateTable(eventsTable, new EventsTableModel(events));
+		setColWidth(eventsTable);
+		//floatingTasksTable.setModel(new FloatingTasksTableModel(floatingTasks));
+		updateTable(floatingTasksTable, new FloatingTasksTableModel(floatingTasks));
+		setColWidth(floatingTasksTable);
+		//deadlineTasksTable.setModel(new DeadlineTasksTableModel(deadlineTasks));
+		updateTable(deadlineTasksTable, new DeadlineTasksTableModel(deadlineTasks));
+		setColWidth(deadlineTasksTable);
+	}
+
+	private void updateTable(JTable table, Object model) {
+		table.setModel((AbstractTableModel)model);
+		setColWidth(table);
+		setTabFocus(table);
+	}
+
+	private void setTabFocus(JTable table) {
+		switch (table.getName()) {
+		case "Events":
+			tabbedPane.setSelectedIndex(0);
+			break;
+		case "Todos":
+			tabbedPane.setSelectedIndex(1);
+			break;
+		case "Deadlines":
+			tabbedPane.setSelectedIndex(2);
+			break;
+		}
+	}
+
+	private void setColWidth(JTable table) {
+		switch (table.getName()) {
+		case "Events":
+			eventsTable.getColumnModel().getColumn(0).setMaxWidth(45);
+			eventsTable.getColumnModel().getColumn(1).setMinWidth(115);
+			eventsTable.getColumnModel().getColumn(1).setMaxWidth(115);
+			eventsTable.getColumnModel().getColumn(2).setMinWidth(115);
+			eventsTable.getColumnModel().getColumn(2).setMaxWidth(115);
+			eventsTable.getColumnModel().getColumn(3).setMinWidth(409);
+			eventsTable.getColumnModel().getColumn(3).setMaxWidth(700);
+			eventsTable.getColumnModel().getColumn(4).setMaxWidth(50);
+			eventsTable.getRowSorter().toggleSortOrder(1);
+			eventsTable.getRowSorter().toggleSortOrder(1);
+			break;
+		case "Todos":
+			floatingTasksTable.getColumnModel().getColumn(0).setMaxWidth(45);
+			floatingTasksTable.getColumnModel().getColumn(1).setMinWidth(639);
+			floatingTasksTable.getColumnModel().getColumn(2).setMaxWidth(50);
+			floatingTasksTable.getRowSorter().toggleSortOrder(0);
+			floatingTasksTable.getRowSorter().toggleSortOrder(0);
+			break;
+		case "Deadlines":
+			deadlineTasksTable.getColumnModel().getColumn(0).setMaxWidth(45);
+			deadlineTasksTable.getColumnModel().getColumn(1).setMinWidth(115);
+			deadlineTasksTable.getColumnModel().getColumn(1).setMaxWidth(115);
+			deadlineTasksTable.getColumnModel().getColumn(2).setMinWidth(524);
+			deadlineTasksTable.getColumnModel().getColumn(3).setMaxWidth(50);
+			deadlineTasksTable.getRowSorter().toggleSortOrder(1);
+			deadlineTasksTable.getRowSorter().toggleSortOrder(1);
+			break;
+		}
 	}
 
 	public void updateStatusMsg(String msg) {
