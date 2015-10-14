@@ -27,6 +27,7 @@ public class Logic {
 	public static Logic getInstance() {
 		if (logic == null) {
 			logic = new Logic();
+			Storage.init();
 		}
 		return logic;
 	}
@@ -83,25 +84,28 @@ public class Logic {
 				System.out.println(sEvt.getTaskID() + ", " + sEvt.getTaskDesc() + ", " + sEvt.getFromDate() + ", " + sEvt.getToDate());
 				//return Storage.addTask(parser.getAddParsedObject(input), Commands.TASK_TYPE.SINGLE_DATE_EVENT);
 				Storage.addTask(sEvt, Commands.TASK_TYPE.EVENT);
-
+				Storage.saveTaskType(Commands.TASK_TYPE.EVENT);
 				return "<html><b>\"" + sEvt.getTaskDesc() + "\"</b><br/>has been successfully added as an Event on <b>" + parser.formatDate(sEvt.getFromDate(), "EEE, d MMM yyyy") + "</b> at <b>" + parser.formatDate(sEvt.getFromDate(), "h:mm a") + "</b>.</html>";
 				//break;
 			case DOUBLE_DATE_EVENT:
 				Event dEvt = (Event)v.get(i);
 				System.out.println(dEvt.getTaskID() + ", " + dEvt.getTaskDesc() + ", " + dEvt.getFromDate() + ", " + dEvt.getToDate());
 				Storage.addTask(dEvt, Commands.TASK_TYPE.EVENT);
+				Storage.saveTaskType(Commands.TASK_TYPE.EVENT);
 				return "<html><b>\"" + dEvt.getTaskDesc() + "\"</b><br/>has been successfully added as an Event from <b>" + parser.formatDate(dEvt.getFromDate(), "EEE, d MMM yyyy h:mm a") + "</b> to <b>" + parser.formatDate(dEvt.getToDate(), "EEE, d MMM yyyy h:mm a") + "</b>.</html>";
 				//break;
 			case FLOATING_TASK:
 				FloatingTask flt = (FloatingTask)v.get(i);
 				System.out.println(flt.getTaskID() + ", " + flt.getTaskDesc());
 				Storage.addTask(flt, Commands.TASK_TYPE.FLOATING_TASK);
+				Storage.saveTaskType(Commands.TASK_TYPE.FLOATING_TASK);
 				return "<html><b>\"" + flt.getTaskDesc() + "\"</b><br/>has been successfully added as a Todo task.</html>";
 				//break;
 			case DEADLINE_TASK:
 				DeadlineTask dt = (DeadlineTask)v.get(i);
 				System.out.println(dt.getTaskID() + ", " + dt.getTaskDesc() + ", " + dt.getDate());
 				Storage.addTask(dt, Commands.TASK_TYPE.DEADLINE_TASK);
+				Storage.saveTaskType(Commands.TASK_TYPE.DEADLINE_TASK);
 				return "<html><b>\"" + dt.getTaskDesc() + "\"</b><br/>has been successfully added as a Deadline task that must be completed by <b>" + parser.formatDate(dt.getDate(), "EEE, d MMM yyyy") + "</b>.</html>";
 				//break;
 			default:
@@ -131,9 +135,16 @@ public class Logic {
 		}
 		System.out.println();
 		statusMsg += "</b> have been deleted successfully.<br/></html>";
+		Storage.saveAllTask();
 		return statusMsg;
 
 		// return Storage.delete(parser.getDeleteParsedObject(input));
+	}
+
+	public void updateTaskStatus(int taskID, boolean status) {
+		ArrayList<Integer> ids = new ArrayList<Integer>();
+		ids.add(taskID);
+		Storage.changeStatus(ids, status);
 	}
 
 	private void display(String input) {
