@@ -20,6 +20,16 @@ public abstract class Task {
 		this.taskDesc = taskDesc;
 		this.isDone = isDone;
 	}
+	
+	@Override
+	public Task clone() {
+		try {
+			return (Task) super.clone();
+		} catch (CloneNotSupportedException e) {
+			// TODO Auto-generated catch block
+			return null;
+		}
+	}
 
 	public int getTaskID() {
 		return taskID;

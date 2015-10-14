@@ -32,7 +32,7 @@ public class Parser {
 		desc = command.substring(0, startPosition).trim();
 		String startTime = command.substring(startPosition + 4, endPosition).trim();
 		String endTime = command.substring(endPosition + 2).trim();
-		return new Event("", startTime, endTime, desc, false);
+		return null;//new Event("", startTime, endTime, desc, false);
 	}
 	
 	public static int getTaskId(String command) {
