@@ -3,6 +3,7 @@
  */
 package models;
 
+import java.util.ArrayList;
 import java.util.Vector;
 import javax.swing.table.AbstractTableModel;
 
@@ -16,9 +17,9 @@ public class FloatingTasksTableModel extends AbstractTableModel {
 	private String[] columnNames = { "ID", "Task Description", "Done" };
 	private Class[] columnTypes = { Integer.class, String.class, Boolean.class };
 
-	Vector<FloatingTask> tasksVector;
+	ArrayList<FloatingTask> tasksVector;
 
-	public FloatingTasksTableModel(Vector<FloatingTask> tasksVector) {
+	public FloatingTasksTableModel(ArrayList<FloatingTask> tasksVector) {
 		super();
 		this.tasksVector = tasksVector;
 	}
@@ -47,7 +48,7 @@ public class FloatingTasksTableModel extends AbstractTableModel {
     }
 
 	public void setValueAt(Object value, int row, int col) {
-		FloatingTask t = (FloatingTask)tasksVector.elementAt(row);
+		FloatingTask t = (FloatingTask)tasksVector.get(row);
 		switch (col) {
 			case 0:
 					//t.setTaskID((Integer) value);
@@ -62,14 +63,18 @@ public class FloatingTasksTableModel extends AbstractTableModel {
     }
 
 	public Object getValueAt(int row, int col) {
-		FloatingTask t = (FloatingTask)tasksVector.elementAt(row);
+		FloatingTask t = (FloatingTask)tasksVector.get(row);
 		switch (col) {
 			case 0:
-					return t.getTaskID();
+				return t.getTaskID();
 			case 1:
-					return t.getTaskDesc();
+				StringBuffer sb = new StringBuffer("<html>" + t.getTaskDesc() + "</html>");
+				if (sb.length() > 90) {
+					sb.insert(90, "<br/>");
+				}
+				return sb.toString();
 			case 2:
-					return t.isDone();
+				return t.isDone();
 		}
 
 		return new String();

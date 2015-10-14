@@ -4,7 +4,7 @@
 package models;
 
 import java.text.SimpleDateFormat;
-import java.util.Vector;
+import java.util.ArrayList;
 import javax.swing.table.AbstractTableModel;
 
 import models.Event;
@@ -17,11 +17,11 @@ public class EventsTableModel extends AbstractTableModel {
 	private String[] columnNames = { "ID", "Start Date", "End Date", "Task Description", "Done" };
 	private Class[] columnTypes = { Integer.class, String.class, String.class, String.class, Boolean.class };
 
-	Vector<Event> tasksVector;
+	ArrayList<Event> events;
 
-	public EventsTableModel(Vector<Event> tasksVector) {
+	public EventsTableModel(ArrayList<Event> events) {
 		super();
-		this.tasksVector = tasksVector;
+		this.events = events;
 	}
 
 	public int getColumnCount() {
@@ -37,7 +37,7 @@ public class EventsTableModel extends AbstractTableModel {
 	}
 
 	public int getRowCount() {
-	    return tasksVector.size();
+	    return events.size();
     }
 
 	public boolean isCellEditable(int row, int col) {
@@ -48,7 +48,7 @@ public class EventsTableModel extends AbstractTableModel {
     }
 
 	public void setValueAt(Object value, int row, int col) {
-		Event t = (Event)tasksVector.elementAt(row);
+		Event evt = (Event)events.get(row);
 		switch (col) {
 			case 0:
 					//t.setTaskID((Integer) value);
@@ -63,36 +63,38 @@ public class EventsTableModel extends AbstractTableModel {
 					//t.setEndTime((String) value);
 			break;
 			case 4:
-					t.setTaskDesc((String) value);
+					evt.setTaskDesc((String) value);
 			break;
 			case 5:
-					t.setDone((Boolean) value);
+					evt.setDone((Boolean) value);
 			break;
 		}
     }
 
 	public Object getValueAt(int row, int col) {
-		Event t = (Event)tasksVector.elementAt(row);
+		Event evt = (Event)events.get(row);
 		switch (col) {
 			case 0:
-					return t.getTaskID();
+					return evt.getTaskID();
 			case 1:
-					//return t.getDate().format(DateTimeFormatter.ofPattern("E, d MMM y"));
-					//return t.getDate();
-				return new SimpleDateFormat("EEE, d MMM yyyy h:mm a").format(t.getFromDate()).toString();
+				String fromDate = new SimpleDateFormat("EEE, d MMM yyyy").format(evt.getFromDate()).toString();
+				String fromTime = new SimpleDateFormat("h:mm a").format(evt.getFromDate()).toString();
+				return "<html>" + fromDate + "<br/>" + fromTime + "</html>";
 			case 2:
-					//return t.getStartTime().format(DateTimeFormatter.ofPattern("HH:mm a"));
-					//return t.getStartTime();
-				return new SimpleDateFormat("EEE, d MMM yyyy h:mm a").format(t.getToDate()).toString();
+				String toDate = new SimpleDateFormat("EEE, d MMM yyyy").format(evt.getToDate()).toString();
+				String toTime = new SimpleDateFormat("h:mm a").format(evt.getToDate()).toString();
+				return "<html>" + toDate + "<br/>" + toTime + "</html>";
 			case 3:
-				return t.getTaskDesc();
+				StringBuffer sb = new StringBuffer("<html>" + evt.getTaskDesc() + "</html>");
+				if (sb.length() > 60) {
+					sb.insert(60, "<br/>");
+				}
+				return sb.toString();
 			case 4:
-					//return t.getTaskDesc();
-				return t.isDone();
+				return evt.isDone();
 			case 5:
-					return null;
+				return null;
 		}
-
 		return new String();
 	}
 }

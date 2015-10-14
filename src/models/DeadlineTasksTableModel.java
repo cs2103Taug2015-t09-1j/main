@@ -1,6 +1,7 @@
 package models;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Vector;
 
 import javax.swing.table.AbstractTableModel;
@@ -13,9 +14,9 @@ public class DeadlineTasksTableModel extends AbstractTableModel {
 	private String[] columnNames = { "ID", "Deadline", "Task Description", "Done" };
 	private Class[] columnTypes = { Integer.class, String.class, String.class, Boolean.class };
 
-	Vector<DeadlineTask> tasksVector;
+	ArrayList<DeadlineTask> tasksVector;
 
-	public DeadlineTasksTableModel(Vector<DeadlineTask> tasksVector) {
+	public DeadlineTasksTableModel(ArrayList<DeadlineTask> tasksVector) {
 		super();
 		this.tasksVector = tasksVector;
 	}
@@ -44,7 +45,7 @@ public class DeadlineTasksTableModel extends AbstractTableModel {
     }
 
 	public void setValueAt(Object value, int row, int col) {
-		DeadlineTask t = (DeadlineTask)tasksVector.elementAt(row);
+		DeadlineTask t = (DeadlineTask)tasksVector.get(row);
 		switch (col) {
 			case 0:
 					//t.setTaskID((Integer) value);
@@ -62,16 +63,20 @@ public class DeadlineTasksTableModel extends AbstractTableModel {
     }
 
 	public Object getValueAt(int row, int col) {
-		DeadlineTask t = (DeadlineTask)tasksVector.elementAt(row);
+		DeadlineTask t = (DeadlineTask)tasksVector.get(row);
 		switch (col) {
 			case 0:
 					return t.getTaskID();
 			case 1:
-					//return t.getDate().format(DateTimeFormatter.ofPattern("E, d MMM y"));
-					//return t.getDate();
-				return new SimpleDateFormat("EEE, d MMM yyyy h:mm a").format(t.getDate()).toString();
+				String date = new SimpleDateFormat("EEE, d MMM yyyy").format(t.getDate()).toString();
+				String time = new SimpleDateFormat("h:mm a").format(t.getDate()).toString();
+				return "<html>" + date + "<br/>" + time + "</html>";
 			case 2:
-				return t.getTaskDesc();
+				StringBuffer sb = new StringBuffer("<html>" + t.getTaskDesc() + "</html>");
+				if (sb.length() > 70) {
+					sb.insert(70, "<br/>");
+				}
+				return sb.toString();
 			case 3:
 					//return t.getTaskDesc();
 				return t.isDone();
