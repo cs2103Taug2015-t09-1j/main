@@ -121,8 +121,10 @@ public class MainGUI {
 					updateTable(eventsTable, new EventsTableModel(logic.getAllEvents()));
 				} else if (statusMsg.contains("Todo")) {
 					updateTable(floatingTasksTable, new FloatingTasksTableModel(logic.getAllFloatingTasks()));
-				} else {
+				} else if (statusMsg.contains("Deadline")){
 					updateTable(deadlineTasksTable, new DeadlineTasksTableModel(logic.getAllDeadlineTasks()));
+				} else {
+					updateAllTables();
 				}
 				tfUserInput.setText(null);
 			}
@@ -131,6 +133,7 @@ public class MainGUI {
 
 	private void setupStatusLabels() {
 		lblStatusMsg = new JLabel("");
+		lblStatusMsg.setVerticalAlignment(SwingConstants.TOP);
 		lblStatusMsg.setHorizontalAlignment(SwingConstants.LEFT);
 		lblStatusMsg.setFont(new Font("Segoe UI", Font.PLAIN, 15));
 		lblStatusMsg.setBounds(67, 488, 683, 39);
@@ -139,7 +142,7 @@ public class MainGUI {
 		lblStatus = new JLabel("Status:");
 		lblStatusMsg.setLabelFor(lblStatus);
 		lblStatus.setFont(new Font("Segoe UI", Font.BOLD, 15));
-		lblStatus.setBounds(12, 486, 53, 21);
+		lblStatus.setBounds(12, 487, 53, 21);
 		frmTodokoro.getContentPane().add(lblStatus);
 	}
 
@@ -174,9 +177,9 @@ public class MainGUI {
 	}
 
 	private void setupTables() {
-		setupEventsTable();
-		setupFloatingTasksTable();
 		setupDeadlineTasksTable();
+		setupFloatingTasksTable();
+		setupEventsTable();
 	}
 
 	/*public void updateSingleTable(ArrayList tasks, String type) {
@@ -253,27 +256,11 @@ public class MainGUI {
 	}
 
 	private void updateAllTables() {
-		ArrayList<List<Task>> temp = logic.getAllTaskLists();
-		ArrayList<Event> events = new ArrayList<Event>();
-		ArrayList<FloatingTask> floatingTasks = new ArrayList<FloatingTask>();
-		ArrayList<DeadlineTask> deadlineTasks = new ArrayList<DeadlineTask>();
-		for (int i = 0; i < temp.get(0).size(); i++) {
-			events.add((Event)temp.get(0).get(i));
-		}
-		for (int i = 0; i < temp.get(1).size(); i++) {
-			floatingTasks.add((FloatingTask)temp.get(1).get(i));
-		}
-		for (int i = 0; i < temp.get(2).size(); i++) {
-			deadlineTasks.add((DeadlineTask)temp.get(2).get(i));
-		}
-		//eventsTable.setModel(new EventsTableModel(events));
-		updateTable(eventsTable, new EventsTableModel(events));
+		updateTable(eventsTable, new EventsTableModel(logic.getAllEvents()));
 		setColWidth(eventsTable);
-		//floatingTasksTable.setModel(new FloatingTasksTableModel(floatingTasks));
-		updateTable(floatingTasksTable, new FloatingTasksTableModel(floatingTasks));
+		updateTable(floatingTasksTable, new FloatingTasksTableModel(logic.getAllFloatingTasks()));
 		setColWidth(floatingTasksTable);
-		//deadlineTasksTable.setModel(new DeadlineTasksTableModel(deadlineTasks));
-		updateTable(deadlineTasksTable, new DeadlineTasksTableModel(deadlineTasks));
+		updateTable(deadlineTasksTable, new DeadlineTasksTableModel(logic.getAllDeadlineTasks()));
 		setColWidth(deadlineTasksTable);
 	}
 
