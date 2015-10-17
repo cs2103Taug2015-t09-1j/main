@@ -1,10 +1,12 @@
 package models;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Vector;
+import java.util.Date;
 
 import javax.swing.table.AbstractTableModel;
+
+import models.Commands.TASK_TYPE;
+import storage.Storage;
 
 /**
  * @author Dalton
@@ -12,13 +14,18 @@ import javax.swing.table.AbstractTableModel;
  */
 public class DeadlineTasksTableModel extends AbstractTableModel {
 	private String[] columnNames = { "ID", "Deadline", "Task Description", "Done" };
-	private Class[] columnTypes = { Integer.class, String.class, String.class, Boolean.class };
+	private Class<?>[] columnTypes = { Integer.class, Date.class, String.class, Boolean.class };
 
-	ArrayList<DeadlineTask> tasksVector;
+	ArrayList<DeadlineTask> deadlines;
 
-	public DeadlineTasksTableModel(ArrayList<DeadlineTask> tasksVector) {
+	public DeadlineTasksTableModel() {
 		super();
-		this.tasksVector = tasksVector;
+		this.deadlines = (ArrayList)Storage.getAllTask(Commands.TASK_TYPE.DEADLINE_TASK);
+	}
+
+	public DeadlineTasksTableModel(ArrayList<DeadlineTask> deadlines) {
+		super();
+		this.deadlines = deadlines;
 	}
 
 	public int getColumnCount() {
@@ -29,56 +36,53 @@ public class DeadlineTasksTableModel extends AbstractTableModel {
 		return columnNames[col];
 	}
 
-    public Class getColumnClass(int col) {
+    public Class<?> getColumnClass(int col) {
 		return columnTypes[col];
 	}
 
 	public int getRowCount() {
-	    return tasksVector.size();
+	    return deadlines.size();
     }
 
 	public boolean isCellEditable(int row, int col) {
         switch (col) {
+        	case 1:
+        		return true;
+        	case 2:
+        		return true;
+        	case 3:
+        		return true;
             default:
                 return false;
         }
     }
 
 	public void setValueAt(Object value, int row, int col) {
-		DeadlineTask t = (DeadlineTask)tasksVector.get(row);
+		DeadlineTask t = (DeadlineTask)deadlines.get(row);
 		switch (col) {
-			case 0:
-					//t.setTaskID((Integer) value);
-			break;
 			case 1:
-					//t.setDate((String) value);
-			break;
+				t.setDate((Date)value);
+				break;
 			case 2:
-					t.setTaskDesc((String) value);
-			break;
+				t.setTaskDesc((String) value);
+				break;
 			case 3:
-					t.setDone((Boolean) value);
-			break;
+				t.setDone((Boolean)value);
+				break;
 		}
+		Storage.saveTaskType(TASK_TYPE.DEADLINE_TASK);
     }
 
 	public Object getValueAt(int row, int col) {
-		DeadlineTask t = (DeadlineTask)tasksVector.get(row);
+		DeadlineTask t = (DeadlineTask)deadlines.get(row);
 		switch (col) {
 			case 0:
-					return t.getTaskID();
+				return t.getTaskID();
 			case 1:
-				String date = new SimpleDateFormat("EEE, d MMM yyyy").format(t.getDate()).toString();
-				String time = new SimpleDateFormat("h:mm a").format(t.getDate()).toString();
-				return "<html>" + date + "<br/>" + time + "</html>";
+				return t.getDate();
 			case 2:
-				StringBuffer sb = new StringBuffer("<html>" + t.getTaskDesc() + "</html>");
-				if (sb.length() > 70) {
-					sb.insert(70, "<br/>");
-				}
-				return sb.toString();
+				return t.getTaskDesc();
 			case 3:
-					//return t.getTaskDesc();
 				return t.isDone();
 		}
 

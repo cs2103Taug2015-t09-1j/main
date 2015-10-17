@@ -7,7 +7,10 @@ import java.util.ArrayList;
 import java.util.Vector;
 import javax.swing.table.AbstractTableModel;
 
+import logic.Logic;
 import models.FloatingTask;
+import models.Commands.TASK_TYPE;
+import storage.Storage;
 
 /**
  * @author Dalton
@@ -16,12 +19,18 @@ import models.FloatingTask;
 public class FloatingTasksTableModel extends AbstractTableModel {
 	private String[] columnNames = { "ID", "Task Description", "Done" };
 	private Class[] columnTypes = { Integer.class, String.class, Boolean.class };
+	private Logic logic = Logic.getInstance();
 
-	ArrayList<FloatingTask> tasksVector;
+	ArrayList<FloatingTask> todos;
 
-	public FloatingTasksTableModel(ArrayList<FloatingTask> tasksVector) {
+	public FloatingTasksTableModel() {
 		super();
-		this.tasksVector = tasksVector;
+		this.todos = (ArrayList)Storage.getAllTask(Commands.TASK_TYPE.FLOATING_TASK);
+	}
+
+	public FloatingTasksTableModel(ArrayList<FloatingTask> todos) {
+		super();
+		this.todos = todos;
 	}
 
 	public int getColumnCount() {
@@ -37,42 +46,38 @@ public class FloatingTasksTableModel extends AbstractTableModel {
 	}
 
 	public int getRowCount() {
-	    return tasksVector.size();
+	    return todos.size();
     }
 
 	public boolean isCellEditable(int row, int col) {
         switch (col) {
+        	case 2:
+        		return true;
             default:
                 return false;
         }
     }
 
 	public void setValueAt(Object value, int row, int col) {
-		FloatingTask t = (FloatingTask)tasksVector.get(row);
+		FloatingTask t = (FloatingTask)todos.get(row);
 		switch (col) {
-			case 0:
-					//t.setTaskID((Integer) value);
-			break;
 			case 1:
-					t.setTaskDesc((String) value);
+				t.setTaskDesc((String) value);
 			break;
 			case 2:
-					t.setDone((Boolean) value);
+				t.setDone((Boolean)value);
 			break;
 		}
+		Storage.saveTaskType(TASK_TYPE.FLOATING_TASK);
     }
 
 	public Object getValueAt(int row, int col) {
-		FloatingTask t = (FloatingTask)tasksVector.get(row);
+		FloatingTask t = (FloatingTask)todos.get(row);
 		switch (col) {
 			case 0:
 				return t.getTaskID();
 			case 1:
-				StringBuffer sb = new StringBuffer("<html>" + t.getTaskDesc() + "</html>");
-				if (sb.length() > 90) {
-					sb.insert(90, "<br/>");
-				}
-				return sb.toString();
+				return t.getTaskDesc();
 			case 2:
 				return t.isDone();
 		}

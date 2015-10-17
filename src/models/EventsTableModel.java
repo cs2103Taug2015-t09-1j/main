@@ -3,11 +3,20 @@
  */
 package models;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Locale;
+
 import javax.swing.table.AbstractTableModel;
+
+import org.ocpsoft.prettytime.nlp.PrettyTimeParser;
+
 import models.Event;
-import logic.Logic;
+import parser.MainParser;
+import models.Commands.TASK_TYPE;
+import storage.Storage;
 
 /**
  * @author Dalton
@@ -15,10 +24,14 @@ import logic.Logic;
  */
 public class EventsTableModel extends AbstractTableModel {
 	private String[] columnNames = { "ID", "Start Date", "End Date", "Task Description", "Done" };
-	private Class[] columnTypes = { Integer.class, String.class, String.class, String.class, Boolean.class };
-	private Logic logic = Logic.getInstance();
+	private Class<?>[] columnTypes = { Integer.class, Date.class, Date.class, String.class, Boolean.class };
 
 	ArrayList<Event> events;
+
+	public EventsTableModel() {
+		super();
+		this.events = (ArrayList)Storage.getAllTask(Commands.TASK_TYPE.EVENT);
+	}
 
 	public EventsTableModel(ArrayList<Event> events) {
 		super();
@@ -33,7 +46,7 @@ public class EventsTableModel extends AbstractTableModel {
 		return columnNames[col];
 	}
 
-    public Class getColumnClass(int col) {
+    public Class<?> getColumnClass(int col) {
 		return columnTypes[col];
 	}
 
@@ -43,6 +56,12 @@ public class EventsTableModel extends AbstractTableModel {
 
 	public boolean isCellEditable(int row, int col) {
         switch (col) {
+	    	case 1:
+	    		return true;
+	    	case 2:
+	    		return true;
+        	case 3:
+        		return true;
         	case 4:
         		return true;
         	default:
@@ -53,44 +72,37 @@ public class EventsTableModel extends AbstractTableModel {
 	public void setValueAt(Object value, int row, int col) {
 		Event evt = (Event)events.get(row);
 		switch (col) {
-			case 0:
-					//t.setTaskID((Integer) value);
-			break;
 			case 1:
-					//t.setDate((String) value);
-			break;
+				evt.setFromDate((Date)value);
+				break;
 			case 2:
-					//t.setStartTime((String) value);
-			break;
+				evt.setToDate((Date)value);
+				break;
 			case 3:
-					evt.setTaskDesc((String)value);
-			break;
+				evt.setTaskDesc((String)value);
+				break;
 			case 4:
-					//evt.setDone((Boolean) value);
-					logic.updateTaskStatus(evt.getTaskID(), (Boolean)value);
-			break;
+				evt.setDone((Boolean)value);
+				break;
 		}
+		Storage.saveTaskType(TASK_TYPE.EVENT);
     }
 
 	public Object getValueAt(int row, int col) {
 		Event evt = (Event)events.get(row);
 		switch (col) {
 			case 0:
-					return evt.getTaskID();
+				return evt.getTaskID();
 			case 1:
-				String fromDate = new SimpleDateFormat("EEE, d MMM yyyy").format(evt.getFromDate()).toString();
-				String fromTime = new SimpleDateFormat("h:mm a").format(evt.getFromDate()).toString();
-				return "<html>" + fromDate + "<br/>" + fromTime + "</html>";
+				return evt.getFromDate();
 			case 2:
-				String toDate = new SimpleDateFormat("EEE, d MMM yyyy").format(evt.getToDate()).toString();
-				String toTime = new SimpleDateFormat("h:mm a").format(evt.getToDate()).toString();
-				return "<html>" + toDate + "<br/>" + toTime + "</html>";
-			case 3:
-				StringBuffer sb = new StringBuffer("<html>" + evt.getTaskDesc() + "</html>");
-				if (sb.length() > 60) {
-					sb.insert(60, "<br/>");
+				if (evt.getFromDate() == evt.getToDate()) {
+					return null;
+				} else {
+					return evt.getToDate();
 				}
-				return sb.toString();
+			case 3:
+				return evt.getTaskDesc();
 			case 4:
 				return evt.isDone();
 		}
