@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import models.Event;
-import models.FloatingTask;
+import models.Todo;
 import models.Task;
 
 public class Parser {
@@ -26,7 +26,7 @@ public class Parser {
 		int startPosition = command.indexOf("from");
 		String desc = command;
 		if (startPosition == -1) {
-			return new FloatingTask(desc, false);
+			return new Todo(desc, false);
 		}
 		int endPosition = command.indexOf("to");
 		desc = command.substring(0, startPosition).trim();

@@ -12,18 +12,18 @@ import storage.Storage;
  * @author Dalton
  *
  */
-public class DeadlineTasksTableModel extends AbstractTableModel {
+public class DeadlinesTableModel extends AbstractTableModel {
 	private String[] columnNames = { "ID", "Deadline", "Task Description", "Done" };
 	private Class<?>[] columnTypes = { Integer.class, Date.class, String.class, Boolean.class };
 
-	ArrayList<DeadlineTask> deadlines;
+	ArrayList<Deadline> deadlines;
 
-	public DeadlineTasksTableModel() {
+	public DeadlinesTableModel() {
 		super();
-		this.deadlines = (ArrayList)Storage.getAllTask(Commands.TASK_TYPE.DEADLINE_TASK);
+		this.deadlines = (ArrayList)Storage.getAllTask(Commands.TASK_TYPE.DEADLINE);
 	}
 
-	public DeadlineTasksTableModel(ArrayList<DeadlineTask> deadlines) {
+	public DeadlinesTableModel(ArrayList<Deadline> deadlines) {
 		super();
 		this.deadlines = deadlines;
 	}
@@ -58,7 +58,7 @@ public class DeadlineTasksTableModel extends AbstractTableModel {
     }
 
 	public void setValueAt(Object value, int row, int col) {
-		DeadlineTask t = (DeadlineTask)deadlines.get(row);
+		Deadline t = (Deadline)deadlines.get(row);
 		switch (col) {
 			case 1:
 				t.setDate((Date)value);
@@ -70,11 +70,11 @@ public class DeadlineTasksTableModel extends AbstractTableModel {
 				t.setDone((Boolean)value);
 				break;
 		}
-		Storage.saveTaskType(TASK_TYPE.DEADLINE_TASK);
+		Storage.saveTaskType(TASK_TYPE.DEADLINE);
     }
 
 	public Object getValueAt(int row, int col) {
-		DeadlineTask t = (DeadlineTask)deadlines.get(row);
+		Deadline t = (Deadline)deadlines.get(row);
 		switch (col) {
 			case 0:
 				return t.getTaskID();

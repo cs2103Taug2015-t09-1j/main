@@ -8,7 +8,7 @@ import java.util.Vector;
 import javax.swing.table.AbstractTableModel;
 
 import logic.Logic;
-import models.FloatingTask;
+import models.Todo;
 import models.Commands.TASK_TYPE;
 import storage.Storage;
 
@@ -16,19 +16,19 @@ import storage.Storage;
  * @author Dalton
  *
  */
-public class FloatingTasksTableModel extends AbstractTableModel {
+public class TodosTableModel extends AbstractTableModel {
 	private String[] columnNames = { "ID", "Task Description", "Done" };
 	private Class[] columnTypes = { Integer.class, String.class, Boolean.class };
 	private Logic logic = Logic.getInstance();
 
-	ArrayList<FloatingTask> todos;
+	ArrayList<Todo> todos;
 
-	public FloatingTasksTableModel() {
+	public TodosTableModel() {
 		super();
-		this.todos = (ArrayList)Storage.getAllTask(Commands.TASK_TYPE.FLOATING_TASK);
+		this.todos = (ArrayList)Storage.getAllTask(Commands.TASK_TYPE.TODO);
 	}
 
-	public FloatingTasksTableModel(ArrayList<FloatingTask> todos) {
+	public TodosTableModel(ArrayList<Todo> todos) {
 		super();
 		this.todos = todos;
 	}
@@ -59,7 +59,7 @@ public class FloatingTasksTableModel extends AbstractTableModel {
     }
 
 	public void setValueAt(Object value, int row, int col) {
-		FloatingTask t = (FloatingTask)todos.get(row);
+		Todo t = (Todo)todos.get(row);
 		switch (col) {
 			case 1:
 				t.setTaskDesc((String) value);
@@ -68,11 +68,11 @@ public class FloatingTasksTableModel extends AbstractTableModel {
 				t.setDone((Boolean)value);
 			break;
 		}
-		Storage.saveTaskType(TASK_TYPE.FLOATING_TASK);
+		Storage.saveTaskType(TASK_TYPE.TODO);
     }
 
 	public Object getValueAt(int row, int col) {
-		FloatingTask t = (FloatingTask)todos.get(row);
+		Todo t = (Todo)todos.get(row);
 		switch (col) {
 			case 0:
 				return t.getTaskID();

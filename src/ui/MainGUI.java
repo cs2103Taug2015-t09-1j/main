@@ -58,9 +58,9 @@ import com.sun.glass.ui.Window;
 
 import logic.Logic;
 import models.Commands;
-import models.DeadlineTasksTableModel;
+import models.DeadlinesTableModel;
 import models.EventsTableModel;
-import models.FloatingTasksTableModel;
+import models.TodosTableModel;
 import javax.swing.JPanel;
 
 /**
@@ -75,7 +75,7 @@ public class MainGUI {
 	private JLabel lblStatusMsg, lblFilter;
 	private JTable eventsTable, todosTable, deadlinesTable;
 	private JTabbedPane tabbedPane;
-	private JScrollPane eventsScrollPane, floatingTasksScrollPane, deadlineTasksScrollPane;
+	private JScrollPane eventsScrollPane, todosScrollPane, deadlineTasksScrollPane;
 	private JLabel lblStatus;
 	private TableRowSorter eventsSorter, todosSorter, deadlinesSorter;
 	private static final DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
@@ -257,11 +257,11 @@ public class MainGUI {
 		eventsTable.setRowSorter(eventsSorter);
 		eventsSorter.toggleSortOrder(1);
 
-		todosSorter = new TableRowSorter<FloatingTasksTableModel>(new FloatingTasksTableModel());
+		todosSorter = new TableRowSorter<TodosTableModel>(new TodosTableModel());
 		todosTable.setRowSorter(todosSorter);
 		todosSorter.toggleSortOrder(2);
 
-		deadlinesSorter = new TableRowSorter<DeadlineTasksTableModel>(new DeadlineTasksTableModel());
+		deadlinesSorter = new TableRowSorter<DeadlinesTableModel>(new DeadlinesTableModel());
 		deadlinesTable.setRowSorter(deadlinesSorter);
 		deadlinesSorter.toggleSortOrder(1);
 	}
@@ -271,13 +271,13 @@ public class MainGUI {
 		tabbedPane.setFont(new Font("Segoe UI Semibold", Font.PLAIN, 13));
 		tabbedPane.setBounds(12, 12, 738, 462);
 		eventsScrollPane = new JScrollPane();
-		floatingTasksScrollPane = new JScrollPane();
+		todosScrollPane = new JScrollPane();
 		deadlineTasksScrollPane = new JScrollPane();
 		eventsScrollPane.getVerticalScrollBar().setPreferredSize (new Dimension(0,0));
-		floatingTasksScrollPane.getVerticalScrollBar().setPreferredSize (new Dimension(0,0));
+		todosScrollPane.getVerticalScrollBar().setPreferredSize (new Dimension(0,0));
 		deadlineTasksScrollPane.getVerticalScrollBar().setPreferredSize (new Dimension(0,0));
 		tabbedPane.addTab("<html><body leftmargin=15 topmargin=8 marginwidth=15 marginheight=5><b>Events</b></body></html>", null, eventsScrollPane, null);
-		tabbedPane.addTab("<html><body leftmargin=15 topmargin=8 marginwidth=15 marginheight=5><b>Todos</b></body></html>", null, floatingTasksScrollPane, null);
+		tabbedPane.addTab("<html><body leftmargin=15 topmargin=8 marginwidth=15 marginheight=5><b>Todos</b></body></html>", null, todosScrollPane, null);
 		tabbedPane.addTab("<html><body leftmargin=15 topmargin=8 marginwidth=15 marginheight=5><b>Deadlines</b></body></html>", null, deadlineTasksScrollPane, null);
 		tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
 		tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
@@ -287,7 +287,7 @@ public class MainGUI {
 
 	private void setupTables() {
 		setupDeadlineTasksTable();
-		setupFloatingTasksTable();
+		setuptodosTable();
 		setupEventsTable();
 	}
 
@@ -311,7 +311,7 @@ public class MainGUI {
 		updateTableInfo(eventsTable, new EventsTableModel());
 	}
 
-	private void setupFloatingTasksTable() {
+	private void setuptodosTable() {
 		todosTable = new JTable();
 		todosTable.setName("Todos");
 		todosTable.setCellSelectionEnabled(true);
@@ -325,8 +325,8 @@ public class MainGUI {
 		centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
 		todosTable.setDefaultRenderer(Integer.class, centerRenderer);
 		todosTable.setDefaultRenderer(String.class, customRenderer);
-		floatingTasksScrollPane.setViewportView(todosTable);
-		updateTableInfo(todosTable, new FloatingTasksTableModel());
+		todosScrollPane.setViewportView(todosTable);
+		updateTableInfo(todosTable, new TodosTableModel());
 	}
 
 	private void setupDeadlineTasksTable() {
@@ -346,7 +346,7 @@ public class MainGUI {
 		deadlinesTable.setDefaultRenderer(Date.class, customRenderer);
 		deadlinesTable.setDefaultEditor(Date.class, new CustomDateCellEditor());
 		deadlineTasksScrollPane.setViewportView(deadlinesTable);
-		updateTableInfo(deadlinesTable, new DeadlineTasksTableModel());
+		updateTableInfo(deadlinesTable, new DeadlinesTableModel());
 	}
 
 	private void rowFilter(TableRowSorter sorter) {
@@ -377,8 +377,8 @@ public class MainGUI {
 	}
 
 	private void updateAllTables() {
-		updateTableInfo(deadlinesTable, new DeadlineTasksTableModel());
-		updateTableInfo(todosTable, new FloatingTasksTableModel());
+		updateTableInfo(deadlinesTable, new DeadlinesTableModel());
+		updateTableInfo(todosTable, new TodosTableModel());
 		updateTableInfo(eventsTable, new EventsTableModel());
 	}
 
@@ -387,11 +387,11 @@ public class MainGUI {
 			case EVENT:
 				updateTableInfo(eventsTable, new EventsTableModel());
 				break;
-			case FLOATING_TASK:
-				updateTableInfo(todosTable, new FloatingTasksTableModel());
+			case TODO:
+				updateTableInfo(todosTable, new TodosTableModel());
 				break;
-			case DEADLINE_TASK:
-				updateTableInfo(deadlinesTable, new DeadlineTasksTableModel());
+			case DEADLINE:
+				updateTableInfo(deadlinesTable, new DeadlinesTableModel());
 				break;
 			default:
 				updateAllTables();
@@ -414,8 +414,8 @@ public class MainGUI {
 				break;
 			case "Todos":
 				tabbedPane.setSelectedIndex(1);
-				//floatingTasksTable.setRowSelectionInterval(0, 0);
-				//floatingTasksTable.requestFocusInWindow();
+				//todosTable.setRowSelectionInterval(0, 0);
+				//todosTable.requestFocusInWindow();
 				break;
 			case "Deadlines":
 				tabbedPane.setSelectedIndex(2);

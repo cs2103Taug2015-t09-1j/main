@@ -96,11 +96,7 @@ public class EventsTableModel extends AbstractTableModel {
 			case 1:
 				return evt.getFromDate();
 			case 2:
-				if (evt.getFromDate() == evt.getToDate()) {
-					return null;
-				} else {
-					return evt.getToDate();
-				}
+				return evt.getToDate();
 			case 3:
 				return evt.getTaskDesc();
 			case 4:

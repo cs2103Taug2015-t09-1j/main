@@ -8,9 +8,9 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 import models.Commands.TASK_TYPE;
-import models.DeadlineTask;
+import models.Deadline;
 import models.Event;
-import models.FloatingTask;
+import models.Todo;
 import models.Task;
 
 public class DataParser {
@@ -30,9 +30,9 @@ public class DataParser {
 	
 	public static Type getListType(TASK_TYPE type) {
 		switch (type) {
-			case DEADLINE_TASK: return new TypeToken<List<DeadlineTask>>() {}.getType();
+			case DEADLINE: return new TypeToken<List<Deadline>>() {}.getType();
 			case EVENT: return new TypeToken<List<Event>>() {}.getType();
-			case FLOATING_TASK: return new TypeToken<List<FloatingTask>>() {}.getType();
+			case TODO: return new TypeToken<List<Todo>>() {}.getType();
 			default: return null;
 		}
 	}

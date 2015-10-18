@@ -9,10 +9,10 @@ import java.util.Date;
  * @author Dalton
  *
  */
-public class DeadlineTask extends Task {
+public class Deadline extends Task {
 	private Date date;
 
-	public DeadlineTask(Date date, String taskDesc, boolean isDone) {
+	public Deadline(Date date, String taskDesc, boolean isDone) {
 		super(taskDesc, isDone);
 		this.date = date;
 	}
