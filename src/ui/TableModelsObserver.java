@@ -6,7 +6,7 @@ package ui;
 import java.util.Observable;
 import java.util.Observer;
 
-import models.Commands;
+import models.EnumTypes;
 
 /**
  * @author Dalton
@@ -31,6 +31,6 @@ public class TableModelsObserver implements Observer {
 
 	@Override
     public void update(Observable o, Object data) {
-		ui.reloadTables((Commands.TASK_TYPE)data);
+		ui.updateTables((EnumTypes.TASK_TYPE)data);
     }
 }

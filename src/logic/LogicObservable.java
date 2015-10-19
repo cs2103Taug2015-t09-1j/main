@@ -5,7 +5,7 @@ package logic;
 
 import java.util.Observable;
 
-import models.Commands;
+import models.EnumTypes;
 import ui.MessageObserver;
 import ui.TableModelsObserver;
 
@@ -32,7 +32,7 @@ public class LogicObservable extends Observable {
 		observable.deleteObserver(MessageObserver.getInstance());
 	}
 
-	public void updateTables(Commands.TASK_TYPE type) {
+	public void updateTables(EnumTypes.TASK_TYPE type) {
 		observable.addObserver(TableModelsObserver.getInstance());
 		setChanged();
 		notifyObservers(type);

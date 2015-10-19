@@ -4,7 +4,7 @@
 package models;
 
 import java.util.ArrayList;
-import models.Commands.*;
+import models.EnumTypes.*;
 
 /**
  * @author Dalton
