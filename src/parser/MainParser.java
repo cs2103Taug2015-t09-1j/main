@@ -1,26 +1,24 @@
 package parser;
 
-import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.Date;
 
 import org.ocpsoft.prettytime.nlp.*;
 import org.ocpsoft.prettytime.nlp.parse.DateGroup;
 import org.ocpsoft.prettytime.shade.edu.emory.mathcs.backport.java.util.Arrays;
-
-import logic.Logic;
 import models.Deadline;
 import models.Event;
 import models.Todo;
 import models.ParsedObject;
 import models.Task;
 import storage.Storage;
-import models.Commands.*;
+import models.EnumTypes.*;
 
 public class MainParser {
 	private static MainParser parser = null;
@@ -28,9 +26,9 @@ public class MainParser {
 	private final Logger logger = Logger.getLogger(MainParser.class.getName());
 	private String[] updateCmdList = {"update", "/u", "edit", "/e", "modify", "/m"};
 	private String[] deleteCmdList = {"delete", "del", "/d", "remove", "rm", "/r"};
-	private String[] searchCmdList = {"search", "/s", "find", "/f"};
-	private String[] displayCmdList = {"display", "/dp", "show", "/sw"};
-	private String[] doneCmdList = {"is done", "done"};
+	//private String[] searchCmdList = {"search", "/s", "find", "/f"};
+	//private String[] displayCmdList = {"display", "/dp", "show", "/sw"};
+	//private String[] doneCmdList = {"is done", "done"};
 
 	private MainParser() {}
 
@@ -45,25 +43,23 @@ public class MainParser {
 		if (input.trim().isEmpty()) {
 			return COMMAND_TYPE.INVALID;
 		} else {
-			if (isCommand(input, updateCmdList)) {
+			if (isValidCommand(input, updateCmdList, "\\s+\\d+\\s+\\d+")) {
 				return COMMAND_TYPE.UPDATE;
-			} else if (isCommand(input, deleteCmdList)) {
+			} else if (isValidCommand(input, deleteCmdList, "\\s+\\d+\\s*(((to|-)\\s*\\d+\\s*)?|(\\d+\\s*)*)")) {
 				return COMMAND_TYPE.DELETE;
-			} else if (isCommand(input, searchCmdList)) {
-				return COMMAND_TYPE.SEARCH;
-			} else if (isCommand(input, displayCmdList)) {
-				return COMMAND_TYPE.DISPLAY;
 			} else {
 				return COMMAND_TYPE.ADD;
 			}
 		}
 	}
 
-	private boolean isCommand(String input, String[] commandList) {
+	private boolean isValidCommand(String input, String[] commandList, String regex) {
 		for(int i = 0; i < commandList.length; i++) {
-			if (input.startsWith(commandList[i])) {
-				return true;
-			}
+			Pattern pattern = Pattern.compile("^" + commandList[i] + regex);
+			Matcher matcher = pattern.matcher(input);
+	        if (matcher.find()) {
+	        	return true;
+	        }
 		}
 		return false;
 	}
@@ -72,6 +68,7 @@ public class MainParser {
 		for(int i = 0; i < commandList.length; i++) {
 			if (input.startsWith(commandList[i])) {
 				input = input.split("^\\s*" + commandList[i] + "\\s*")[1];
+				break;
 			}
 		}
 		return input;
@@ -81,11 +78,26 @@ public class MainParser {
 		return new SimpleDateFormat(format).format(d);
 	}
 
-	public List<Date> parseDates(String input) {
+	public List<Date> getDateList(String input) {
 		if (input.contains("+")) {
 			input = input.split("\\+")[1];
 		}
-		return ptParser.parseSyntax(input).get(0).getDates();
+
+		List<DateGroup> dGroup = parseDates(input);
+		if (dGroup != null) {
+			return dGroup.get(0).getDates();
+		} else {
+			return null;
+		}
+	}
+
+	public List<DateGroup> parseDates(String input) {
+		List<DateGroup> dGroup = ptParser.parseSyntax(input);
+		if (!dGroup.isEmpty()) {
+			return dGroup;
+		} else {
+			return null;
+		}
 	}
 
 	private String getTaskDesc(String input) {
@@ -96,63 +108,40 @@ public class MainParser {
 		input = input.replaceAll("\\s+((due by)|due|by|from|on|at)\\s*((due by)|due|by|from|on|at)*\\s*$", "");
 		input = input.replaceAll("^\\s*((due by)|due|by|from|on|at)\\s*((due by)|due|by|from|on|at)", "");
 		input = input.replaceAll("^\\s+|\\s+$", "");
+		input = input.replaceAll("^\\+", "");
 		return input.trim();
 	}
 
 	public ParsedObject getAddParsedObject(String input) {
-		List<Date> parsedInput = parseDates(input);
+		List<Date> parsedInput = getDateList(input);
 		ArrayList<Task> tasks = new ArrayList<Task>();
 
-		if (!parsedInput.isEmpty()) {
+		if (parsedInput != null) {
 			switch (parsedInput.size()) {
 				case 1:
 					if (input.contains("by") || input.contains("due") || input.contains("before")) {
-						// Deadline Task
-						Date deadlineDate = setTime(parsedInput.get(0), 23, 59, 59, 999);
-						tasks.add(new Deadline(deadlineDate, getTaskDesc(input), false));
+						tasks.add(new Deadline(parsedInput.get(0), getTaskDesc(input), false));
 						return new ParsedObject(COMMAND_TYPE.ADD, TASK_TYPE.DEADLINE, tasks);
 					} else {
-						// Single Date Event
 						tasks.add(new Event(parsedInput.get(0), parsedInput.get(0), getTaskDesc(input), false));
 						return new ParsedObject(COMMAND_TYPE.ADD, TASK_TYPE.SINGLE_DATE_EVENT, tasks);
 					}
 				case 2:
-					// Double Date Event
 					tasks.add(new Event(parsedInput.get(0), parsedInput.get(1), getTaskDesc(input), false));
 					return new ParsedObject(COMMAND_TYPE.ADD, TASK_TYPE.DOUBLE_DATE_EVENT, tasks);
 				default:
-					// Invalid
 					return new ParsedObject(COMMAND_TYPE.INVALID, null, null);
 			}
 		} else {
-			// Floating Task
 			tasks.add(new Todo(input.trim(), false));
 			return new ParsedObject(COMMAND_TYPE.ADD, TASK_TYPE.TODO, tasks);
 		}
 	}
 
-	private Date setTime(Date d, int hours, int minutes, int seconds, int milliseconds) {
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(d);
-		cal.set(Calendar.HOUR_OF_DAY, hours);
-		cal.set(Calendar.MINUTE, minutes);
-		cal.set(Calendar.SECOND, seconds);
-		cal.set(Calendar.MILLISECOND, milliseconds);
-		return cal.getTime();
-	}
-
 	public ArrayList<String> getCommandParameters(String input, COMMAND_TYPE cmdType) {
 		String pattern;
 		String[] paramArray;
-		/*if (cmdType == COMMAND_TYPE.SEARCH || cmdType == COMMAND_TYPE.DISPLAY) {
-			pattern = "\\.+|,+|:+|;+|/+|\\\\+|\\|+";
-		} else {
-			if (input.contains("to") || input.contains("-")) {
-				pattern = "\\-+|to";
-			} else {
-				pattern = "\\s+|\\.+|,+|:+|;+|/+|\\\\+|\\|+";
-			}
-		}*/
+
 		switch (cmdType) {
 		case SEARCH:
 		case DISPLAY:
@@ -184,6 +173,22 @@ public class MainParser {
 		return paramList;
 	}
 
+	public ParsedObject getUpdateParsedObject(String input) {
+		String params = removeCommandWord(input, updateCmdList);
+		ArrayList<String> paramsList = getCommandParameters(params, COMMAND_TYPE.UPDATE);
+		return new ParsedObject(COMMAND_TYPE.UPDATE, null, paramsList);
+	}
+
+	public int parseInteger(String intString) {
+		try {
+			return Integer.parseInt(intString);
+		} catch (NumberFormatException e) {
+			logger.log(Level.SEVERE, e.toString(), e);
+			//throw new NumberFormatException();
+		}
+		return 0;
+	}
+
 	public ParsedObject getDeleteParsedObject(String input) {
 		String params = removeCommandWord(input, deleteCmdList);
 		ArrayList<Integer> taskIDs = new ArrayList<Integer>();
@@ -193,13 +198,15 @@ public class MainParser {
 			int fromID = parseInteger(taskIDList.get(0));
 			int toID = parseInteger(taskIDList.get(1));
 
-			for (int i = fromID; i < toID; i++) {
-				if (Storage.getTaskByID(i) != null) {
+			for (int i = fromID; i <= toID; i++) {
+				if (Storage.getInstance().getTaskByID(i) != null) {
 					taskIDs.add(i);
 				}
 			}
 		} else {
-			taskIDs.add(parseInteger(taskIDList.get(0)));
+			for (int i = 0; i < taskIDList.size(); i++) {
+				taskIDs.add(parseInteger(taskIDList.get(i)));
+			}
 		}
 
 		return new ParsedObject(COMMAND_TYPE.DELETE, null, taskIDs);
@@ -225,7 +232,7 @@ public class MainParser {
 
 		return new ParsedObject(COMMAND_TYPE.DELETE, null, taskIDs);
 	}
-*/
+
 	public ParsedObject getDisplayParsedObject(String input) {
 		String params = removeCommandWord(input, displayCmdList);
 
@@ -253,20 +260,5 @@ public class MainParser {
 
 		return new ParsedObject(COMMAND_TYPE.SEARCH, null, searchTerms);
 	}
-
-	public ParsedObject getUpdateParsedObject(String input) {
-		String params = removeCommandWord(input, updateCmdList);
-		ArrayList<String> paramsList = getCommandParameters(params, COMMAND_TYPE.UPDATE);
-		return new ParsedObject(COMMAND_TYPE.UPDATE, null, paramsList);
-	}
-
-	public int parseInteger(String intString) {
-		try {
-			return Integer.parseInt(intString);
-		} catch (NumberFormatException e) {
-			logger.log(Level.SEVERE, e.toString(), e);
-			//throw new NumberFormatException();
-		}
-		return 0;
-	}
+*/
 }
