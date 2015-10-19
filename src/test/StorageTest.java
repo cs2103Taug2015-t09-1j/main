@@ -1,6 +1,6 @@
 package test;
 
-import static models.Commands.TASK_TYPE.*;
+import static models.EnumTypes.TASK_TYPE.*;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -22,10 +22,10 @@ public class StorageTest {
 		Date date = new Date();
 		System.out.println(date.toString());
 		Event event = new Event(date, date, "Task description", false);
-		Storage.addTask(event, EVENT);
-		Storage.saveAllTask();
-		Storage.init();
-		List<Task> events = Storage.getAllTask(EVENT);
+		Storage.getInstance().addTask(event, EVENT);
+		Storage.getInstance().saveAllTask();
+		Storage.getInstance().init();
+		List<Task> events = Storage.getInstance().getAllTask(EVENT);
 		System.out.println(((Event)events.get(0)).getFromDate().toString());
 	}
 

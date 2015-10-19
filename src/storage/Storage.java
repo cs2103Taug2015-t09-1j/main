@@ -1,37 +1,49 @@
 package storage;
 
-import static models.Commands.TASK_TYPE.DEADLINE;
-import static models.Commands.TASK_TYPE.EVENT;
-import static models.Commands.TASK_TYPE.TODO;
+import static models.EnumTypes.TASK_TYPE.DEADLINE;
+import static models.EnumTypes.TASK_TYPE.EVENT;
+import static models.EnumTypes.TASK_TYPE.TODO;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import models.Commands.TASK_TYPE;
+import logic.Logic;
+import models.EnumTypes.TASK_TYPE;
 import models.Task;
 
 public class Storage {
-	public static interface storageDir {
-		String storeFolder = "data";
-		String todo = "data/Floating.txt";
-		String deadline = "data/Deadline.txt";
-		String event = "data/Event.txt";
+	private String storeFolder = "data";
+	private String todo = storeFolder + "/Floating.txt";
+	private String deadline = storeFolder + "/Deadline.txt";
+	private String event = storeFolder + "/Event.txt";
+
+	private List<Task> todos = new ArrayList<>();
+	private List<Task> events = new ArrayList<>();
+	private List<Task> deadlines = new ArrayList<>();
+
+	private static Storage storage = Storage.getInstance();
+
+	private Storage() {
+		init();
 	}
 
-	private static List<Task> todos = new ArrayList<>();
-	private static List<Task> events = new ArrayList<>();
-	private static List<Task> deadlines = new ArrayList<>();
+	public static Storage getInstance() {
+		if (storage == null) {
+			storage = new Storage();
+		}
+		return storage;
+	}
 
-	public static void init() {
-		FileHandler.createNewFolderIfNotExisit(storageDir.storeFolder);
-		todos = DataParser.deserialize(FileHandler.readFromFile(storageDir.todo), TODO);
-		events = DataParser.deserialize(FileHandler.readFromFile(storageDir.event), EVENT);
-		deadlines = DataParser.deserialize(FileHandler.readFromFile(storageDir.deadline), DEADLINE);
+	public void init() {
+		FileHandler.createNewFolderIfNotExisit(storeFolder);
+		todos = DataParser.deserialize(FileHandler.readFromFile(todo), TODO);
+		events = DataParser.deserialize(FileHandler.readFromFile(event), EVENT);
+		deadlines = DataParser.deserialize(FileHandler.readFromFile(deadline), DEADLINE);
 		int curMaxId = Math.max(getMaxId(todos), Math.max(getMaxId(events), getMaxId(deadlines)));
 		Task.setNextId(curMaxId);
 	}
 
-	private static int getMaxId(List<Task> tasks) {
+	private int getMaxId(List<Task> tasks) {
 		int res = 0;
 		for (Task task : tasks) {
 			res = Math.max(task.getTaskID(), res);
@@ -39,7 +51,7 @@ public class Storage {
 		return res;
 	}
 
-	public static void addTask(Task task, TASK_TYPE type) {
+	public void addTask(Task task, TASK_TYPE type) {
 		switch (type) {
 			case TODO: todos.add(task); break;
 			case EVENT: events.add(task); break;
@@ -48,7 +60,7 @@ public class Storage {
 		}
 	}
 
-	public static List<Task> getAllTask(TASK_TYPE type) {
+	public List<Task> getAllTask(TASK_TYPE type) {
 		switch (type) {
 			case TODO: return todos;
 			case EVENT: return events;
@@ -57,7 +69,7 @@ public class Storage {
 		}
 	}
 
-	public static Task getTaskByID(int id) {
+	public Task getTaskByID(int id) {
 		for (Task event:events) if (event.getTaskID() == id){
 			return event;
 		}
@@ -70,7 +82,7 @@ public class Storage {
 		return null;
 	}
 
-	public static void delete(int id) {
+	public void delete(int id) {
 		Task task = getTaskByID(id);
 		if (task == null) {
 			return;
@@ -80,13 +92,13 @@ public class Storage {
 		deadlines.remove(task);
 	}
 
-	public static void delete(List<Integer> ids) {
+	public void delete(List<Integer> ids) {
 		for (int id : ids) {
 			delete(id);
 		}
 	}
 
-	public static void changeStatus(List<Integer> ids, boolean status) {
+	public void changeStatus(List<Integer> ids, boolean status) {
 		for (int id : ids) {
 			Task task = getTaskByID(id);
 			if (task != null) {
@@ -95,25 +107,39 @@ public class Storage {
 		}
 	}
 
-	public static void saveAllTask() {
-		FileHandler.writeToFile(storageDir.todo, DataParser.serialize(todos, TODO));
-		FileHandler.writeToFile(storageDir.event, DataParser.serialize(events, EVENT));
-		FileHandler.writeToFile(storageDir.deadline, DataParser.serialize(deadlines, DEADLINE));
+	public void saveAllTask() {
+		FileHandler.writeToFile(todo, DataParser.serialize(todos, TODO));
+		FileHandler.writeToFile(event, DataParser.serialize(events, EVENT));
+		FileHandler.writeToFile(deadline, DataParser.serialize(deadlines, DEADLINE));
 	}
 
-	public static void saveTaskType(TASK_TYPE type) {
+	public void saveTaskType(TASK_TYPE type) {
 		switch (type) {
 		case TODO:
-			FileHandler.writeToFile(storageDir.todo, DataParser.serialize(todos, TODO));
+			FileHandler.writeToFile(todo, DataParser.serialize(todos, TODO));
 			break;
 		case EVENT:
-			FileHandler.writeToFile(storageDir.event, DataParser.serialize(events, EVENT));
+			FileHandler.writeToFile(event, DataParser.serialize(events, EVENT));
 			break;
 		case DEADLINE:
-			FileHandler.writeToFile(storageDir.deadline, DataParser.serialize(deadlines, DEADLINE));
+			FileHandler.writeToFile(deadline, DataParser.serialize(deadlines, DEADLINE));
 			break;
 		default:
 			saveAllTask();
 		}
+	}
+
+	/**
+	 * @return the storeFolder
+	 */
+	public String getStoreFolder() {
+		return storeFolder;
+	}
+
+	/**
+	 * @param storeFolder the storeFolder to set
+	 */
+	public void setStoreFolder(String storeFolder) {
+		this.storeFolder = storeFolder;
 	}
 }

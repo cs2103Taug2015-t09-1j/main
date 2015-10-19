@@ -7,7 +7,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
-import models.Commands.TASK_TYPE;
+import models.EnumTypes.TASK_TYPE;
 import models.Deadline;
 import models.Event;
 import models.Todo;
