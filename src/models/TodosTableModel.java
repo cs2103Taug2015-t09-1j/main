@@ -4,12 +4,10 @@
 package models;
 
 import java.util.ArrayList;
-import java.util.Vector;
 import javax.swing.table.AbstractTableModel;
 
-import logic.Logic;
 import models.Todo;
-import models.Commands.TASK_TYPE;
+import models.EnumTypes.TASK_TYPE;
 import storage.Storage;
 
 /**
@@ -17,22 +15,22 @@ import storage.Storage;
  *
  */
 public class TodosTableModel extends AbstractTableModel {
-	private String[] columnNames = { "ID", "Task Description", "Done" };
-	private Class[] columnTypes = { Integer.class, String.class, Boolean.class };
-	private Logic logic = Logic.getInstance();
-
-	ArrayList<Todo> todos;
+	private static TodosTableModel ttm = TodosTableModel.getInstance();
+	private final String[] columnNames = { "ID", "Task Description", "Done" };
+	private final Class<?>[] columnTypes = { Integer.class, String.class, Boolean.class };
+	private ArrayList<Todo> todos;
 
 	public TodosTableModel() {
 		super();
-		this.todos = (ArrayList)Storage.getAllTask(Commands.TASK_TYPE.TODO);
+		this.todos = (ArrayList)Storage.getInstance().getAllTask(EnumTypes.TASK_TYPE.TODO);
 	}
 
-	public TodosTableModel(ArrayList<Todo> todos) {
-		super();
-		this.todos = todos;
+	public static TodosTableModel getInstance() {
+		if (ttm == null) {
+			ttm = new TodosTableModel();
+		}
+		return ttm;
 	}
-
 	public int getColumnCount() {
 		return columnNames.length;
     }
@@ -68,7 +66,7 @@ public class TodosTableModel extends AbstractTableModel {
 				t.setDone((Boolean)value);
 			break;
 		}
-		Storage.saveTaskType(TASK_TYPE.TODO);
+		Storage.getInstance().saveTaskType(TASK_TYPE.TODO);
     }
 
 	public Object getValueAt(int row, int col) {

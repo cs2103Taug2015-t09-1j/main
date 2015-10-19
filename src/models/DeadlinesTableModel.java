@@ -5,7 +5,7 @@ import java.util.Date;
 
 import javax.swing.table.AbstractTableModel;
 
-import models.Commands.TASK_TYPE;
+import models.EnumTypes.TASK_TYPE;
 import storage.Storage;
 
 /**
@@ -13,19 +13,21 @@ import storage.Storage;
  *
  */
 public class DeadlinesTableModel extends AbstractTableModel {
-	private String[] columnNames = { "ID", "Deadline", "Task Description", "Done" };
-	private Class<?>[] columnTypes = { Integer.class, Date.class, String.class, Boolean.class };
-
-	ArrayList<Deadline> deadlines;
+	private static DeadlinesTableModel dtm = DeadlinesTableModel.getInstance();
+	private final String[] columnNames = { "ID", "Deadline", "Task Description", "Done" };
+	private final Class<?>[] columnTypes = { Integer.class, Date.class, String.class, Boolean.class };
+	private ArrayList<Deadline> deadlines;
 
 	public DeadlinesTableModel() {
 		super();
-		this.deadlines = (ArrayList)Storage.getAllTask(Commands.TASK_TYPE.DEADLINE);
+		this.deadlines = (ArrayList)Storage.getInstance().getAllTask(EnumTypes.TASK_TYPE.DEADLINE);
 	}
 
-	public DeadlinesTableModel(ArrayList<Deadline> deadlines) {
-		super();
-		this.deadlines = deadlines;
+	public static DeadlinesTableModel getInstance() {
+		if (dtm == null) {
+			dtm = new DeadlinesTableModel();
+		}
+		return dtm;
 	}
 
 	public int getColumnCount() {
@@ -70,7 +72,7 @@ public class DeadlinesTableModel extends AbstractTableModel {
 				t.setDone((Boolean)value);
 				break;
 		}
-		Storage.saveTaskType(TASK_TYPE.DEADLINE);
+		Storage.getInstance().saveTaskType(TASK_TYPE.DEADLINE);
     }
 
 	public Object getValueAt(int row, int col) {

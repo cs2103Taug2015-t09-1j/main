@@ -3,19 +3,11 @@
  */
 package models;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Locale;
-
 import javax.swing.table.AbstractTableModel;
 
-import org.ocpsoft.prettytime.nlp.PrettyTimeParser;
-
-import models.Event;
-import parser.MainParser;
-import models.Commands.TASK_TYPE;
+import models.EnumTypes.TASK_TYPE;
 import storage.Storage;
 
 /**
@@ -23,19 +15,21 @@ import storage.Storage;
  *
  */
 public class EventsTableModel extends AbstractTableModel {
-	private String[] columnNames = { "ID", "Start Date", "End Date", "Task Description", "Done" };
-	private Class<?>[] columnTypes = { Integer.class, Date.class, Date.class, String.class, Boolean.class };
+	private static EventsTableModel etm = EventsTableModel.getInstance();
+	private final String[] columnNames = { "ID", "Start Date", "End Date", "Task Description", "Done" };
+	private final Class<?>[] columnTypes = { Integer.class, Date.class, Date.class, String.class, Boolean.class };
+	private ArrayList<Event> events;
 
-	ArrayList<Event> events;
-
-	public EventsTableModel() {
+	private EventsTableModel() {
 		super();
-		this.events = (ArrayList)Storage.getAllTask(Commands.TASK_TYPE.EVENT);
+		this.events = (ArrayList)Storage.getInstance().getAllTask(EnumTypes.TASK_TYPE.EVENT);
 	}
 
-	public EventsTableModel(ArrayList<Event> events) {
-		super();
-		this.events = events;
+	public static EventsTableModel getInstance() {
+		if (etm == null) {
+			etm = new EventsTableModel();
+		}
+		return etm;
 	}
 
 	public int getColumnCount() {
@@ -85,7 +79,7 @@ public class EventsTableModel extends AbstractTableModel {
 				evt.setDone((Boolean)value);
 				break;
 		}
-		Storage.saveTaskType(TASK_TYPE.EVENT);
+		Storage.getInstance().saveTaskType(TASK_TYPE.EVENT);
     }
 
 	public Object getValueAt(int row, int col) {
@@ -96,6 +90,7 @@ public class EventsTableModel extends AbstractTableModel {
 			case 1:
 				return evt.getFromDate();
 			case 2:
+				//return (evt.getFromDate() == evt.getToDate()) ? null : evt.getToDate();
 				return evt.getToDate();
 			case 3:
 				return evt.getTaskDesc();

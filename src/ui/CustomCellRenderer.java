@@ -36,7 +36,7 @@ public class CustomCellRenderer extends JTextArea implements TableCellRenderer {
 
         if (value != null) {
 	        if (value instanceof Date) {
-	        	this.setText(formatDate((Date)value));
+	        	//this.setText(formatDate((Date)value));
         		long currentTime = System.currentTimeMillis();
         		long dateTime = ((Date)value).getTime();
         		if (dateTime < currentTime) {
@@ -44,17 +44,23 @@ public class CustomCellRenderer extends JTextArea implements TableCellRenderer {
 	        	} else {
 	        		this.setForeground(Color.decode("0x009900"));
 	        	}
+
         		if (table.getName().equals("Events")) {
-	        		long fromDate = ((Date)table.getModel().getValueAt(row, 1)).getTime();
-	        		long toDate = ((Date)table.getModel().getValueAt(row, 2)).getTime();
-	        		if (fromDate == toDate) {
-	        			if (column == 2) {
-	        				this.setText(null);
-	        			}
-	        		}
+        			int modelRow = table.getRowSorter().convertRowIndexToModel(row);
+	        		if (column == 2) {
+	        			String fromDate = table.getModel().getValueAt(modelRow, 1).toString();
+		        		String toDate = table.getModel().getValueAt(modelRow, 2).toString();
+		        		if (fromDate.equals(toDate)) {
+		        			this.setText(null);
+		        		} else {
+		        			this.setText(formatDate((Date)value));
+		        		}
+        			} else {
+        				this.setText(formatDate((Date)value));
+        			}
         		}
 	        } else {
-        		this.setText(value.toString());
+	        	this.setText(value.toString());
 	        }
         }
 
