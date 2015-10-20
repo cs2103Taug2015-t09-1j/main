@@ -8,11 +8,11 @@ import java.io.IOException;
 
 public class FileHandler {
 	
-	public static void createNewFolderIfNotExisit(String folderName) {
-		File file = new File(folderName);
+	public static void createNewFolderIfNotExisit(String dir) {
+		File file = new File(dir);
 		if (!file.exists()) {
 			try {
-				file.mkdir();
+				file.mkdirs();
 			} catch (Exception e) {
 				// error occurs 
 			}
@@ -31,8 +31,6 @@ public class FileHandler {
 	}
 	
 	public static String readFromFile(String fileName) {
-		
-		createNewFileIfNotExisit(fileName);
 		
 		StringBuilder result = new StringBuilder();
 		BufferedReader  fr = null;

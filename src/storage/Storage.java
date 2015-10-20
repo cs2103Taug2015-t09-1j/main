@@ -4,6 +4,7 @@ import static models.EnumTypes.TASK_TYPE.DEADLINE;
 import static models.EnumTypes.TASK_TYPE.EVENT;
 import static models.EnumTypes.TASK_TYPE.TODO;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,10 +13,17 @@ import models.EnumTypes.TASK_TYPE;
 import models.Task;
 
 public class Storage {
-	private String storeFolder = "data";
-	private String todo = storeFolder + "/Floating.txt";
-	private String deadline = storeFolder + "/Deadline.txt";
-	private String event = storeFolder + "/Event.txt";
+	
+	private static String TODO_FILE = "todo.txt";
+	private static String EVENT_FILE = "event.txt";
+	private static String DEADLINE_FILE = "deadline.txt";
+	private static String DATA_FOLDER = "data"; 
+	
+	private String configFile = "config.txt";
+	private String storeDir;
+	private String todoFile;
+	private String deadlineFile;
+	private String eventFile;
 
 	private List<Task> todos = new ArrayList<>();
 	private List<Task> events = new ArrayList<>();
@@ -33,14 +41,43 @@ public class Storage {
 		}
 		return storage;
 	}
-
-	public void init() {
-		FileHandler.createNewFolderIfNotExisit(storeFolder);
-		todos = DataParser.deserialize(FileHandler.readFromFile(todo), TODO);
-		events = DataParser.deserialize(FileHandler.readFromFile(event), EVENT);
-		deadlines = DataParser.deserialize(FileHandler.readFromFile(deadline), DEADLINE);
+	
+	private void initDir() {
+		initstoreDirFromConfig();
+		updateStoreDir();
+	}
+	
+	private void initTasks() {
+		todos = DataParser.deserialize(FileHandler.readFromFile(todoFile), TODO);
+		events = DataParser.deserialize(FileHandler.readFromFile(eventFile), EVENT);
+		deadlines = DataParser.deserialize(FileHandler.readFromFile(deadlineFile), DEADLINE);
+	}
+	
+	private void initTaskId() {
 		int curMaxId = Math.max(getMaxId(todos), Math.max(getMaxId(events), getMaxId(deadlines)));
 		Task.setNextId(curMaxId);
+	}
+	
+	private void initstoreDirFromConfig() {
+		storeDir = FileHandler.readFromFile(configFile);
+		if (storeDir == null) storeDir = "";
+		FileHandler.createNewFolderIfNotExisit(storeDir + "/" + DATA_FOLDER);
+	}
+	
+	private void updateStoreDir() {
+		todoFile = storeDir + "/" + DATA_FOLDER + "/" + TODO_FILE;
+		eventFile = storeDir + "/" + DATA_FOLDER + "/" + EVENT_FILE;
+		deadlineFile = storeDir + "/" + DATA_FOLDER + "/" + DEADLINE_FILE;
+		
+		FileHandler.createNewFileIfNotExisit(todoFile);
+		FileHandler.createNewFileIfNotExisit(deadlineFile);
+		FileHandler.createNewFileIfNotExisit(eventFile);
+	}
+	
+	public void init() {
+		initDir();
+		initTasks();
+		initTaskId();
 	}
 
 	private int getMaxId(List<Task> tasks) {
@@ -108,21 +145,21 @@ public class Storage {
 	}
 
 	public void saveAllTask() {
-		FileHandler.writeToFile(todo, DataParser.serialize(todos, TODO));
-		FileHandler.writeToFile(event, DataParser.serialize(events, EVENT));
-		FileHandler.writeToFile(deadline, DataParser.serialize(deadlines, DEADLINE));
+		FileHandler.writeToFile(todoFile, DataParser.serialize(todos, TODO));
+		FileHandler.writeToFile(eventFile, DataParser.serialize(events, EVENT));
+		FileHandler.writeToFile(deadlineFile, DataParser.serialize(deadlines, DEADLINE));
 	}
 
 	public void saveTaskType(TASK_TYPE type) {
 		switch (type) {
 		case TODO:
-			FileHandler.writeToFile(todo, DataParser.serialize(todos, TODO));
+			FileHandler.writeToFile(todoFile, DataParser.serialize(todos, TODO));
 			break;
 		case EVENT:
-			FileHandler.writeToFile(event, DataParser.serialize(events, EVENT));
+			FileHandler.writeToFile(eventFile, DataParser.serialize(events, EVENT));
 			break;
 		case DEADLINE:
-			FileHandler.writeToFile(deadline, DataParser.serialize(deadlines, DEADLINE));
+			FileHandler.writeToFile(deadlineFile, DataParser.serialize(deadlines, DEADLINE));
 			break;
 		default:
 			saveAllTask();
@@ -130,16 +167,33 @@ public class Storage {
 	}
 
 	/**
-	 * @return the storeFolder
+	 * @return the storeDir
 	 */
-	public String getStoreFolder() {
-		return storeFolder;
+	public String getstoreDir() {
+		return storeDir;
 	}
 
 	/**
-	 * @param storeFolder the storeFolder to set
+	 * @param storeDir the storeDir to set
 	 */
-	public void setStoreFolder(String storeFolder) {
-		this.storeFolder = storeFolder;
+	public void setstoreDir(String storeDir) {
+		this.storeDir = storeDir;
+		updateStoreDir();
+		saveAllTask();
+	}
+	
+	public void importData(String dataDir, boolean isReplace) {
+		List<Task> importedTodos = DataParser.deserialize(FileHandler.readFromFile(dataDir + "/" + TODO_FILE), TODO);
+		List<Task> importedEvents = DataParser.deserialize(FileHandler.readFromFile(dataDir + "/" + EVENT_FILE), EVENT);
+		List<Task> importedDeadlines = DataParser.deserialize(FileHandler.readFromFile(dataDir + "/" + DEADLINE_FILE), DEADLINE);
+		if (isReplace) {
+			todos = importedTodos;
+			events = importedEvents;
+			deadlines = importedDeadlines;
+		} else {
+			todos.addAll(importedTodos);
+			events.addAll(importedEvents);
+			deadlines.addAll(importedDeadlines);
+		}
 	}
 }
