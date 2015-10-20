@@ -43,11 +43,7 @@ public class Storage {
 		}
 		return storage;
 	}
-	
-	private void initDir() {
-		initStoreDirFromConfig();
-		updateStoreDir();
-	}
+
 	
 	private void initTasks() {
 		todos = DataParser.deserialize(FileHandler.readFromFile(todoFile), TODO);
@@ -60,13 +56,13 @@ public class Storage {
 		Task.setNextId(curMaxId);
 	}
 	
-	private void initStoreDirFromConfig() {
-		storeDir = FileHandler.readFromFile(configFile);
+	private void initStoreDir(String storeDir) {
 		if (storeDir.equals("")) storeDir = DirectoryHandler.getCurrentDir();
+		storeDir = DirectoryHandler.fixDir(storeDir);
+		
+		this.storeDir = storeDir;
 		FileHandler.createNewFolderIfNotExisit(storeDir + "/" + DATA_FOLDER);
-	}
-	
-	private void updateStoreDir() {
+		
 		todoFile = storeDir + "/" + DATA_FOLDER + "/" + TODO_FILE;
 		eventFile = storeDir + "/" + DATA_FOLDER + "/" + EVENT_FILE;
 		deadlineFile = storeDir + "/" + DATA_FOLDER + "/" + DEADLINE_FILE;
@@ -74,10 +70,12 @@ public class Storage {
 		FileHandler.createNewFileIfNotExisit(todoFile);
 		FileHandler.createNewFileIfNotExisit(deadlineFile);
 		FileHandler.createNewFileIfNotExisit(eventFile);
+		
+		FileHandler.writeToFile(configFile, storeDir);
 	}
 	
 	public void init() {
-		initDir();
+		initStoreDir(FileHandler.readFromFile(configFile));
 		initTasks();
 		initTaskId();
 	}
@@ -178,9 +176,8 @@ public class Storage {
 	/**
 	 * @param storeDir the storeDir to set
 	 */
-	public void setStoreDir(String storeDir) {
-		this.storeDir = DirectoryHandler.fixDir(storeDir);
-		updateStoreDir();
+	public void setStoreDir(String storeDir) {		
+		initStoreDir(storeDir);
 		saveAllTask();
 	}
 	

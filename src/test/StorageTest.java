@@ -2,6 +2,7 @@ package test;
 
 import static models.EnumTypes.TASK_TYPE.*;
 
+import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -12,6 +13,8 @@ import org.junit.Test;
 import models.Event;
 import models.Task;
 import storage.Storage;
+import storage.DirectoryHandler;
+import storage.FileHandler;
 
 public class StorageTest {
 
@@ -37,7 +40,6 @@ public class StorageTest {
 		Storage storage = Storage.getInstance();
 		storage.init();
 		
-		storage.saveAllTask();
 	}
 
 }
