@@ -1,7 +1,6 @@
 package logic;
 
 import parser.MainParser;
-import storage.Storage;
 
 import java.util.Observable;
 import java.util.logging.Logger;
@@ -39,7 +38,10 @@ public class Logic extends Observable {
 				processDeleteCommand(input);
 				break;
 			case UNDO:
-				//undo(input);
+				processUndoCommand(input);
+				break;
+			case REDO:
+				processRedoCommand(input);
 				break;
 			default:
 				observable.updateStatusMsg("Invalid command entered. Please try again.");
@@ -72,6 +74,22 @@ public class Logic extends Observable {
 
 	private void processChangeDirectoryCommand() {
 
+	}
+
+	private void processUndoCommand(String input) {
+		UndoRedo undoCmd = UndoRedo.getInstance();
+		if (undoCmd.execute(parser.getUndoParsedObject(input))) {
+			observable.updateTables(undoCmd.getTaskType());
+		}
+		observable.updateStatusMsg(undoCmd.getMessage());
+	}
+
+	private void processRedoCommand(String input) {
+		UndoRedo redoCmd = UndoRedo.getInstance();
+		if (redoCmd.execute(parser.getRedoParsedObject(input))) {
+			observable.updateTables(redoCmd.getTaskType());
+		}
+		observable.updateStatusMsg(redoCmd.getMessage());
 	}
 
 	/*public ArrayList<List<Task>> getAllTaskLists() {

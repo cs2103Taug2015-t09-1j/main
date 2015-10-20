@@ -12,6 +12,8 @@ import java.util.Date;
 import org.ocpsoft.prettytime.nlp.*;
 import org.ocpsoft.prettytime.nlp.parse.DateGroup;
 import org.ocpsoft.prettytime.shade.edu.emory.mathcs.backport.java.util.Arrays;
+
+import logic.UndoRedo;
 import models.Deadline;
 import models.Event;
 import models.Todo;
@@ -26,6 +28,8 @@ public class MainParser {
 	private final Logger logger = Logger.getLogger(MainParser.class.getName());
 	private String[] updateCmdList = {"update", "/u", "edit", "/e", "modify", "/m"};
 	private String[] deleteCmdList = {"delete", "del", "/d", "remove", "rm", "/r"};
+	private String[] undoCmdList = {"undo", "/un"};
+	private String[] redoCmdList = {"redo", "/re"};
 	//private String[] searchCmdList = {"search", "/s", "find", "/f"};
 	//private String[] displayCmdList = {"display", "/dp", "show", "/sw"};
 	//private String[] doneCmdList = {"is done", "done"};
@@ -47,6 +51,10 @@ public class MainParser {
 				return COMMAND_TYPE.UPDATE;
 			} else if (isValidCommand(input, deleteCmdList, "\\s+\\d+\\s*(((to|-)\\s*\\d+\\s*)?|(\\d+\\s*)*)")) {
 				return COMMAND_TYPE.DELETE;
+			} else if (isValidCommand(input, undoCmdList, "\\s+\\d+\\s*$")) {
+				return COMMAND_TYPE.UNDO;
+			} else if (isValidCommand(input, redoCmdList, "\\s+\\d+\\s*$")) {
+				return COMMAND_TYPE.REDO;
 			} else {
 				return COMMAND_TYPE.ADD;
 			}
@@ -112,32 +120,6 @@ public class MainParser {
 		return input.trim();
 	}
 
-	public ParsedObject getAddParsedObject(String input) {
-		List<Date> parsedInput = getDateList(input);
-		ArrayList<Task> tasks = new ArrayList<Task>();
-
-		if (parsedInput != null) {
-			switch (parsedInput.size()) {
-				case 1:
-					if (input.contains("by") || input.contains("due") || input.contains("before")) {
-						tasks.add(new Deadline(parsedInput.get(0), getTaskDesc(input), false));
-						return new ParsedObject(COMMAND_TYPE.ADD, TASK_TYPE.DEADLINE, tasks);
-					} else {
-						tasks.add(new Event(parsedInput.get(0), parsedInput.get(0), getTaskDesc(input), false));
-						return new ParsedObject(COMMAND_TYPE.ADD, TASK_TYPE.SINGLE_DATE_EVENT, tasks);
-					}
-				case 2:
-					tasks.add(new Event(parsedInput.get(0), parsedInput.get(1), getTaskDesc(input), false));
-					return new ParsedObject(COMMAND_TYPE.ADD, TASK_TYPE.DOUBLE_DATE_EVENT, tasks);
-				default:
-					return new ParsedObject(COMMAND_TYPE.INVALID, null, null);
-			}
-		} else {
-			tasks.add(new Todo(input.trim(), false));
-			return new ParsedObject(COMMAND_TYPE.ADD, TASK_TYPE.TODO, tasks);
-		}
-	}
-
 	public ArrayList<String> getCommandParameters(String input, COMMAND_TYPE cmdType) {
 		String pattern;
 		String[] paramArray;
@@ -173,10 +155,42 @@ public class MainParser {
 		return paramList;
 	}
 
+	public ParsedObject getAddParsedObject(String input) {
+		List<Date> parsedInput = getDateList(input);
+		ArrayList<Task> tasks = new ArrayList<Task>();
+		ParsedObject obj;
+		if (parsedInput != null) {
+			switch (parsedInput.size()) {
+				case 1:
+					if (input.contains("by") || input.contains("due") || input.contains("before")) {
+						tasks.add(new Deadline(parsedInput.get(0), getTaskDesc(input), false));
+						obj = new ParsedObject(COMMAND_TYPE.ADD, TASK_TYPE.DEADLINE, tasks);
+					} else {
+						tasks.add(new Event(parsedInput.get(0), parsedInput.get(0), getTaskDesc(input), false));
+						obj = new ParsedObject(COMMAND_TYPE.ADD, TASK_TYPE.SINGLE_DATE_EVENT, tasks);
+					}
+					break;
+				case 2:
+					tasks.add(new Event(parsedInput.get(0), parsedInput.get(1), getTaskDesc(input), false));
+					obj = new ParsedObject(COMMAND_TYPE.ADD, TASK_TYPE.DOUBLE_DATE_EVENT, tasks);
+					break;
+				default:
+					obj = new ParsedObject(COMMAND_TYPE.INVALID, null, null);
+			}
+		} else {
+			tasks.add(new Todo(input.trim(), false));
+			obj = new ParsedObject(COMMAND_TYPE.ADD, TASK_TYPE.TODO, tasks);
+		}
+		UndoRedo.getInstance().addUndoable(obj);
+		return obj;
+	}
+
 	public ParsedObject getUpdateParsedObject(String input) {
 		String params = removeCommandWord(input, updateCmdList);
 		ArrayList<String> paramsList = getCommandParameters(params, COMMAND_TYPE.UPDATE);
-		return new ParsedObject(COMMAND_TYPE.UPDATE, null, paramsList);
+		ParsedObject obj = new ParsedObject(COMMAND_TYPE.UPDATE, null, paramsList);
+		UndoRedo.getInstance().addUndoable(obj);
+		return obj;
 	}
 
 	public int parseInteger(String intString) {
@@ -192,15 +206,19 @@ public class MainParser {
 	public ParsedObject getDeleteParsedObject(String input) {
 		String params = removeCommandWord(input, deleteCmdList);
 		ArrayList<Integer> taskIDs = new ArrayList<Integer>();
+		ArrayList<Task> deletedTasks = new ArrayList<Task>();
 		ArrayList<String> taskIDList = getCommandParameters(params, COMMAND_TYPE.DELETE);
+		ParsedObject obj;
 
 		if (input.contains("to") || input.contains("-")) {
 			int fromID = parseInteger(taskIDList.get(0));
 			int toID = parseInteger(taskIDList.get(1));
 
 			for (int i = fromID; i <= toID; i++) {
-				if (Storage.getInstance().getTaskByID(i) != null) {
+				Task t = Storage.getInstance().getTaskByID(i);
+				if (t != null) {
 					taskIDs.add(i);
+					deletedTasks.add(t);
 				}
 			}
 		} else {
@@ -208,8 +226,25 @@ public class MainParser {
 				taskIDs.add(parseInteger(taskIDList.get(i)));
 			}
 		}
+		obj = new ParsedObject(COMMAND_TYPE.DELETE, null, taskIDs);
+		UndoRedo.getInstance().addUndoable(new ParsedObject(COMMAND_TYPE.DELETE, null, deletedTasks));
+		return obj;
+	}
 
-		return new ParsedObject(COMMAND_TYPE.DELETE, null, taskIDs);
+	public ParsedObject getUndoParsedObject(String input) {
+		String params = removeCommandWord(input, undoCmdList);
+		ArrayList<Integer> numOfExec = new ArrayList<Integer>();
+		numOfExec.add(parseInteger(params));
+
+		return new ParsedObject(COMMAND_TYPE.UNDO, null, numOfExec);
+	}
+
+	public ParsedObject getRedoParsedObject(String input) {
+		String params = removeCommandWord(input, redoCmdList);
+		ArrayList<Integer> numOfExec = new ArrayList<Integer>();
+		numOfExec.add(parseInteger(params));
+
+		return new ParsedObject(COMMAND_TYPE.REDO, null, numOfExec);
 	}
 /*
 	public ParsedObject getIsDoneParsedObject(String input) {
