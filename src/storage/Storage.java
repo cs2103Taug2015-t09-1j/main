@@ -8,6 +8,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.ocpsoft.prettytime.shade.net.fortuna.ical4j.model.parameter.Dir;
+
 import logic.Logic;
 import models.EnumTypes.TASK_TYPE;
 import models.Task;
@@ -43,7 +45,7 @@ public class Storage {
 	}
 	
 	private void initDir() {
-		initstoreDirFromConfig();
+		initStoreDirFromConfig();
 		updateStoreDir();
 	}
 	
@@ -58,9 +60,9 @@ public class Storage {
 		Task.setNextId(curMaxId);
 	}
 	
-	private void initstoreDirFromConfig() {
+	private void initStoreDirFromConfig() {
 		storeDir = FileHandler.readFromFile(configFile);
-		if (storeDir == null) storeDir = "";
+		if (storeDir.equals("")) storeDir = DirectoryHandler.getCurrentDir();
 		FileHandler.createNewFolderIfNotExisit(storeDir + "/" + DATA_FOLDER);
 	}
 	
@@ -169,15 +171,15 @@ public class Storage {
 	/**
 	 * @return the storeDir
 	 */
-	public String getstoreDir() {
+	public String getStoreDir() {
 		return storeDir;
 	}
 
 	/**
 	 * @param storeDir the storeDir to set
 	 */
-	public void setstoreDir(String storeDir) {
-		this.storeDir = storeDir;
+	public void setStoreDir(String storeDir) {
+		this.storeDir = DirectoryHandler.fixDir(storeDir);
 		updateStoreDir();
 		saveAllTask();
 	}

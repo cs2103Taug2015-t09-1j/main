@@ -34,22 +34,22 @@ public class FileHandler {
 		
 		StringBuilder result = new StringBuilder();
 		BufferedReader  fr = null;
-
+		
 		try {
 			fr = new BufferedReader(new FileReader(fileName));
 			String line;
 			while ((line = fr.readLine()) != null) 
 				result.append(line);
-		} catch (IOException e){
-			// error occurs 
+		} catch (Exception e){
+			// error occurs
 		} finally {
 			try {
 				fr.close();
-			} catch (IOException e) {
+			} catch (Exception e) {
 				// error occurs 
-			}
+			}	
 		}
-
+		System.out.println(result.toString());
 		return result.toString();
 	}
 	public static void writeToFile(String fileName, String data) {

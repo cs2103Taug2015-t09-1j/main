@@ -17,7 +17,7 @@ public class StorageTest {
 
 	@Test
 	public void test() {
-		DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+		/*DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 		   //get current date time with Date()
 		Date date = new Date();
 		System.out.println(date.toString());
@@ -26,7 +26,18 @@ public class StorageTest {
 		Storage.getInstance().saveAllTask();
 		Storage.getInstance().init();
 		List<Task> events = Storage.getInstance().getAllTask(EVENT);
-		System.out.println(((Event)events.get(0)).getFromDate().toString());
+		System.out.println(((Event)events.get(0)).getFromDate().toString());*/
+	}
+	
+	@Test 
+	public void testStorageInit() {
+		String workingDir = System.getProperty("user.dir");
+		System.out.println("Current working directory : " + workingDir);
+
+		Storage storage = Storage.getInstance();
+		storage.init();
+		
+		storage.saveAllTask();
 	}
 
 }
