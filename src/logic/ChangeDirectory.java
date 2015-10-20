@@ -32,11 +32,8 @@ public class ChangeDirectory extends JFrame {
 	    //this.setVisible(true);
 
 	    if (dirChooser.showOpenDialog(frame) == JFileChooser.APPROVE_OPTION) {
-	    	System.out.println("getCurrentDirectory(): " +  dirChooser.getCurrentDirectory() + storage.getStoreFolder());
-	    	System.out.println("getSelectedFile() : " +  dirChooser.getSelectedFile());
-	    	System.out.println("getSelectedFile() : " +  dirChooser.getSelectedFile().getName());
-	    	storage.setStoreFolder(dirChooser.getSelectedFile().getName());
-	    	storage.saveAllTask();
+	    	System.out.println("getCurrentDirectory(): " +  dirChooser.getCurrentDirectory() + storage.getStoreDir());
+	    	storage.setStoreDir(dirChooser.getSelectedFile().getPath());
 	    } else {
 	    	System.out.println("No Selection");
 	    }
