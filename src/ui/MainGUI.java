@@ -179,7 +179,7 @@ public class MainGUI {
 		frmTodokoro.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0), "test");
 		frmTodokoro.getRootPane().getActionMap().put("test", new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
-            	ChangeDirectory cd = new ChangeDirectory();
+            	ChangeDirectory cd = new ChangeDirectory(frmTodokoro);
             }
         });
 	}

@@ -15,9 +15,9 @@ import storage.Storage;
 public class ChangeDirectory extends JFrame {
 	private static final Storage storage = Storage.getInstance();
 
-	public ChangeDirectory() {
+	public ChangeDirectory(JFrame frame) {
 		JFileChooser dirChooser = new JFileChooser();
-		String title = "Select a new directory";
+		String title = "Select a directory";
 
 		dirChooser.setCurrentDirectory(new java.io.File("."));
 		dirChooser.setDialogTitle(title);
@@ -25,13 +25,13 @@ public class ChangeDirectory extends JFrame {
 		dirChooser.setAcceptAllFileFilterUsed(false);
 		dirChooser.setVisible(true);
 
-	    this.setBounds(0, 0, 0, 0);
-	    this.setAlwaysOnTop(true);
-	    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	    this.setLocationRelativeTo(null);
-	    this.setVisible(true);
+	    //this.setBounds(0, 0, 0, 0);
+	    //this.setAlwaysOnTop(true);
+	    //this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	    //this.setLocationRelativeTo(null);
+	    //this.setVisible(true);
 
-	    if (dirChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+	    if (dirChooser.showOpenDialog(frame) == JFileChooser.APPROVE_OPTION) {
 	    	System.out.println("getCurrentDirectory(): " +  dirChooser.getCurrentDirectory() + storage.getStoreFolder());
 	    	System.out.println("getSelectedFile() : " +  dirChooser.getSelectedFile());
 	    	System.out.println("getSelectedFile() : " +  dirChooser.getSelectedFile().getName());
@@ -39,6 +39,12 @@ public class ChangeDirectory extends JFrame {
 	    	storage.saveAllTask();
 	    } else {
 	    	System.out.println("No Selection");
+	    }
+
+	    try {
+	    	this.dispose();
+	    } catch (Exception e) {
+	    	e.printStackTrace();
 	    }
 	}
 }
