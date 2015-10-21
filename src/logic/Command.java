@@ -15,6 +15,8 @@ public abstract class Command {
 	protected String message;
 
 	public abstract boolean execute(ParsedObject obj);
+	//public abstract void undo(ParsedObject obj);
+	//public abstract void redo(ParsedObject obj);
 
 	public String getMessage() {
 		return this.message;

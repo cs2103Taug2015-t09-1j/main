@@ -30,6 +30,7 @@ public class MainParser {
 	private String[] deleteCmdList = {"delete", "del", "/d", "remove", "rm", "/r"};
 	private String[] undoCmdList = {"undo", "/un"};
 	private String[] redoCmdList = {"redo", "/re"};
+	private String[] exitCmdList = {"exit", "/e", "quit", "/q"};
 	//private String[] searchCmdList = {"search", "/s", "find", "/f"};
 	//private String[] displayCmdList = {"display", "/dp", "show", "/sw"};
 	//private String[] doneCmdList = {"is done", "done"};
@@ -51,11 +52,14 @@ public class MainParser {
 				return COMMAND_TYPE.UPDATE;
 			} else if (isValidCommand(input, deleteCmdList, "\\s+\\d+\\s*(((to|-)\\s*\\d+\\s*)?|(\\d+\\s*)*)")) {
 				return COMMAND_TYPE.DELETE;
-			} else if (isValidCommand(input, undoCmdList, "\\s+\\d+\\s*$")) {
+			} else if (isValidCommand(input, undoCmdList, "(\\s+\\d+\\s*)*$")) {
 				return COMMAND_TYPE.UNDO;
-			} else if (isValidCommand(input, redoCmdList, "\\s+\\d+\\s*$")) {
+			} else if (isValidCommand(input, redoCmdList, "(\\s+\\d+\\s*)*$")) {
 				return COMMAND_TYPE.REDO;
-			} else {
+			} else if (isValidCommand(input, exitCmdList, "\\s*$")) {
+				return COMMAND_TYPE.EXIT;
+			}
+			else {
 				return COMMAND_TYPE.ADD;
 			}
 		}
@@ -63,7 +67,7 @@ public class MainParser {
 
 	private boolean isValidCommand(String input, String[] commandList, String regex) {
 		for(int i = 0; i < commandList.length; i++) {
-			Pattern pattern = Pattern.compile("^" + commandList[i] + regex);
+			Pattern pattern = Pattern.compile("(?i)^" + commandList[i] + regex);
 			Matcher matcher = pattern.matcher(input);
 	        if (matcher.find()) {
 	        	return true;
@@ -73,12 +77,18 @@ public class MainParser {
 	}
 
 	private String removeCommandWord(String input, String[] commandList) {
+		String temp = input;
 		for(int i = 0; i < commandList.length; i++) {
-			if (input.startsWith(commandList[i])) {
-				input = input.split("^\\s*" + commandList[i] + "\\s*")[1];
+			if (!input.equalsIgnoreCase(commandList[i]) && input.startsWith(commandList[i])) {
+				input = input.toLowerCase().replaceAll(commandList[i] + "\\s*", "");
 				break;
 			}
 		}
+
+		if (temp.equals(input)) {
+			input = "";
+		}
+
 		return input;
 	}
 
@@ -181,7 +191,7 @@ public class MainParser {
 			tasks.add(new Todo(input.trim(), false));
 			obj = new ParsedObject(COMMAND_TYPE.ADD, TASK_TYPE.TODO, tasks);
 		}
-		UndoRedo.getInstance().addUndoable(obj);
+		//UndoRedo.getInstance().addUndoable(obj);
 		return obj;
 	}
 
@@ -189,7 +199,6 @@ public class MainParser {
 		String params = removeCommandWord(input, updateCmdList);
 		ArrayList<String> paramsList = getCommandParameters(params, COMMAND_TYPE.UPDATE);
 		ParsedObject obj = new ParsedObject(COMMAND_TYPE.UPDATE, null, paramsList);
-		UndoRedo.getInstance().addUndoable(obj);
 		return obj;
 	}
 
@@ -215,11 +224,11 @@ public class MainParser {
 			int toID = parseInteger(taskIDList.get(1));
 
 			for (int i = fromID; i <= toID; i++) {
-				Task t = Storage.getInstance().getTaskByID(i);
-				if (t != null) {
+				//Task t = Storage.getInstance().getTaskByID(i);
+				//if (t != null) {
 					taskIDs.add(i);
-					deletedTasks.add(t);
-				}
+					//deletedTasks.add(t);
+				//}
 			}
 		} else {
 			for (int i = 0; i < taskIDList.size(); i++) {
@@ -227,14 +236,17 @@ public class MainParser {
 			}
 		}
 		obj = new ParsedObject(COMMAND_TYPE.DELETE, null, taskIDs);
-		UndoRedo.getInstance().addUndoable(new ParsedObject(COMMAND_TYPE.DELETE, null, deletedTasks));
 		return obj;
 	}
 
 	public ParsedObject getUndoParsedObject(String input) {
 		String params = removeCommandWord(input, undoCmdList);
 		ArrayList<Integer> numOfExec = new ArrayList<Integer>();
-		numOfExec.add(parseInteger(params));
+		if (params.isEmpty()) {
+			numOfExec.add(1);
+		} else {
+			numOfExec.add(parseInteger(params));
+		}
 
 		return new ParsedObject(COMMAND_TYPE.UNDO, null, numOfExec);
 	}
@@ -242,7 +254,11 @@ public class MainParser {
 	public ParsedObject getRedoParsedObject(String input) {
 		String params = removeCommandWord(input, redoCmdList);
 		ArrayList<Integer> numOfExec = new ArrayList<Integer>();
-		numOfExec.add(parseInteger(params));
+		if (params.isEmpty()) {
+			numOfExec.add(1);
+		} else {
+			numOfExec.add(parseInteger(params));
+		}
 
 		return new ParsedObject(COMMAND_TYPE.REDO, null, numOfExec);
 	}

@@ -9,7 +9,7 @@ package models;
  */
 public class EnumTypes {
 	public static enum COMMAND_TYPE {
-		ADD, DELETE, UPDATE, SEARCH, DISPLAY, UNDO, REDO, INVALID
+		ADD, DELETE, UPDATE, SEARCH, DISPLAY, UNDO, REDO, EXIT, INVALID
 	};
 
 	public static enum TASK_TYPE {

@@ -6,7 +6,7 @@ import java.util.Observable;
 import java.util.logging.Logger;
 
 public class Logic extends Observable {
-	private static Logic logic = Logic.getInstance();
+	private static Logic logic = null;
 	private static final MainParser parser = MainParser.getInstance();
 	private static final LogicObservable observable = LogicObservable.getInstance();
 	private final Logger logger = Logger.getLogger(Logic.class.getName());
@@ -43,6 +43,8 @@ public class Logic extends Observable {
 			case REDO:
 				processRedoCommand(input);
 				break;
+			case EXIT:
+				System.exit(0);
 			default:
 				observable.updateStatusMsg("Invalid command entered. Please try again.");
 		}
@@ -70,10 +72,6 @@ public class Logic extends Observable {
 			observable.updateTables(deleteCmd.getTaskType());
 		}
 		observable.updateStatusMsg(deleteCmd.getMessage());
-	}
-
-	private void processChangeDirectoryCommand() {
-
 	}
 
 	private void processUndoCommand(String input) {

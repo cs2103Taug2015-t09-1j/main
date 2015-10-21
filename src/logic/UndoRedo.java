@@ -23,8 +23,7 @@ import storage.Storage;
  *
  */
 public class UndoRedo extends Command {
-	private static UndoRedo undo = UndoRedo.getInstance();
-	private static final MainParser parser = MainParser.getInstance();
+	private static UndoRedo undoredo = null;
 	private static final Storage storage = Storage.getInstance();
 	private static final Logger logger = Logger.getLogger(Delete.class.getName());
 	private static final boolean DEBUG = true;
@@ -32,101 +31,122 @@ public class UndoRedo extends Command {
 	private Deque<ParsedObject> redoables = new ArrayDeque<ParsedObject>();
 	private boolean isUndoable = false;
 	private boolean isRedoable = false;
+	private boolean isUpdateCmd = true;
 
 	private UndoRedo() {}
 
 	public static UndoRedo getInstance() {
-		if (undo == null) {
-			undo = new UndoRedo();
+		if (undoredo == null) {
+			undoredo = new UndoRedo();
 		}
-		return undo;
+		return undoredo;
 	}
 
 	@Override
 	public boolean execute(ParsedObject obj) {
 		assert obj != null;
-
-		if (DEBUG) {
-			System.out.println(obj.getCommandType());
-			System.out.println(obj.getTaskType());
-		}
+		int numOfExec = (Integer)obj.getObjects().get(0);
 
 		switch (obj.getCommandType()) {
 			case UNDO:
-				return Undo((Integer)obj.getObjects().get(0), getNextUndoable());
+				if (undoables.size() > 0) {
+					numOfExec = undo(numOfExec);
+					if (numOfExec > 0) {
+						message = "<html>The previous " + numOfExec + " commands have been reversed.</html>";
+						taskType = EnumTypes.TASK_TYPE.ALL;
+						return true;
+					} else {
+						message = "<html>There are no available tasks to undo.</html>";
+						taskType = EnumTypes.TASK_TYPE.INVALID;
+						return false;
+					}
+				} else {
+					message = "<html>There are no available tasks to undo.</html>";
+					taskType = EnumTypes.TASK_TYPE.INVALID;
+					return false;
+				}
 			case REDO:
-				return Redo((Integer)obj.getObjects().get(0), getNextRedoable());
+				if (redoables.size() > 0) {
+					numOfExec = redo(numOfExec);
+					if (numOfExec > 0) {
+						message = "<html>The previous " + numOfExec + " undo commands have been reversed.</html>";
+						taskType = EnumTypes.TASK_TYPE.ALL;
+						return true;
+					} else {
+						message = "<html>There are no available tasks to redo.</html>";
+						taskType = EnumTypes.TASK_TYPE.INVALID;
+						return false;
+					}
+				} else {
+					message = "<html>There are no available tasks to redo.</html>";
+					taskType = EnumTypes.TASK_TYPE.INVALID;
+					return false;
+				}
+			default:
+				message = "<html>There are no available tasks to undo or redo.</html>";
+				taskType = EnumTypes.TASK_TYPE.INVALID;
+				return false;
 		}
-
-		message = "<html>There are no available tasks to undo.</html>";
-		taskType = EnumTypes.TASK_TYPE.INVALID;
-		return false;
 	}
 
-	private boolean Undo(int numOfExec, ParsedObject obj) {
-		if (numOfExec > 0) {
+	private int undo(int numOfExec) {
+		int successCount = 0;
+		for (int i = 0; i < numOfExec; i++) {
+			ParsedObject obj = getNextUndoable();
 			if (obj != null) {
-				for (int i = 0; i < numOfExec; i++) {
-					switch (obj.getCommandType()) {
-						case ADD:
-							reverseAdd(obj);
-							break;
-						case DELETE:
-							reverseDelete(obj);
-							break;
-						case UPDATE:
-							reverseUpdate(obj);
-							break;
-						default:
-							message = "<html>There are no available tasks to undo.</html>";
-							taskType = EnumTypes.TASK_TYPE.INVALID;
-							return false;
-					}
+				switch (obj.getCommandType()) {
+					case ADD:
+						undoAdd(obj);
+						successCount++;
+						break;
+					case DELETE:
+						undoDelete(obj);
+						successCount++;
+						break;
+					case UPDATE:
+						reverseUpdate(obj);
+						successCount++;
+						break;
+					default:
+						message = "<html>There are no available tasks to undo.</html>";
+						taskType = EnumTypes.TASK_TYPE.INVALID;
 				}
-				storage.saveAllTask();
-				message = "<html>The previous " + numOfExec + " commands have been reversed.</html>";
-				taskType = EnumTypes.TASK_TYPE.ALL;
-				return true;
 			} else {
 				isUndoable = false;
 			}
 		}
-		message = "<html>There are no available tasks to undo.</html>";
-		taskType = EnumTypes.TASK_TYPE.INVALID;
-		return false;
+		storage.saveAllTask();
+		return successCount;
 	}
 
-	private boolean Redo(int numOfExec, ParsedObject obj) {
-		if (numOfExec > 0) {
+	private int redo(int numOfExec) {
+		int successCount = 0;
+		for (int i = 0; i < numOfExec; i++) {
+			ParsedObject obj = getNextRedoable();
 			if (obj != null) {
-				for (int i = 0; i < numOfExec; i++) {
-					switch (obj.getCommandType()) {
-						case ADD:
-							reverseDelete(obj);
-							break;
-						case DELETE:
-							reverseAdd(obj);
-							break;
-						case UPDATE:
-							reverseUpdate(obj);
-							break;
-						default:
-							message = "<html>There are no available tasks to redo.</html>";
-							taskType = EnumTypes.TASK_TYPE.INVALID;
-							return false;
-					}
+				switch (obj.getCommandType()) {
+					case ADD:
+						redoAdd(obj);
+						successCount++;
+						break;
+					case DELETE:
+						redoDelete(obj);
+						successCount++;
+						break;
+					case UPDATE:
+						reverseUpdate(obj);
+						successCount++;
+						break;
+					default:
+						message = "<html>There are no available tasks to redo.</html>";
+						taskType = EnumTypes.TASK_TYPE.INVALID;
 				}
-				storage.saveAllTask();
-				message = "<html>The previous " + numOfExec + " undo commands have been reversed.</html>";
-				taskType = EnumTypes.TASK_TYPE.ALL;
-				return true;
 			} else {
-				isRedoable = false;
+				isUndoable = false;
 			}
 		}
-		message = "<html>There are no available tasks to redo.</html>";
-		taskType = EnumTypes.TASK_TYPE.INVALID;
-		return false;
+		storage.saveAllTask();
+		return successCount;
 	}
 
 	public void addUndoable(ParsedObject obj) {
@@ -139,6 +159,9 @@ public class UndoRedo extends Command {
 	private ParsedObject getNextUndoable() {
 		if (isUndoable) {
 			ParsedObject undoable = undoables.pop();
+			if (undoables.size() == 0) {
+				isUndoable = false;
+			}
 			addRedoable(undoable);
 			return undoable;
 		}
@@ -155,46 +178,89 @@ public class UndoRedo extends Command {
 	private ParsedObject getNextRedoable() {
 		if (isRedoable) {
 			ParsedObject redoable = redoables.pop();
+			if (redoables.size() == 0) {
+				isRedoable = false;
+			}
 			addUndoable(redoable);
 			return redoable;
 		}
 		return null;
 	}
 
-	private void reverseAdd(ParsedObject obj) {
+	private void undoAdd(ParsedObject obj) {
 		Task t = null;
 		switch (obj.getTaskType()) {
-		case SINGLE_DATE_EVENT:
-		case DOUBLE_DATE_EVENT:
-			t = (Event)obj.getObjects().get(0);
-			if (DEBUG) {
-				System.out.println("Task ID " + t.getTaskID());
-			}
-			break;
-		case TODO:
-			t = (Todo)obj.getObjects().get(0);
-			if (DEBUG) {
-				System.out.println("Task ID " + t.getTaskID());
-			}
-			break;
-		case DEADLINE:
-			t = (Todo)obj.getObjects().get(0);
-			if (DEBUG) {
-				System.out.println("Task ID " + t.getTaskID());
-			}
-			break;
+			case SINGLE_DATE_EVENT:
+			case DOUBLE_DATE_EVENT:
+				t = (Event)obj.getObjects().get(0);
+				break;
+			case TODO:
+				t = (Todo)obj.getObjects().get(0);
+				break;
+			case DEADLINE:
+				t = (Todo)obj.getObjects().get(0);
+				break;
+		}
+
+		if (DEBUG) {
+			System.out.println("Task ID " + t.getTaskID());
 		}
 		storage.delete(t.getTaskID());
 	}
 
-	private void reverseDelete(ParsedObject obj) {
+	private void undoDelete(ParsedObject obj) {
+		ArrayList<Task> temp = obj.getObjects();
+
+		for (int i = 0; i < temp.size(); i++) {
+			Task t = temp.get(i);
+			if (t instanceof Event) {
+				t = (Event)t;
+			} else if (t instanceof Todo) {
+				t = (Todo)t;
+			} else if (t instanceof Deadline) {
+				t = (Deadline)t;
+			}
+			storage.addTask(t);
+		}
+	}
+
+	private void redoDelete(ParsedObject obj) {
 		ArrayList<Task> temp = obj.getObjects();
 		for (int i = 0; i < temp.size(); i++) {
-			storage.addTask(temp.get(i), obj.getTaskType());
+			storage.delete(((Task)temp.get(i)).getTaskID());
+		}
+	}
+
+	private void redoAdd(ParsedObject obj) {
+		ArrayList<Task> temp = obj.getObjects();
+		for (int i = 0; i < temp.size(); i++) {
+			Task t = temp.get(i);
+			if (t instanceof Event) {
+				t = (Event)t;
+			} else if (t instanceof Todo) {
+				t = (Todo)t;
+			} else if (t instanceof Deadline) {
+				t = (Deadline)t;
+			}
+			storage.addTask(t);
 		}
 	}
 
 	private void reverseUpdate(ParsedObject obj) {
+		if (!isUpdateCmd) {
+			ArrayList temp = obj.getObjects();
+			Object saved = temp.get(temp.size()-1);
+			Object updated = temp.get(2);
+			temp.set(2, saved);
+			temp.set(temp.size()-1, updated);
+		}
+		Update.getInstance().setReverseCmd(true);
 		Update.getInstance().execute(obj);
+		Update.getInstance().setReverseCmd(false);
+		isUpdateCmd = false;
+	}
+
+	public void resetIsUpdateStatus() {
+		isUpdateCmd = true;
 	}
 }
