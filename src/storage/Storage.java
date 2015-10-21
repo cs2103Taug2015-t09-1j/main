@@ -11,16 +11,19 @@ import java.util.List;
 import org.ocpsoft.prettytime.shade.net.fortuna.ical4j.model.parameter.Dir;
 
 import logic.Logic;
+import models.Deadline;
 import models.EnumTypes.TASK_TYPE;
+import models.Event;
 import models.Task;
+import models.Todo;
 
 public class Storage {
-	
+
 	private static String TODO_FILE = "todo.txt";
 	private static String EVENT_FILE = "event.txt";
 	private static String DEADLINE_FILE = "deadline.txt";
-	private static String DATA_FOLDER = "data"; 
-	
+	private static String DATA_FOLDER = "data";
+
 	private String configFile = "config.txt";
 	private String storeDir;
 	private String todoFile;
@@ -44,36 +47,36 @@ public class Storage {
 		return storage;
 	}
 
-	
+
 	private void initTasks() {
 		todos = DataParser.deserialize(FileHandler.readFromFile(todoFile), TODO);
 		events = DataParser.deserialize(FileHandler.readFromFile(eventFile), EVENT);
 		deadlines = DataParser.deserialize(FileHandler.readFromFile(deadlineFile), DEADLINE);
 	}
-	
+
 	private void initTaskId() {
 		int curMaxId = Math.max(getMaxId(todos), Math.max(getMaxId(events), getMaxId(deadlines)));
 		Task.setNextId(curMaxId);
 	}
-	
+
 	private void initStoreDir(String storeDir) {
 		if (storeDir.equals("")) storeDir = DirectoryHandler.getCurrentDir();
 		storeDir = DirectoryHandler.fixDir(storeDir);
-		
+
 		this.storeDir = storeDir;
 		FileHandler.createNewFolderIfNotExisit(storeDir + "/" + DATA_FOLDER);
-		
+
 		todoFile = storeDir + "/" + DATA_FOLDER + "/" + TODO_FILE;
 		eventFile = storeDir + "/" + DATA_FOLDER + "/" + EVENT_FILE;
 		deadlineFile = storeDir + "/" + DATA_FOLDER + "/" + DEADLINE_FILE;
-		
+
 		FileHandler.createNewFileIfNotExisit(todoFile);
 		FileHandler.createNewFileIfNotExisit(deadlineFile);
 		FileHandler.createNewFileIfNotExisit(eventFile);
-		
+
 		FileHandler.writeToFile(configFile, storeDir);
 	}
-	
+
 	public void init() {
 		initStoreDir(FileHandler.readFromFile(configFile));
 		initTasks();
@@ -88,12 +91,13 @@ public class Storage {
 		return res;
 	}
 
-	public void addTask(Task task, TASK_TYPE type) {
-		switch (type) {
-			case TODO: todos.add(task); break;
-			case EVENT: events.add(task); break;
-			case DEADLINE: deadlines.add(task); break;
-			default: break;
+	public void addTask(Task task) {
+		if (task instanceof Event) {
+			events.add(task);
+		} else if (task instanceof Todo) {
+			todos.add(task);
+		} else if (task instanceof Deadline) {
+			deadlines.add(task);
 		}
 	}
 
@@ -176,11 +180,11 @@ public class Storage {
 	/**
 	 * @param storeDir the storeDir to set
 	 */
-	public void setStoreDir(String storeDir) {		
+	public void setStoreDir(String storeDir) {
 		initStoreDir(storeDir);
 		saveAllTask();
 	}
-	
+
 	public void importData(String dataDir, boolean isReplace) {
 		List<Task> importedTodos = DataParser.deserialize(FileHandler.readFromFile(dataDir + "/" + TODO_FILE), TODO);
 		List<Task> importedEvents = DataParser.deserialize(FileHandler.readFromFile(dataDir + "/" + EVENT_FILE), EVENT);
