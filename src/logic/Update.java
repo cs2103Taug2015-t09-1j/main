@@ -13,6 +13,8 @@ import models.Event;
 import models.ParsedObject;
 import models.Task;
 import models.Todo;
+import models.EnumTypes.COMMAND_TYPE;
+import models.EnumTypes.TASK_TYPE;
 import parser.MainParser;
 import storage.Storage;
 
@@ -23,9 +25,12 @@ import storage.Storage;
 public class Update extends Command {
 	private static final MainParser parser = MainParser.getInstance();
 	private static final Storage storage = Storage.getInstance();
+	private static final UndoRedo undoredo = UndoRedo.getInstance();
 	private static final Logger logger = Logger.getLogger(Update.class.getName());
 	private static final boolean DEBUG = true;
-	private static Update update = Update.getInstance();
+	private static Update update = null;
+	private static ArrayList<String> backup;
+	private boolean isReverseCmd = false;
 
 	private Update() {}
 
@@ -39,6 +44,10 @@ public class Update extends Command {
 	@Override
 	public boolean execute(ParsedObject obj) {
 		assert obj != null;
+		if (!isReverseCmd) {
+			undoredo.resetIsUpdateStatus();
+		}
+		backup = new ArrayList<String>();
 		ArrayList<String> params = obj.getObjects();
 		Task t = storage.getTaskByID(parser.parseInteger(params.get(0)));
 		if (t != null) {
@@ -60,10 +69,18 @@ public class Update extends Command {
 	}
 
 	private boolean updateEvent(Event evt, ArrayList<String> params) {
+		if (!isReverseCmd) {
+			cloneParamsList(params);
+		}
+
 		switch (params.get(1)) {
 			case "2":
 				try {
 					Date fromDate = parser.getDateList(params.get(2)).get(0);
+					if (!isReverseCmd) {
+						backup.set(2, evt.getFromDate().toString());
+						backup.add(fromDate.toString());
+					}
 					evt.setFromDate(fromDate);
 					message += "Start Date has been updated to <b>" + parser.formatDate(fromDate,  "EEE, d MMM yyyy") + "</b>.</html>";
 				} catch (Exception e) {
@@ -75,6 +92,10 @@ public class Update extends Command {
 			case "3":
 				try {
 					Date toDate = parser.getDateList(params.get(2)).get(0);
+					if (!isReverseCmd) {
+						backup.set(2, evt.getToDate().toString());
+						backup.add(toDate.toString());
+					}
 					evt.setToDate(toDate);
 					message += "End Date has been updated to <b>" + parser.formatDate(toDate,  "EEE, d MMM yyyy") + "</b>.</html>";
 				} catch (Exception e) {
@@ -85,6 +106,10 @@ public class Update extends Command {
 				break;
 			case "4":
 				String taskDesc = params.get(2);
+				if (!isReverseCmd) {
+					backup.set(2, evt.getTaskDesc());
+					backup.add(taskDesc);
+				}
 				evt.setTaskDesc(taskDesc);
 				message += "Task Description has been updated to <b>" + taskDesc + "</b>.</html>";
 				break;
@@ -93,14 +118,23 @@ public class Update extends Command {
 				taskType = EnumTypes.TASK_TYPE.INVALID;
 				return false;
 		}
-
+		if (!isReverseCmd) {
+			undoredo.addUndoable(new ParsedObject(EnumTypes.COMMAND_TYPE.UPDATE, null, backup));
+		}
 		storage.saveTaskType(EnumTypes.TASK_TYPE.EVENT);
 		return true;
 	}
 
 	private boolean updateTodo(Todo t, ArrayList<String> params) {
+		if (!isReverseCmd) {
+			cloneParamsList(params);
+		}
+
 		switch (params.get(1)) {
 			case "2":
+				if (!isReverseCmd) {
+					backup.set(2, t.getTaskDesc());
+				}
 				String taskDesc = params.get(1);
 				t.setTaskDesc(taskDesc);
 				message += "Task Description has been updated to <b>" + taskDesc + "</b>.</html>";
@@ -110,13 +144,23 @@ public class Update extends Command {
 				taskType = EnumTypes.TASK_TYPE.INVALID;
 				return false;
 		}
+		if (!isReverseCmd) {
+			undoredo.addUndoable(new ParsedObject(EnumTypes.COMMAND_TYPE.UPDATE, null, backup));
+		}
 		storage.saveTaskType(EnumTypes.TASK_TYPE.TODO);
 		return true;
 	}
 
 	private boolean updateDeadline(Deadline d, ArrayList<String> params) {
+		if (!isReverseCmd) {
+			cloneParamsList(params);
+		}
+
 		switch (params.get(1)) {
 			case "2":
+				if (!isReverseCmd) {
+					backup.set(2, d.getDate().toString());
+				}
 				try {
 					Date deadline = parser.getDateList(params.get(1)).get(0);
 					d.setDate(deadline);
@@ -128,6 +172,9 @@ public class Update extends Command {
 				}
 				break;
 			case "3":
+				if (!isReverseCmd) {
+					backup.set(2, d.getTaskDesc());
+				}
 				String taskDesc = params.get(2);
 				d.setTaskDesc(taskDesc);
 				message += "Task Description has been updated to <b>" + taskDesc + "</b>.</html>";
@@ -137,7 +184,23 @@ public class Update extends Command {
 				taskType = EnumTypes.TASK_TYPE.INVALID;
 				return false;
 		}
+		if (!isReverseCmd) {
+			undoredo.addUndoable(new ParsedObject(EnumTypes.COMMAND_TYPE.UPDATE, null, backup));
+		}
 		storage.saveTaskType(EnumTypes.TASK_TYPE.DEADLINE);
 		return true;
+	}
+
+	/**
+	 * @param isReverseCmd the isReverseCmd to set
+	 */
+	public void setReverseCmd(boolean isReverseCmd) {
+		this.isReverseCmd = isReverseCmd;
+	}
+
+	private void cloneParamsList(ArrayList<String> params) {
+		for (String s : params) {
+			backup.add(s);
+		}
 	}
 }
