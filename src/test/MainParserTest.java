@@ -7,10 +7,10 @@ import java.util.Date;
 
 import org.junit.Test;
 
-import models.EnumTypes.COMMAND_TYPE;
-import models.EnumTypes.TASK_TYPE;
-import models.ParsedObject;
-import parser.MainParser;
+import main.models.ParsedObject;
+import main.models.EnumTypes.COMMAND_TYPE;
+import main.models.EnumTypes.TASK_TYPE;
+import main.parser.MainParser;
 
 public class MainParserTest {
 	private String[] updateCmdList = {"update", "/u", "edit", "/e", "modify", "/m"};
