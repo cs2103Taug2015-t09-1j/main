@@ -1,17 +1,21 @@
 package main.logic;
 
 import java.util.Observable;
+import java.util.Observer;
 import java.util.logging.Logger;
 
 import main.parser.MainParser;
+import main.ui.MainGUI;
 
-public class Logic extends Observable {
+public class Logic extends Observable implements Observer {
 	private static Logic logic = null;
 	private static final MainParser parser = MainParser.getInstance();
 	private static final LogicObservable observable = LogicObservable.getInstance();
 	private final Logger logger = Logger.getLogger(Logic.class.getName());
 
-	private Logic() {}
+	private Logic() {
+		addObserver(MainGUI.getInstance());
+	}
 
 	public static Logic getInstance() {
 		if (logic == null) {
@@ -88,6 +92,14 @@ public class Logic extends Observable {
 			observable.updateTables(redoCmd.getTaskType());
 		}
 		observable.updateStatusMsg(redoCmd.getMessage());
+	}
+
+	@Override
+	public void update(Observable o, Object arg) {
+		// TODO Auto-generated method stub
+		System.out.println((String)arg);
+		setChanged();
+		notifyObservers("hiep: " + (String)arg);
 	}
 
 	/*public ArrayList<List<Task>> getAllTaskLists() {

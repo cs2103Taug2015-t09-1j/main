@@ -2,9 +2,7 @@
  *
  */
 package main.ui;
-
 import java.util.Observable;
-
 import main.logic.LogicObserver;
 
 /**

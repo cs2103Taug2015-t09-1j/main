@@ -9,13 +9,9 @@ import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -26,11 +22,10 @@ import java.util.logging.Logger;
 import java.util.regex.PatternSyntaxException;
 
 import javax.swing.AbstractAction;
-import javax.swing.ActionMap;
 import javax.swing.JComponent;
-import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
@@ -39,22 +34,15 @@ import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowFilter;
 import javax.swing.SwingConstants;
-import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableRowSorter;
-import javax.swing.text.MaskFormatter;
-
-import com.sun.glass.ui.Window;
 
 import main.logic.ChangeDirectory;
 import main.logic.Logic;
@@ -63,14 +51,14 @@ import main.models.EnumTypes;
 import main.models.EventsTableModel;
 import main.models.TodosTableModel;
 
-import javax.swing.JPanel;
-
 /**
  * @author Dalton
  *
  */
-public class MainGUI {
+public class MainGUI extends Observable implements Observer{
 
+	private static MainGUI mainGui;
+	
 	private JFrame frmTodokoro;
 	private JPanel inputPanel;
 	private JTextField tfUserInput, tfFilter;
@@ -80,9 +68,9 @@ public class MainGUI {
 	private JScrollPane eventsScrollPane, todosScrollPane, deadlineTasksScrollPane;
 	private TableRowSorter eventsSorter, todosSorter, deadlinesSorter;
 
-	private static final InputObservable inputObservable = InputObservable.getInstance();
+	/*private static final InputObservable inputObservable = InputObservable.getInstance();
 	private static final MessageObserver msgObserver = MessageObserver.getInstance();
-	private static final TableModelsObserver tablesObserver = TableModelsObserver.getInstance();
+	private static final TableModelsObserver tablesObserver = TableModelsObserver.getInstance();*/
 	private static final Logger logger = Logger.getLogger(MainGUI.class.getName());
 	private static EventsTableModel etm = EventsTableModel.getInstance();
 	private static TodosTableModel ttm = TodosTableModel.getInstance();
@@ -92,6 +80,10 @@ public class MainGUI {
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
+		
+		// make sure that Logic has instance before MainGui has instance. 
+		Logic.getInstance();
+		
 		try {
 			UIManager.setLookAndFeel("com.jtattoo.plaf.smart.SmartLookAndFeel");
 		} catch (Throwable e) {
@@ -101,7 +93,8 @@ public class MainGUI {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					MainGUI window = new MainGUI();
+					MainGUI window = getInstance();
+					window.addObserver(Logic.getInstance());
 					window.frmTodokoro.setVisible(true);
 				} catch (Exception e) {
 					logger.log(Level.SEVERE, "EventQueue Invoke: " + e.toString(), e);
@@ -110,17 +103,25 @@ public class MainGUI {
 		});
 	}
 
+	public static MainGUI getInstance() {
+		if (mainGui == null) {
+			mainGui = new MainGUI();
+		}
+		return mainGui;
+	}
+	
 	/**
 	 * Create the application.
 	 */
-	public MainGUI() {
+	private MainGUI() {
 		try {
 			initialize();
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, "MainGUI Constructor: " + e.toString(), e);
 		}
-		msgObserver.setOwner(this);
-		tablesObserver.setOwner(this);
+		
+		/*msgObserver.setOwner(this);
+		tablesObserver.setOwner(this);*/
 	}
 
 	/**
@@ -207,7 +208,7 @@ public class MainGUI {
 
 		tfUserInput.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				inputObservable.sendUserInput(tfUserInput.getText());
+				sendUserInput(tfUserInput.getText());
 				tfUserInput.setText(null);
 			}
 		});
@@ -432,5 +433,16 @@ public class MainGUI {
 
 	public void updateStatusMsg(String msg) {
 		lblStatusMsg.setText(msg);
+	}
+
+	private void sendUserInput(String input) {
+		setChanged();
+		notifyObservers(input);
+	}
+	
+	@Override
+	public void update(Observable o, Object arg) {
+		// TODO Auto-generated method stub
+		System.out.println((String)arg);
 	}
 }
