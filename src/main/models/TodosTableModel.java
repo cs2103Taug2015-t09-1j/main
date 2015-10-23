@@ -4,6 +4,8 @@
 package main.models;
 
 import java.util.ArrayList;
+import java.util.List;
+
 import javax.swing.table.AbstractTableModel;
 
 import main.models.Todo;
@@ -18,11 +20,11 @@ public class TodosTableModel extends AbstractTableModel {
 	private static TodosTableModel ttm = TodosTableModel.getInstance();
 	private final String[] columnNames = { "ID", "Task Description", "Done" };
 	private final Class<?>[] columnTypes = { Integer.class, String.class, Boolean.class };
-	private ArrayList<Todo> todos;
+	private List<Task> todos;
 
 	public TodosTableModel() {
 		super();
-		this.todos = (ArrayList)Storage.getInstance().getAllTask(EnumTypes.TASK_TYPE.TODO);
+		this.todos = Storage.getInstance().getAllTask(EnumTypes.TASK_TYPE.TODO);
 	}
 
 	public static TodosTableModel getInstance() {

@@ -16,6 +16,13 @@ public class Deadline extends Task {
 		super(taskDesc, isDone);
 		this.date = date;
 	}
+	
+	@Override
+	public Deadline clone() {
+		Deadline deadline = (Deadline)super.clone();
+		deadline.setDate((Date)deadline.getDate().clone());
+		return deadline;
+	}
 
 	public Date getDate() {
 		return date;

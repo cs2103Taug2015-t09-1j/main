@@ -90,12 +90,11 @@ public class MainGUI extends Observable implements Observer {
 		} catch (Throwable e) {
 			logger.log(Level.SEVERE, "LookAndFeel: " + e.toString(), e);
 		}
-
+		
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					// make sure that Logic has instance before MainGui has
-					// instance.
+					// make sure that Logic has instance before MainGui has instance.
 					Logic.getInstance();
 
 					MainGUI window = getInstance();
@@ -104,6 +103,7 @@ public class MainGUI extends Observable implements Observer {
 				} catch (Exception e) {
 					logger.log(Level.SEVERE, "EventQueue Invoke: " + e.toString(), e);
 				}
+
 			}
 		});
 	}
@@ -463,13 +463,15 @@ public class MainGUI extends Observable implements Observer {
 
 		if (OEvent.getCode() == ObserverEvent.CHANGE_MESSAGE_CODE) {
 			ObserverEvent.EMessage eMessage = (ObserverEvent.EMessage) OEvent.getPayload();
-			System.out.println(eMessage.getMessage());
+			//System.out.println(eMessage.getMessage());
+			updateStatusMsg(eMessage.getMessage());
 			return;
 		}
 
 		if (OEvent.getCode() == ObserverEvent.CHANGE_TABLE_CODE) {
 			ObserverEvent.ETasks eTasks = (ObserverEvent.ETasks) OEvent.getPayload();
-			System.out.println(eTasks.getTaskType());
+			//System.out.println(eTasks.getTaskType());
+			updateTables(eTasks.getTaskType());
 			return;
 		}
 

@@ -2,6 +2,7 @@ package main.models;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
 
@@ -16,11 +17,11 @@ public class DeadlinesTableModel extends AbstractTableModel {
 	private static DeadlinesTableModel dtm = DeadlinesTableModel.getInstance();
 	private final String[] columnNames = { "ID", "Deadline", "Task Description", "Done" };
 	private final Class<?>[] columnTypes = { Integer.class, Date.class, String.class, Boolean.class };
-	private ArrayList<Deadline> deadlines;
+	private List<Task> deadlines;
 
 	public DeadlinesTableModel() {
 		super();
-		this.deadlines = (ArrayList)Storage.getInstance().getAllTask(EnumTypes.TASK_TYPE.DEADLINE);
+		this.deadlines = Storage.getInstance().getAllTask(EnumTypes.TASK_TYPE.DEADLINE);
 	}
 
 	public static DeadlinesTableModel getInstance() {

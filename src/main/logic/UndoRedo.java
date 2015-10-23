@@ -15,7 +15,7 @@ import main.models.Event;
 import main.models.ParsedObject;
 import main.models.Task;
 import main.models.Todo;
-import main.parser.MainParser;
+import main.parser.Parser;
 import main.storage.Storage;
 
 /**

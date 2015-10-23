@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author Dalton
  *
  */
-public abstract class Task {
+public abstract class Task implements Cloneable {
 	private static AtomicInteger nextId = new AtomicInteger();
 	private final int taskID;
 	private String taskDesc;
@@ -24,7 +24,7 @@ public abstract class Task {
 	@Override
 	public Task clone() {
 		try {
-			return (Task) super.clone();
+			return (Task)super.clone();
 		} catch (CloneNotSupportedException e) {
 			// TODO Auto-generated catch block
 			return null;

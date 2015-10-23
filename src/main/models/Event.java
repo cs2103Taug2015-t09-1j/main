@@ -17,6 +17,14 @@ public class Event extends Task {
 		this.fromDate = fromDate;
 		this.toDate = toDate;
 	}
+	
+	@Override 
+	public Event clone() {
+		Event event = (Event)super.clone();
+		event.setFromDate((Date)event.getFromDate().clone());
+		event.setToDate((Date)event.getToDate().clone());
+		return event;
+	}
 
 	public Date getFromDate() {
 		return fromDate;

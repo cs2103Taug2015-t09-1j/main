@@ -10,14 +10,14 @@ import org.junit.Test;
 import main.models.ParsedObject;
 import main.models.EnumTypes.COMMAND_TYPE;
 import main.models.EnumTypes.TASK_TYPE;
-import main.parser.MainParser;
+import main.parser.Parser;
 
 public class MainParserTest {
 	private String[] updateCmdList = {"update", "/u", "edit", "/e", "modify", "/m"};
 	private String[] deleteCmdList = {"delete", "del", "/d", "remove", "rm", "/r"};
 	private String[] undoCmdList = {"undo", "/un"};
 	private String[] redoCmdList = {"redo", "/re"};
-	private MainParser testParser = MainParser.getInstance();
+	private Parser testParser = Parser.getInstance();
 
 	@Test
 	public void testGetInstance() {
@@ -34,7 +34,7 @@ public class MainParserTest {
 
 	@Test
 	public void testIsValidCommand() {
-		//MainParser test = MainParser.getInstance();
+		//Parser test = Parser.getInstance();
 		//assertTrue(test.isValidCommand("update", updateCmdList, "\\s+\\d+\\s+\\d+"));
 		//assertFalse(test.isValidCommand("what", updateCmdList, "\\s+\\d+\\s+\\d+"));
 	}

@@ -6,14 +6,17 @@ import java.util.logging.Logger;
 
 import main.models.EnumTypes.TASK_TYPE;
 import main.models.ObserverEvent;
-import main.parser.MainParser;
+import main.parser.Parser;
 import main.ui.MainGUI;
 
 public class Logic extends Observable implements Observer {
 	private static Logic logic = null;
-	private static final MainParser parser = MainParser.getInstance();
-	private static final LogicObservable observable = LogicObservable.getInstance();
-	private final Logger logger = Logger.getLogger(Logic.class.getName());
+	private static final Parser parser = Parser.getInstance();
+	/*
+	 * private static final LogicObservable observable =
+	 * LogicObservable.getInstance(); private final Logger logger =
+	 * Logger.getLogger(Logic.class.getName());
+	 */
 
 	private Logic() {
 		addObserver(MainGUI.getInstance());
@@ -44,56 +47,64 @@ public class Logic extends Observable implements Observer {
 			processDeleteCommand(input);
 			break;
 		case UNDO:
-			processUndoCommand(input);
+			//processUndoCommand(input);
 			break;
 		case REDO:
-			processRedoCommand(input);
+			//processRedoCommand(input);
 			break;
 		case EXIT:
 			System.exit(0);
 		default:
-			observable.updateStatusMsg("Invalid command entered. Please try again.");
+			updateMessage("Invalid command entered. Please try again.");
 		}
 	}
 
 	private void processAddCommand(String input) {
 		Add addCmd = Add.getInstance();
 		if (addCmd.execute(parser.getAddParsedObject(input))) {
-			observable.updateTables(addCmd.getTaskType());
+			updateModelData(addCmd.getTaskType());
 		}
-		observable.updateStatusMsg(addCmd.getMessage());
+		updateMessage(addCmd.getMessage());
 	}
 
 	private void processUpdateCommand(String input) {
 		Update updateCmd = Update.getInstance();
 		if (updateCmd.execute(parser.getUpdateParsedObject(input))) {
-			observable.updateTables(updateCmd.getTaskType());
+			updateModelData(updateCmd.getTaskType());
 		}
-		observable.updateStatusMsg(updateCmd.getMessage());
+		updateMessage(updateCmd.getMessage());
 	}
 
 	private void processDeleteCommand(String input) {
 		Delete deleteCmd = Delete.getInstance();
 		if (deleteCmd.execute(parser.getDeleteParsedObject(input))) {
-			observable.updateTables(deleteCmd.getTaskType());
+			updateModelData(deleteCmd.getTaskType());
 		}
-		observable.updateStatusMsg(deleteCmd.getMessage());
+		updateMessage(deleteCmd.getMessage());
 	}
 
-	private void processUndoCommand(String input) {
-		UndoRedo undoCmd = UndoRedo.getInstance();
-		if (undoCmd.execute(parser.getUndoParsedObject(input))) {
-			observable.updateTables(undoCmd.getTaskType());
-		}
-		observable.updateStatusMsg(undoCmd.getMessage());
+	/*
+	 * private void processUndoCommand(String input) { UndoRedo undoCmd =
+	 * UndoRedo.getInstance(); if
+	 * (undoCmd.execute(parser.getUndoParsedObject(input))) {
+	 * observable.updateTables(undoCmd.getTaskType()); }
+	 * observable.updateStatusMsg(undoCmd.getMessage()); }
+	 * 
+	 * private void processRedoCommand(String input) { UndoRedo redoCmd =
+	 * UndoRedo.getInstance(); if
+	 * (redoCmd.execute(parser.getRedoParsedObject(input))) {
+	 * observable.updateTables(redoCmd.getTaskType()); }
+	 * observable.updateStatusMsg(redoCmd.getMessage()); }
+	 */
+
+	private void updateModelData(TASK_TYPE type) {
+		setChanged();
+		notifyObservers(new ObserverEvent(ObserverEvent.CHANGE_TABLE_CODE, new ObserverEvent.ETasks(null, type)));
 	}
 
-	private void processRedoCommand(String input) {
-		UndoRedo redoCmd = UndoRedo.getInstance();
-		if (redoCmd.execute(parser.getRedoParsedObject(input))) {
-			observable.updateTables(redoCmd.getTaskType());
-		}
-		observable.updateStatusMsg(redoCmd.getMessage());
+	private void updateMessage(String message) {
+		setChanged();
+		notifyObservers(new ObserverEvent(ObserverEvent.CHANGE_MESSAGE_CODE, new ObserverEvent.EMessage(message)));
 	}
 
 	@Override
@@ -101,13 +112,17 @@ public class Logic extends Observable implements Observer {
 		ObserverEvent OEvent = (ObserverEvent) event;
 		if (OEvent.getCode() == ObserverEvent.CHANGE_USER_INPUT_CODE) {
 			ObserverEvent.EInput eInput = (ObserverEvent.EInput) OEvent.getPayload();
-			System.out.println(eInput.getCommand());
+			processCommand(eInput.getCommand());
 		}
 
-		/*setChanged();
-		notifyObservers(
-				new ObserverEvent(ObserverEvent.CHANGE_MESSAGE_CODE, new ObserverEvent.EMessage("update message")));
-		notifyObservers(new ObserverEvent(ObserverEvent.CHANGE_TABLE_CODE, new ObserverEvent.ETasks(null, TASK_TYPE.DEADLINE)));*/
+		// setChanged();
+		// notifyObservers(
+		// new ObserverEvent(ObserverEvent.CHANGE_MESSAGE_CODE, new
+		// ObserverEvent.EMessage("update message")));
+		// notifyObservers(
+		// new ObserverEvent(ObserverEvent.CHANGE_TABLE_CODE, new
+		// ObserverEvent.ETasks(null, TASK_TYPE.DEADLINE)));
+
 	}
 
 	/*

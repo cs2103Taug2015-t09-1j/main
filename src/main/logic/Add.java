@@ -13,7 +13,7 @@ import main.models.Event;
 import main.models.ParsedObject;
 import main.models.Task;
 import main.models.Todo;
-import main.parser.MainParser;
+import main.parser.Parser;
 import main.storage.Storage;
 
 /**
@@ -21,7 +21,7 @@ import main.storage.Storage;
  *
  */
 public class Add extends Command {
-	private static final MainParser parser = MainParser.getInstance();
+	private static final Parser parser = Parser.getInstance();
 	private static final Storage storage = Storage.getInstance();
 	private static final UndoRedo undoredo = UndoRedo.getInstance();
 	private static final Logger logger = Logger.getLogger(Add.class.getName());

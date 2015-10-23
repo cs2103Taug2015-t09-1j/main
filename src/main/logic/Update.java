@@ -15,7 +15,7 @@ import main.models.Task;
 import main.models.Todo;
 import main.models.EnumTypes.COMMAND_TYPE;
 import main.models.EnumTypes.TASK_TYPE;
-import main.parser.MainParser;
+import main.parser.Parser;
 import main.storage.Storage;
 
 /**
@@ -23,7 +23,7 @@ import main.storage.Storage;
  *
  */
 public class Update extends Command {
-	private static final MainParser parser = MainParser.getInstance();
+	private static final Parser parser = Parser.getInstance();
 	private static final Storage storage = Storage.getInstance();
 	private static final UndoRedo undoredo = UndoRedo.getInstance();
 	private static final Logger logger = Logger.getLogger(Update.class.getName());

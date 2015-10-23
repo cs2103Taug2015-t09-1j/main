@@ -5,6 +5,8 @@ package main.models;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+
 import javax.swing.table.AbstractTableModel;
 
 import main.models.EnumTypes.TASK_TYPE;
@@ -18,11 +20,12 @@ public class EventsTableModel extends AbstractTableModel {
 	private static EventsTableModel etm = EventsTableModel.getInstance();
 	private final String[] columnNames = { "ID", "Start Date", "End Date", "Task Description", "Done" };
 	private final Class<?>[] columnTypes = { Integer.class, Date.class, Date.class, String.class, Boolean.class };
-	private ArrayList<Event> events;
+	private List<Task> events;
 
 	private EventsTableModel() {
 		super();
-		this.events = (ArrayList)Storage.getInstance().getAllTask(EnumTypes.TASK_TYPE.EVENT);
+		System.out.println("new call");
+		this.events = Storage.getInstance().getAllTask(EnumTypes.TASK_TYPE.EVENT);
 	}
 
 	public static EventsTableModel getInstance() {
