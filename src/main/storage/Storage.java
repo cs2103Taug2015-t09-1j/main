@@ -47,6 +47,9 @@ public class Storage {
 		return storage;
 	}
 
+	public static void start() {
+		Storage.getInstance();
+	}
 
 	private void initTasks() {
 		todos = DataParser.deserialize(FileHandler.readFromFile(todoFile), TODO);
@@ -54,9 +57,22 @@ public class Storage {
 		deadlines = DataParser.deserialize(FileHandler.readFromFile(deadlineFile), DEADLINE);
 	}
 
+	/*
+	 * reset task ids to begin with 0
+	 */
 	private void initTaskId() {
-		int curMaxId = Math.max(getMaxId(todos), Math.max(getMaxId(events), getMaxId(deadlines)));
-		Task.setNextId(curMaxId);
+		int cnt = 0;
+		for (Task todo: events) {
+			todo.setTaskId(++cnt);
+		}
+		for (Task todo: todos) {
+			todo.setTaskId(++cnt);
+		}
+		for (Task todo: deadlines) {
+			todo.setTaskId(++cnt);
+		}
+		//int curMaxId = Math.max(getMaxId(todos), Math.max(getMaxId(events), getMaxId(deadlines)));
+		Task.setNextId(cnt);
 	}
 
 	private void initStoreDir(String storeDir) {
@@ -83,60 +99,73 @@ public class Storage {
 		initTaskId();
 	}
 
-	private int getMaxId(List<Task> tasks) {
+	/*private int getMaxId(List<Task> tasks) {
 		int res = 0;
 		for (Task task : tasks) {
 			res = Math.max(task.getTaskID(), res);
 		}
 		return res;
-	}
+	}*/
 
-	public void addTask(Task task) {
+	public boolean addTask(Task task) {
+		task = task.clone();
 		if (task instanceof Event) {
 			events.add(task);
+			return true;
 		} else if (task instanceof Todo) {
 			todos.add(task);
+			return true;
 		} else if (task instanceof Deadline) {
 			deadlines.add(task);
+			return true;
 		}
+		return false;
 	}
 
+	private List<Task> cloneList(List<Task> tasks) {
+		List<Task> cloneTasks = new ArrayList<>();
+		for (Task task : tasks) {
+			cloneTasks.add(task.clone());
+		}
+		return cloneTasks;
+	}
+	
 	public List<Task> getAllTask(TASK_TYPE type) {
 		switch (type) {
-			case TODO: return todos;
-			case EVENT: return events;
-			case DEADLINE: return deadlines;
+			case TODO: return cloneList(todos);
+			case EVENT: return cloneList(events);
+			case DEADLINE: return cloneList(deadlines);
 			default: return new ArrayList<>();
 		}
 	}
 
 	public Task getTaskByID(int id) {
 		for (Task event:events) if (event.getTaskID() == id){
-			return event;
+			return event.clone();
 		}
 		for (Task event:todos) if (event.getTaskID() == id){
-			return event;
+			return event.clone();
 		}
 		for (Task event:deadlines) if (event.getTaskID() == id){
-			return event;
+			return event.clone();
 		}
 		return null;
 	}
 
-	public void delete(int id) {
-		Task task = getTaskByID(id);
-		if (task == null) {
-			return;
+	public boolean delete(int id) {
+		for (Task event : events) if (event.getTaskID() == id) {
+			events.remove(event);
+			return true;
 		}
-		events.remove(task);
-		todos.remove(task);
-		deadlines.remove(task);
-	}
-
-	public void delete(List<Integer> ids) {
-		for (int id : ids) {
-			delete(id);
+		for (Task todo : todos) if (todo.getTaskID() == id) {
+			todos.remove(todo);
+			return true;
 		}
+		for (Task deadline : deadlines) if (deadline.getTaskID() == id) {
+			deadlines.remove(deadline);
+			return true;
+		}
+		return true;
 	}
 
 	public void changeStatus(List<Integer> ids, boolean status) {

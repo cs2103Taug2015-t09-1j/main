@@ -36,7 +36,7 @@ public class CustomCellRenderer extends JTextArea implements TableCellRenderer {
 
         if (value != null) {
 	        if (value instanceof Date) {
-	        	//this.setText(formatDate((Date)value));
+	        	this.setText(formatDate((Date)value));
         		long currentTime = System.currentTimeMillis();
         		long dateTime = ((Date)value).getTime();
         		if (dateTime < currentTime) {

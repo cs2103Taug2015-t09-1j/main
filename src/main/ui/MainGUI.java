@@ -50,6 +50,7 @@ import main.models.DeadlinesTableModel;
 import main.models.EnumTypes;
 import main.models.EventsTableModel;
 import main.models.ObserverEvent;
+import main.models.Task;
 import main.models.TodosTableModel;
 
 /**
@@ -69,12 +70,6 @@ public class MainGUI extends Observable implements Observer {
 	private JScrollPane eventsScrollPane, todosScrollPane, deadlineTasksScrollPane;
 	private TableRowSorter eventsSorter, todosSorter, deadlinesSorter;
 
-	/*
-	 * private static final InputObservable inputObservable =
-	 * InputObservable.getInstance(); private static final MessageObserver
-	 * msgObserver = MessageObserver.getInstance(); private static final
-	 * TableModelsObserver tablesObserver = TableModelsObserver.getInstance();
-	 */
 	private static final Logger logger = Logger.getLogger(MainGUI.class.getName());
 	private static EventsTableModel etm = EventsTableModel.getInstance();
 	private static TodosTableModel ttm = TodosTableModel.getInstance();
@@ -95,7 +90,7 @@ public class MainGUI extends Observable implements Observer {
 			public void run() {
 				try {
 					// make sure that Logic has instance before MainGui has instance.
-					Logic.getInstance();
+					Logic.start();
 
 					MainGUI window = getInstance();
 					window.addObserver(Logic.getInstance());
@@ -388,25 +383,28 @@ public class MainGUI extends Observable implements Observer {
 		sorter.setRowFilter(rowFilter);
 	}
 
-	public void updateTables(EnumTypes.TASK_TYPE type) {
+	public void updateTables(EnumTypes.TASK_TYPE type, List<Task> tasks) {
 		switch (type) {
 		case EVENT:
+			etm.setTasks(tasks);
 			etm.fireTableDataChanged();
 			tabbedPane.setSelectedIndex(0);
 			break;
 		case TODO:
+			ttm.setTasks(tasks);
 			ttm.fireTableDataChanged();
 			tabbedPane.setSelectedIndex(1);
 			break;
 		case DEADLINE:
+			dtm.setTasks(tasks);
 			dtm.fireTableDataChanged();
 			tabbedPane.setSelectedIndex(2);
 			break;
 		default:
-			etm.fireTableDataChanged();
+			/*etm.fireTableDataChanged();
 			ttm.fireTableDataChanged();
 			dtm.fireTableDataChanged();
-			tabbedPane.setSelectedIndex(0);
+			tabbedPane.setSelectedIndex(0);*/
 		}
 	}
 
@@ -471,7 +469,7 @@ public class MainGUI extends Observable implements Observer {
 		if (OEvent.getCode() == ObserverEvent.CHANGE_TABLE_CODE) {
 			ObserverEvent.ETasks eTasks = (ObserverEvent.ETasks) OEvent.getPayload();
 			//System.out.println(eTasks.getTaskType());
-			updateTables(eTasks.getTaskType());
+			updateTables(eTasks.getTaskType(), eTasks.getTasks());
 			return;
 		}
 

@@ -17,13 +17,16 @@ public class DeadlinesTableModel extends AbstractTableModel {
 	private static DeadlinesTableModel dtm = DeadlinesTableModel.getInstance();
 	private final String[] columnNames = { "ID", "Deadline", "Task Description", "Done" };
 	private final Class<?>[] columnTypes = { Integer.class, Date.class, String.class, Boolean.class };
-	private List<Task> deadlines;
+	private List<Task> deadlines = new ArrayList<>();
 
 	public DeadlinesTableModel() {
 		super();
-		this.deadlines = Storage.getInstance().getAllTask(EnumTypes.TASK_TYPE.DEADLINE);
 	}
 
+	public void setTasks(List<Task> tasks) {
+		this.deadlines = tasks;
+	}
+	
 	public static DeadlinesTableModel getInstance() {
 		if (dtm == null) {
 			dtm = new DeadlinesTableModel();

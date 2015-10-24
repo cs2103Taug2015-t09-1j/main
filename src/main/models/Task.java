@@ -11,7 +11,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public abstract class Task implements Cloneable {
 	private static AtomicInteger nextId = new AtomicInteger();
-	private final int taskID;
+	//private final int taskID;
+	private int taskID;
 	private String taskDesc;
 	private boolean isDone;
 
@@ -35,6 +36,10 @@ public abstract class Task implements Cloneable {
 		return taskID;
 	}
 
+	public void setTaskId(int taskID) {
+		this.taskID = taskID;
+	}
+
 	public String getTaskDesc() {
 		return taskDesc;
 	}
@@ -50,7 +55,7 @@ public abstract class Task implements Cloneable {
 	public void setDone(boolean isDone) {
 		this.isDone = isDone;
 	}
-
+	
 	public static void setNextId(int initState) {
 		nextId = new AtomicInteger(initState);
 	}

@@ -20,11 +20,14 @@ public class TodosTableModel extends AbstractTableModel {
 	private static TodosTableModel ttm = TodosTableModel.getInstance();
 	private final String[] columnNames = { "ID", "Task Description", "Done" };
 	private final Class<?>[] columnTypes = { Integer.class, String.class, Boolean.class };
-	private List<Task> todos;
+	private List<Task> todos = new ArrayList<>();
 
 	public TodosTableModel() {
 		super();
-		this.todos = Storage.getInstance().getAllTask(EnumTypes.TASK_TYPE.TODO);
+	}
+	
+	public void setTasks(List<Task> tasks) {
+		this.todos = tasks;
 	}
 
 	public static TodosTableModel getInstance() {

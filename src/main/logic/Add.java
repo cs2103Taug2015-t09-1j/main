@@ -51,7 +51,7 @@ public class Add extends Command {
 					Event sEvt = (Event)tasks.get(0);
 					storage.addTask(sEvt);
 					storage.saveTaskType(EnumTypes.TASK_TYPE.EVENT);
-					taskType = EnumTypes.TASK_TYPE.SINGLE_DATE_EVENT;
+					taskType = EnumTypes.TASK_TYPE.EVENT;
 					message = "<html><b>\"" + sEvt.getTaskDesc() + "\"</b><br/>has been successfully added as an Event on <b>" + parser.formatDate(sEvt.getFromDate(), "EEE, d MMM yyyy") + "</b> at <b>" + parser.formatDate(sEvt.getFromDate(), "h:mm a") + "</b>.</html>";
 
 					if (DEBUG) {
@@ -64,7 +64,7 @@ public class Add extends Command {
 					Event dEvt = (Event)tasks.get(0);
 					storage.addTask(dEvt);
 					storage.saveTaskType(EnumTypes.TASK_TYPE.EVENT);
-					taskType = EnumTypes.TASK_TYPE.DOUBLE_DATE_EVENT;
+					taskType = EnumTypes.TASK_TYPE.EVENT;
 					message = "<html><b>\"" + dEvt.getTaskDesc() + "\"</b><br/>has been successfully added as an Event from <b>" + parser.formatDate(dEvt.getFromDate(), "EEE, d MMM yyyy h:mm a") + "</b> to <b>" + parser.formatDate(dEvt.getToDate(), "EEE, d MMM yyyy h:mm a") + "</b>.</html>";
 
 					if (DEBUG) {

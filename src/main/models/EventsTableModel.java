@@ -20,12 +20,14 @@ public class EventsTableModel extends AbstractTableModel {
 	private static EventsTableModel etm = EventsTableModel.getInstance();
 	private final String[] columnNames = { "ID", "Start Date", "End Date", "Task Description", "Done" };
 	private final Class<?>[] columnTypes = { Integer.class, Date.class, Date.class, String.class, Boolean.class };
-	private List<Task> events;
+	private List<Task> events = new ArrayList<>();
 
 	private EventsTableModel() {
 		super();
-		System.out.println("new call");
-		this.events = Storage.getInstance().getAllTask(EnumTypes.TASK_TYPE.EVENT);
+	}
+	
+	public void setTasks(List<Task> tasks) {
+		this.events = tasks;
 	}
 
 	public static EventsTableModel getInstance() {

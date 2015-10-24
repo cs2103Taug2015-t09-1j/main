@@ -17,10 +17,10 @@ public class ModelTest {
 	@Test
 	public void testCloneTask() {
 		List<Task> tasks = Storage.getInstance().getAllTask(TASK_TYPE.EVENT);
-		Event event = (Event)tasks.get(0);
-		Event eventClone = (Event)event.clone();
-		Date d1 = event.getFromDate(),
-			 d2 = eventClone.getFromDate();
+		Task event = tasks.get(0);
+		Task eventClone = event.clone();
+		Date d1 = ((Event)event).getFromDate(),
+			 d2 = ((Event)eventClone).getFromDate();
 		if (d1 == d2) {
 			System.out.println("equal");
 		} else {
