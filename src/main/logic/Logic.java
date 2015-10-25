@@ -8,7 +8,7 @@ import main.model.ObserverEvent;
 import main.model.EnumTypes.TASK_TYPE;
 import main.parser.Parser;
 import main.storage.Storage;
-import main.ui.MainGUI;
+import main.ui.MainGui;
 
 public class Logic extends Observable implements Observer {
 	private static Logic logic = null;
@@ -20,7 +20,7 @@ public class Logic extends Observable implements Observer {
 	
 	public static void start() {
 		Logic logic = Logic.getInstance();
-		logic.addObserver(MainGUI.getInstance());
+		logic.addObserver(MainGui.getInstance());
 		
 		Storage.start();
 		storage = Storage.getInstance();

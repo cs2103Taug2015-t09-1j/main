@@ -57,9 +57,9 @@ import main.model.taskModels.Task;
  * @author Dalton
  *
  */
-public class MainGUI extends Observable implements Observer {
+public class MainGui extends Observable implements Observer {
 
-	private static MainGUI mainGui;
+	private static MainGui mainGui;
 
 	private JFrame frmTodokoro;
 	private JPanel inputPanel;
@@ -70,7 +70,7 @@ public class MainGUI extends Observable implements Observer {
 	private JScrollPane eventsScrollPane, todosScrollPane, deadlineTasksScrollPane;
 	private TableRowSorter eventsSorter, todosSorter, deadlinesSorter;
 
-	private static final Logger logger = Logger.getLogger(MainGUI.class.getName());
+	private static final Logger logger = Logger.getLogger(MainGui.class.getName());
 	private static EventsTableModel etm = EventsTableModel.getInstance();
 	private static TodosTableModel ttm = TodosTableModel.getInstance();
 	private static DeadlinesTableModel dtm = DeadlinesTableModel.getInstance();
@@ -92,7 +92,7 @@ public class MainGUI extends Observable implements Observer {
 					// make sure that Logic has instance before MainGui has instance.
 					Logic.start();
 
-					MainGUI window = getInstance();
+					MainGui window = getInstance();
 					window.addObserver(Logic.getInstance());
 					window.frmTodokoro.setVisible(true);
 				} catch (Exception e) {
@@ -103,9 +103,9 @@ public class MainGUI extends Observable implements Observer {
 		});
 	}
 
-	public static MainGUI getInstance() {
+	public static MainGui getInstance() {
 		if (mainGui == null) {
-			mainGui = new MainGUI();
+			mainGui = new MainGui();
 		}
 		return mainGui;
 	}
@@ -113,11 +113,11 @@ public class MainGUI extends Observable implements Observer {
 	/**
 	 * Create the application.
 	 */
-	private MainGUI() {
+	private MainGui() {
 		try {
 			initialize();
 		} catch (Exception e) {
-			logger.log(Level.SEVERE, "MainGUI Constructor: " + e.toString(), e);
+			logger.log(Level.SEVERE, "MainGui Constructor: " + e.toString(), e);
 		}
 
 		/*
@@ -129,6 +129,7 @@ public class MainGUI extends Observable implements Observer {
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() throws Exception {
+		setupTableModels();
 		setupMainFrame();
 		setupPanels();
 		setupTextFields();
@@ -138,6 +139,12 @@ public class MainGUI extends Observable implements Observer {
 		setupTableSorters();
 	}
 
+	private void setupTableModels() {
+		dtm.setMainGui(this);
+		etm.setMainGui(this);
+		ttm.setMainGui(this);
+	}
+	
 	private void setupMainFrame() {
 		frmTodokoro = new JFrame();
 		frmTodokoro.setAlwaysOnTop(true);
@@ -445,6 +452,10 @@ public class MainGUI extends Observable implements Observer {
 		table.setFillsViewportHeight(true);
 	}
 
+	public void fakeInputComeIn(String command) {
+		sendUserInput(command);
+	}
+	
 	public void updateStatusMsg(String msg) {
 		lblStatusMsg.setText(msg);
 	}

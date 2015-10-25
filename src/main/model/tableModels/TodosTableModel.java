@@ -4,6 +4,7 @@
 package main.model.tableModels;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
@@ -12,6 +13,7 @@ import main.model.EnumTypes.TASK_TYPE;
 import main.model.taskModels.Task;
 import main.model.taskModels.Todo;
 import main.storage.Storage;
+import main.ui.MainGui;
 
 /**
  * @author Dalton
@@ -22,6 +24,7 @@ public class TodosTableModel extends AbstractTableModel {
 	private final String[] columnNames = { "ID", "Task Description", "Done" };
 	private final Class<?>[] columnTypes = { Integer.class, String.class, Boolean.class };
 	private List<Task> todos = new ArrayList<>();
+	private MainGui mainGui;
 
 	public TodosTableModel() {
 		super();
@@ -37,6 +40,11 @@ public class TodosTableModel extends AbstractTableModel {
 		}
 		return ttm;
 	}
+	
+	public void setMainGui(MainGui mainGui) {
+		this.mainGui = mainGui;
+	}
+	
 	public int getColumnCount() {
 		return columnNames.length;
     }
@@ -64,15 +72,22 @@ public class TodosTableModel extends AbstractTableModel {
 
 	public void setValueAt(Object value, int row, int col) {
 		Todo t = (Todo)todos.get(row);
+		Boolean shouldProcess = false;
+		String fakeCommand = "update " + t.getTaskID() + " " + (col + 1) + " ";
 		switch (col) {
 			case 1:
-				t.setTaskDesc((String) value);
-			break;
+				shouldProcess = true;
+				fakeCommand = fakeCommand + (String)value;
+				break;
 			case 2:
-				t.setDone((Boolean)value);
-			break;
+				shouldProcess = true;
+				fakeCommand = fakeCommand + (Boolean)value;
+				break;
 		}
-		Storage.getInstance().saveTaskType(TASK_TYPE.TODO);
+		if (shouldProcess && mainGui != null) {
+			mainGui.fakeInputComeIn(fakeCommand);
+		}
+
     }
 
 	public Object getValueAt(int row, int col) {

@@ -13,6 +13,7 @@ import main.model.EnumTypes.TASK_TYPE;
 import main.model.taskModels.Event;
 import main.model.taskModels.Task;
 import main.storage.Storage;
+import main.ui.MainGui;
 
 /**
  * @author Dalton
@@ -23,6 +24,7 @@ public class EventsTableModel extends AbstractTableModel {
 	private final String[] columnNames = { "ID", "Start Date", "End Date", "Task Description", "Done" };
 	private final Class<?>[] columnTypes = { Integer.class, Date.class, Date.class, String.class, Boolean.class };
 	private List<Task> events = new ArrayList<>();
+	private MainGui mainGui;
 
 	private EventsTableModel() {
 		super();
@@ -37,6 +39,10 @@ public class EventsTableModel extends AbstractTableModel {
 			etm = new EventsTableModel();
 		}
 		return etm;
+	}
+	
+	public void setMainGui(MainGui mainGui) {
+		this.mainGui = mainGui;
 	}
 
 	public int getColumnCount() {
@@ -72,21 +78,29 @@ public class EventsTableModel extends AbstractTableModel {
 
 	public void setValueAt(Object value, int row, int col) {
 		Event evt = (Event)events.get(row);
+		Boolean shouldProcess = false;
+		String fakeCommand = "update " + evt.getTaskID() + " " + (col + 1) + " ";
 		switch (col) {
 			case 1:
-				evt.setFromDate((Date)value);
+				shouldProcess = true;
+				fakeCommand = fakeCommand + (Date)value;
 				break;
 			case 2:
-				evt.setToDate((Date)value);
+				shouldProcess = true;
+				fakeCommand = fakeCommand + (Date)value;
 				break;
 			case 3:
-				evt.setTaskDesc((String)value);
+				shouldProcess = true;
+				fakeCommand = fakeCommand + (String)value;
 				break;
 			case 4:
-				evt.setDone((Boolean)value);
+				shouldProcess = true;
+				fakeCommand = fakeCommand + (Boolean)value;
 				break;
 		}
-		Storage.getInstance().saveTaskType(TASK_TYPE.EVENT);
+		if (shouldProcess && mainGui != null) {
+			mainGui.fakeInputComeIn(fakeCommand);
+		}
     }
 
 	public Object getValueAt(int row, int col) {

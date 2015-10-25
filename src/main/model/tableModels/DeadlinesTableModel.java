@@ -10,6 +10,7 @@ import main.model.EnumTypes.TASK_TYPE;
 import main.model.taskModels.Deadline;
 import main.model.taskModels.Task;
 import main.storage.Storage;
+import main.ui.MainGui;
 
 /**
  * @author Dalton
@@ -20,6 +21,7 @@ public class DeadlinesTableModel extends AbstractTableModel {
 	private final String[] columnNames = { "ID", "Deadline", "Task Description", "Done" };
 	private final Class<?>[] columnTypes = { Integer.class, Date.class, String.class, Boolean.class };
 	private List<Task> deadlines = new ArrayList<>();
+	private MainGui mainGui;
 
 	public DeadlinesTableModel() {
 		super();
@@ -34,6 +36,10 @@ public class DeadlinesTableModel extends AbstractTableModel {
 			dtm = new DeadlinesTableModel();
 		}
 		return dtm;
+	}
+	
+	public void setMainGui(MainGui mainGui) {
+		this.mainGui = mainGui;
 	}
 
 	public int getColumnCount() {
@@ -67,18 +73,25 @@ public class DeadlinesTableModel extends AbstractTableModel {
 
 	public void setValueAt(Object value, int row, int col) {
 		Deadline t = (Deadline)deadlines.get(row);
+		Boolean shouldProcess = false;
+		String fakeCommand = "update " + t.getTaskID() + " " + (col + 1) + " ";
 		switch (col) {
 			case 1:
-				t.setDate((Date)value);
+				shouldProcess = true;
+				fakeCommand = fakeCommand + (Date)value;
 				break;
 			case 2:
-				t.setTaskDesc((String) value);
+				shouldProcess = true;
+				fakeCommand = fakeCommand + (String)value;
 				break;
 			case 3:
-				t.setDone((Boolean)value);
+				shouldProcess = true;
+				fakeCommand = fakeCommand + (Boolean)value;
 				break;
 		}
-		Storage.getInstance().saveTaskType(TASK_TYPE.DEADLINE);
+		if (shouldProcess && mainGui != null) {
+			mainGui.fakeInputComeIn(fakeCommand);
+		}
     }
 
 	public Object getValueAt(int row, int col) {

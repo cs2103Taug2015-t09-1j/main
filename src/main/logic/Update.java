@@ -166,7 +166,7 @@ public class Update extends Command {
 					backup.set(2, d.getDate().toString());
 				}
 				try {
-					Date deadline = parser.getDateList(params.get(1)).get(0);
+					Date deadline = parser.getDateList(params.get(2)).get(0);
 					d.setDate(deadline);
 					message += "Deadline has been updated to <b>" + parser.formatDate(deadline,  "EEE, d MMM yyyy") + "</b>.</html>";
 				} catch (Exception e) {
