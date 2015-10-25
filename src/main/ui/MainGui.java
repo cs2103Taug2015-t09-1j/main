@@ -390,28 +390,30 @@ public class MainGui extends Observable implements Observer {
 		sorter.setRowFilter(rowFilter);
 	}
 
-	public void updateTables(EnumTypes.TASK_TYPE type, List<Task> tasks) {
+	public void updateTables(EnumTypes.TASK_TYPE type, List<Task> tasks, boolean shouldSwitch) {
 		switch (type) {
 		case EVENT:
 			etm.setTasks(tasks);
 			etm.fireTableDataChanged();
-			tabbedPane.setSelectedIndex(0);
+			if (shouldSwitch) {
+				tabbedPane.setSelectedIndex(0);
+			}
 			break;
 		case TODO:
 			ttm.setTasks(tasks);
 			ttm.fireTableDataChanged();
-			tabbedPane.setSelectedIndex(1);
+			if (shouldSwitch) {
+				tabbedPane.setSelectedIndex(1);
+			}
 			break;
 		case DEADLINE:
 			dtm.setTasks(tasks);
 			dtm.fireTableDataChanged();
-			tabbedPane.setSelectedIndex(2);
+			if (shouldSwitch) {
+				tabbedPane.setSelectedIndex(2);
+			}
 			break;
 		default:
-			/*etm.fireTableDataChanged();
-			ttm.fireTableDataChanged();
-			dtm.fireTableDataChanged();
-			tabbedPane.setSelectedIndex(0);*/
 		}
 	}
 
@@ -480,7 +482,7 @@ public class MainGui extends Observable implements Observer {
 		if (OEvent.getCode() == ObserverEvent.CHANGE_TABLE_CODE) {
 			ObserverEvent.ETasks eTasks = (ObserverEvent.ETasks) OEvent.getPayload();
 			//System.out.println(eTasks.getTaskType());
-			updateTables(eTasks.getTaskType(), eTasks.getTasks());
+			updateTables(eTasks.getTaskType(), eTasks.getTasks(), eTasks.shouldSwitch());
 			return;
 		}
 

@@ -86,7 +86,7 @@ public class DeadlinesTableModel extends AbstractTableModel {
 				break;
 			case 3:
 				shouldProcess = true;
-				fakeCommand = fakeCommand + (Boolean)value;
+				fakeCommand = ((Boolean)value ?  "done" : "undone") + " " + t.getTaskID(); 
 				break;
 		}
 		if (shouldProcess && mainGui != null) {

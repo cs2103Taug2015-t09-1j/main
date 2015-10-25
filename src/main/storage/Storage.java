@@ -149,14 +149,22 @@ public class Storage {
 	}
 
 	public Task getTaskByID(int id) {
+		Task task = getRealTaskById(id);
+		if (task != null) {
+			return task.clone();
+		}
+		return null;
+	}
+	
+	private Task getRealTaskById(int id) {
 		for (Task event:events) if (event.getTaskID() == id){
-			return event.clone();
+			return event;
 		}
-		for (Task event:todos) if (event.getTaskID() == id){
-			return event.clone();
+		for (Task todo:todos) if (todo.getTaskID() == id){
+			return todo;
 		}
-		for (Task event:deadlines) if (event.getTaskID() == id){
-			return event.clone();
+		for (Task deadline:deadlines) if (deadline.getTaskID() == id){
+			return deadline;
 		}
 		return null;
 	}
@@ -177,13 +185,13 @@ public class Storage {
 		return true;
 	}
 
-	public void changeStatus(List<Integer> ids, boolean status) {
-		for (int id : ids) {
-			Task task = getTaskByID(id);
-			if (task != null) {
-				task.setDone(status);
-			}
+	public boolean changeStatus(int id, boolean status) {
+		Task task = getRealTaskById(id);
+		if (task != null) {
+			task.setDone(status);
+			return true;
 		}
+		return false;
 	}
 
 	public void saveAllTask() {

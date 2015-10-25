@@ -25,9 +25,9 @@ public class Logic extends Observable implements Observer {
 		Storage.start();
 		storage = Storage.getInstance();
 		
-		logic.updateModelData(TASK_TYPE.DEADLINE);
-		logic.updateModelData(TASK_TYPE.TODO);
-		logic.updateModelData(TASK_TYPE.EVENT);
+		logic.updateModelData(TASK_TYPE.DEADLINE, false);
+		logic.updateModelData(TASK_TYPE.TODO, false);
+		logic.updateModelData(TASK_TYPE.EVENT, true);
 	}
 
 	public static Logic getInstance() {
@@ -54,6 +54,12 @@ public class Logic extends Observable implements Observer {
 		case DELETE:
 			processDeleteCommand(input);
 			break;
+		case DONE: 
+			processChangeStatusCommand(input, true);
+			break;
+		case UNDONE:
+			processChangeStatusCommand(input, false);
+			break;
 		case UNDO:
 			// processUndoCommand(input);
 			break;
@@ -70,7 +76,7 @@ public class Logic extends Observable implements Observer {
 	private void processAddCommand(String input) {
 		Add addCmd = Add.getInstance();
 		if (addCmd.execute(parser.getAddParsedObject(input))) {
-			updateModelData(addCmd.getTaskType());
+			updateModelData(addCmd.getTaskType(), true);
 		}
 		updateMessage(addCmd.getMessage());
 	}
@@ -78,7 +84,7 @@ public class Logic extends Observable implements Observer {
 	private void processUpdateCommand(String input) {
 		Update updateCmd = Update.getInstance();
 		if (updateCmd.execute(parser.getUpdateParsedObject(input))) {
-			updateModelData(updateCmd.getTaskType());
+			updateModelData(updateCmd.getTaskType(), true);
 		}
 		updateMessage(updateCmd.getMessage());
 	}
@@ -86,13 +92,23 @@ public class Logic extends Observable implements Observer {
 	private void processDeleteCommand(String input) {
 		Delete deleteCmd = Delete.getInstance();
 		if (deleteCmd.execute(parser.getDeleteParsedObject(input))) {
-			updateModelData(TASK_TYPE.DEADLINE);
-			updateModelData(TASK_TYPE.TODO);
-			updateModelData(TASK_TYPE.EVENT);
+			updateModelData(TASK_TYPE.DEADLINE, false);
+			updateModelData(TASK_TYPE.TODO, false);
+			updateModelData(TASK_TYPE.EVENT, false);
 		}
 		updateMessage(deleteCmd.getMessage());
 	}
 
+	private void processChangeStatusCommand(String input, boolean newStatus) {
+		ChangeStatus changeStatus = ChangeStatus.getInstance(newStatus);
+		if (changeStatus.execute(parser.getChangeStatusParsedObject(input, newStatus))) {
+			updateModelData(TASK_TYPE.DEADLINE, false);
+			updateModelData(TASK_TYPE.TODO, false);
+			updateModelData(TASK_TYPE.EVENT, false);
+		}
+		updateMessage(changeStatus.getMessage());
+	}
+	
 	/*private void processUndoCommand(String input) {
 		UndoRedo undoCmd = UndoRedo.getInstance();
 		if (undoCmd.execute(parser.getUndoParsedObject(input))) {
@@ -109,9 +125,9 @@ public class Logic extends Observable implements Observer {
 		observable.updateStatusMsg(redoCmd.getMessage());
 	}
 */
-	private void updateModelData(TASK_TYPE type) {
+	private void updateModelData(TASK_TYPE type, boolean shouldSwitch) {
 		setChanged();
-		notifyObservers(new ObserverEvent(ObserverEvent.CHANGE_TABLE_CODE, new ObserverEvent.ETasks(storage.getAllTask(type), type)));
+		notifyObservers(new ObserverEvent(ObserverEvent.CHANGE_TABLE_CODE, new ObserverEvent.ETasks(storage.getAllTask(type), type, shouldSwitch)));
 	}
 
 	private void updateMessage(String message) {

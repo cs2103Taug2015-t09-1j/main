@@ -56,10 +56,12 @@ public class ObserverEvent {
 	public static class ETasks {
 		private List<Task> tasks = new ArrayList<>();
 		private TASK_TYPE taskType;
+		private boolean shouldSwitch = false;
 
-		public ETasks(List<Task> tasks, TASK_TYPE taskType) {
+		public ETasks(List<Task> tasks, TASK_TYPE taskType, boolean shouldSwitch) {
 			this.taskType = taskType;
 			this.tasks = tasks;
+			this.shouldSwitch = shouldSwitch;
 		}
 
 		public List<Task> getTasks() {
@@ -68,6 +70,10 @@ public class ObserverEvent {
 
 		public TASK_TYPE getTaskType() {
 			return this.taskType;
+		}
+		
+		public boolean shouldSwitch() {
+			return this.shouldSwitch;
 		}
 	}
 }

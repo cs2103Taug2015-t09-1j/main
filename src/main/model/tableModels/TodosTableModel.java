@@ -63,6 +63,8 @@ public class TodosTableModel extends AbstractTableModel {
 
 	public boolean isCellEditable(int row, int col) {
         switch (col) {
+        	case 1: 
+        		return true;
         	case 2:
         		return true;
             default:
@@ -81,10 +83,10 @@ public class TodosTableModel extends AbstractTableModel {
 				break;
 			case 2:
 				shouldProcess = true;
-				fakeCommand = fakeCommand + (Boolean)value;
+				fakeCommand = ((Boolean)value ?  "done" : "undone") + " " + t.getTaskID();
 				break;
 		}
-		if (shouldProcess && mainGui != null) {
+		if (shouldProcess && mainGui != null) {	
 			mainGui.fakeInputComeIn(fakeCommand);
 		}
 

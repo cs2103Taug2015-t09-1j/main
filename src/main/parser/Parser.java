@@ -28,6 +28,8 @@ public class Parser {
 	private final Logger logger = Logger.getLogger(Parser.class.getName());
 	private String[] updateCmdList = {"update", "/u", "edit", "/e", "modify", "/m"};
 	private String[] deleteCmdList = {"delete", "del", "/d", "remove", "rm", "/r"};
+	private String[] doneCmdList = {"done", "complete"};
+	private String[] undoneCmdList = {"undone", "incomplete"};
 	private String[] undoCmdList = {"undo", "/un"};
 	private String[] redoCmdList = {"redo", "/re"};
 	private String[] exitCmdList = {"exit", "/e", "quit", "/q"};
@@ -52,14 +54,17 @@ public class Parser {
 				return COMMAND_TYPE.UPDATE;
 			} else if (isValidCommand(input, deleteCmdList, "\\s+\\d+\\s*(((to|-)\\s*\\d+\\s*)?|(\\d+\\s*)*)")) {
 				return COMMAND_TYPE.DELETE;
+			} else if (isValidCommand(input, doneCmdList, "\\s+\\d+\\s*(((to|-)\\s*\\d+\\s*)?|(\\d+\\s*)*)")) {
+				return COMMAND_TYPE.DONE;
+			} else if (isValidCommand(input, undoneCmdList, "\\s+\\d+\\s*(((to|-)\\s*\\d+\\s*)?|(\\d+\\s*)*)")) {
+				return COMMAND_TYPE.UNDONE;
 			} else if (isValidCommand(input, undoCmdList, "(\\s+\\d+\\s*)*$")) {
 				return COMMAND_TYPE.UNDO;
 			} else if (isValidCommand(input, redoCmdList, "(\\s+\\d+\\s*)*$")) {
 				return COMMAND_TYPE.REDO;
 			} else if (isValidCommand(input, exitCmdList, "\\s*$")) {
 				return COMMAND_TYPE.EXIT;
-			}
-			else {
+			} else {
 				return COMMAND_TYPE.ADD;
 			}
 		}
@@ -215,29 +220,76 @@ public class Parser {
 	public ParsedObject getDeleteParsedObject(String input) {
 		String params = removeCommandWord(input, deleteCmdList);
 		ArrayList<Integer> taskIDs = new ArrayList<Integer>();
-		ArrayList<Task> deletedTasks = new ArrayList<Task>();
 		ArrayList<String> taskIDList = getCommandParameters(params, COMMAND_TYPE.DELETE);
 		ParsedObject obj;
 
 		if (input.contains("to") || input.contains("-")) {
-			int fromID = parseInteger(taskIDList.get(0));
-			int toID = parseInteger(taskIDList.get(1));
-
+			int fromID;
+			int toID;
+			try {
+				fromID = parseInteger(taskIDList.get(0));
+				toID = parseInteger(taskIDList.get(1));
+			} catch (Exception e) {
+				fromID = 0;
+				toID = 0;
+			}
+			
 			for (int i = fromID; i <= toID; i++) {
-				//Task t = Storage.getInstance().getTaskByID(i);
-				//if (t != null) {
-					taskIDs.add(i);
-					//deletedTasks.add(t);
-				//}
+				taskIDs.add(i);
 			}
 		} else {
 			for (int i = 0; i < taskIDList.size(); i++) {
-				taskIDs.add(parseInteger(taskIDList.get(i)));
+				try {
+					taskIDs.add(parseInteger(taskIDList.get(i)));
+				} catch (Exception e) {
+					// Not number exception
+				}
+				
 			}
 		}
 		obj = new ParsedObject(COMMAND_TYPE.DELETE, null, taskIDs);
 		return obj;
 	}
+	
+	public ParsedObject getChangeStatusParsedObject(String input, boolean newStatus) {
+		String params;
+		if (newStatus) {
+			params = removeCommandWord(input, doneCmdList);
+		} else {
+			params = removeCommandWord(input, undoneCmdList);
+		}
+		ArrayList<Integer> taskIDs = new ArrayList<Integer>();
+		ArrayList<String> taskIDList = getCommandParameters(params, COMMAND_TYPE.DELETE);
+		ParsedObject obj;
+
+		if (input.contains("to") || input.contains("-")) {
+			int fromID;
+			int toID;
+			try {
+				fromID = parseInteger(taskIDList.get(0));
+				toID = parseInteger(taskIDList.get(1));
+			} catch (Exception e) {
+				fromID = 0;
+				toID = 0;
+			}
+			
+			for (int i = fromID; i <= toID; i++) {
+				taskIDs.add(i);
+			}
+		} else {
+			for (int i = 0; i < taskIDList.size(); i++) {
+				try {
+					taskIDs.add(parseInteger(taskIDList.get(i)));
+				} catch (Exception e) {
+					// Not number exception
+				}
+				
+			}
+		}
+		obj = new ParsedObject(newStatus ? COMMAND_TYPE.DONE : COMMAND_TYPE.UNDONE, null, taskIDs);
+		return obj;
+	}
+	 
 
 	public ParsedObject getUndoParsedObject(String input) {
 		String params = removeCommandWord(input, undoCmdList);

@@ -95,7 +95,7 @@ public class EventsTableModel extends AbstractTableModel {
 				break;
 			case 4:
 				shouldProcess = true;
-				fakeCommand = fakeCommand + (Boolean)value;
+				fakeCommand = ((Boolean)value ?  "done" : "undone") + " " + evt.getTaskID();
 				break;
 		}
 		if (shouldProcess && mainGui != null) {

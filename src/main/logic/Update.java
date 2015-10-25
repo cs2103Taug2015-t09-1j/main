@@ -137,7 +137,7 @@ public class Update extends Command {
 				if (!isReverseCmd) {
 					backup.set(2, t.getTaskDesc());
 				}
-				String taskDesc = params.get(1);
+				String taskDesc = params.get(2);
 				t.setTaskDesc(taskDesc);
 				message += "Task Description has been updated to <b>" + taskDesc + "</b>.</html>";
 				break;

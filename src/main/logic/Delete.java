@@ -19,7 +19,6 @@ import main.storage.Storage;
  *
  */
 public class Delete extends Command {
-	public static int LIMIT_DELETE_SHOW = 10;
 	private static final Storage storage = Storage.getInstance();
 	private static final Logger logger = Logger.getLogger(Delete.class.getName());
 	private static final boolean DEBUG = true;
@@ -47,21 +46,12 @@ public class Delete extends Command {
 		ArrayList<Task> backup = new ArrayList<Task>();
 		if (taskIDs.size() > 0) {
 			int cnt = 0;
-			message = "<html>Tasks IDs: ";
 			for (int i = 0; i < taskIDs.size(); i++) {
 				Task t = Storage.getInstance().getTaskByID(taskIDs.get(i));
 				if (t != null) {
 					backup.add(t);
 					cnt++;
-					if (cnt <= LIMIT_DELETE_SHOW) {
-						message += ("<b>" + taskIDs.get(i) + "</b>");
-						if (i < taskIDs.size() - 1) {
-							message += ", ";
-						}
-					} else if (cnt == LIMIT_DELETE_SHOW + 1) {
-						message += "...";
-					}  
-					
+
 					storage.delete(taskIDs.get(i));
 
 					if (DEBUG) {
@@ -71,7 +61,7 @@ public class Delete extends Command {
 				}
 			}
 			storage.saveAllTask();
-			message += "<br/> have been deleted successfully.</html>";
+			message = String.format("<html> %d %s been deleted <html>", cnt, cnt > 1 ? "tasks have" : "task has");
 			taskType = EnumTypes.TASK_TYPE.ALL;
 			UndoRedo.getInstance().addUndoable(new ParsedObject(EnumTypes.COMMAND_TYPE.DELETE, null, backup));
 			return true;
@@ -79,7 +69,7 @@ public class Delete extends Command {
 		if (DEBUG) {
 			System.out.println();
 		}
-		message += "Invalid Task IDs. Please try again.</html>";
+		message = "<html> Invalid task ids. Please try again.</html>";
 		taskType = EnumTypes.TASK_TYPE.INVALID;
 		return false;
 	}
