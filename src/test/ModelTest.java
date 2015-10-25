@@ -7,9 +7,9 @@ import java.util.List;
 
 import org.junit.Test;
 
-import main.models.EnumTypes.TASK_TYPE;
-import main.models.Event;
-import main.models.Task;
+import main.model.EnumTypes.TASK_TYPE;
+import main.model.taskModels.Event;
+import main.model.taskModels.Task;
 import main.storage.Storage;
 
 public class ModelTest {

@@ -3,8 +3,8 @@
  */
 package main.logic;
 
-import main.models.EnumTypes;
-import main.models.ParsedObject;
+import main.model.EnumTypes;
+import main.model.ParsedObject;
 
 /**
  * @author Dalton

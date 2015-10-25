@@ -7,9 +7,9 @@ import java.util.Date;
 
 import org.junit.Test;
 
-import main.models.ParsedObject;
-import main.models.EnumTypes.COMMAND_TYPE;
-import main.models.EnumTypes.TASK_TYPE;
+import main.model.ParsedObject;
+import main.model.EnumTypes.COMMAND_TYPE;
+import main.model.EnumTypes.TASK_TYPE;
 import main.parser.Parser;
 
 public class MainParserTest {

@@ -1,7 +1,7 @@
 /**
  *
  */
-package main.models;
+package main.model;
 
 /**
  * @author Dalton

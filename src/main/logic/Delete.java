@@ -6,12 +6,12 @@ package main.logic;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 
-import main.models.Deadline;
-import main.models.EnumTypes;
-import main.models.Event;
-import main.models.ParsedObject;
-import main.models.Task;
-import main.models.Todo;
+import main.model.EnumTypes;
+import main.model.ParsedObject;
+import main.model.taskModels.Deadline;
+import main.model.taskModels.Event;
+import main.model.taskModels.Task;
+import main.model.taskModels.Todo;
 import main.storage.Storage;
 
 /**

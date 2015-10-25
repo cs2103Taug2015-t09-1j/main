@@ -14,12 +14,12 @@ import org.ocpsoft.prettytime.nlp.parse.DateGroup;
 import org.ocpsoft.prettytime.shade.edu.emory.mathcs.backport.java.util.Arrays;
 
 import main.logic.UndoRedo;
-import main.models.Deadline;
-import main.models.Event;
-import main.models.ParsedObject;
-import main.models.Task;
-import main.models.Todo;
-import main.models.EnumTypes.*;
+import main.model.ParsedObject;
+import main.model.EnumTypes.*;
+import main.model.taskModels.Deadline;
+import main.model.taskModels.Event;
+import main.model.taskModels.Task;
+import main.model.taskModels.Todo;
 import main.storage.Storage;
 
 public class Parser {

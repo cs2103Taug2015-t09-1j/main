@@ -7,11 +7,11 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
-import main.models.Deadline;
-import main.models.Event;
-import main.models.Task;
-import main.models.Todo;
-import main.models.EnumTypes.TASK_TYPE;
+import main.model.EnumTypes.TASK_TYPE;
+import main.model.taskModels.Deadline;
+import main.model.taskModels.Event;
+import main.model.taskModels.Task;
+import main.model.taskModels.Todo;
 
 public class DataParser {
 	

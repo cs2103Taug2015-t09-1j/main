@@ -1,11 +1,12 @@
 /**
  *
  */
-package main.models;
+package main.model.taskModels;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import main.models.EnumTypes.TASK_TYPE;
+import main.model.EnumTypes;
+import main.model.EnumTypes.TASK_TYPE;
 
 /**
  * @author Dalton

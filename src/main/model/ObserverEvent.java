@@ -1,11 +1,12 @@
-package main.models;
+package main.model;
+
+import static main.model.EnumTypes.TASK_TYPE.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import main.models.EnumTypes.TASK_TYPE;
-
-import static main.models.EnumTypes.TASK_TYPE.*;
+import main.model.EnumTypes.TASK_TYPE;
+import main.model.taskModels.Task;
 
 public class ObserverEvent {
 	public static int CHANGE_MESSAGE_CODE = 0;

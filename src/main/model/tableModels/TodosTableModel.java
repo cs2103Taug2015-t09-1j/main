@@ -1,15 +1,16 @@
 /**
  *
  */
-package main.models;
+package main.model.tableModels;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
 
-import main.models.Todo;
-import main.models.EnumTypes.TASK_TYPE;
+import main.model.EnumTypes.TASK_TYPE;
+import main.model.taskModels.Task;
+import main.model.taskModels.Todo;
 import main.storage.Storage;
 
 /**

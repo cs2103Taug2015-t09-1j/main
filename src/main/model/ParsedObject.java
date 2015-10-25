@@ -1,11 +1,11 @@
 /**
  *
  */
-package main.models;
+package main.model;
 
 import java.util.ArrayList;
 
-import main.models.EnumTypes.*;
+import main.model.EnumTypes.*;
 
 /**
  * @author Dalton

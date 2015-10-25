@@ -1,8 +1,8 @@
 package main.storage;
 
-import static main.models.EnumTypes.TASK_TYPE.DEADLINE;
-import static main.models.EnumTypes.TASK_TYPE.EVENT;
-import static main.models.EnumTypes.TASK_TYPE.TODO;
+import static main.model.EnumTypes.TASK_TYPE.DEADLINE;
+import static main.model.EnumTypes.TASK_TYPE.EVENT;
+import static main.model.EnumTypes.TASK_TYPE.TODO;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -11,11 +11,11 @@ import java.util.List;
 import org.ocpsoft.prettytime.shade.net.fortuna.ical4j.model.parameter.Dir;
 
 import main.logic.Logic;
-import main.models.Deadline;
-import main.models.Event;
-import main.models.Task;
-import main.models.Todo;
-import main.models.EnumTypes.TASK_TYPE;
+import main.model.EnumTypes.TASK_TYPE;
+import main.model.taskModels.Deadline;
+import main.model.taskModels.Event;
+import main.model.taskModels.Task;
+import main.model.taskModels.Todo;
 
 public class Storage {
 

@@ -1,6 +1,6 @@
 package test;
 
-import static main.models.EnumTypes.TASK_TYPE.*;
+import static main.model.EnumTypes.TASK_TYPE.*;
 import static org.junit.Assert.*;
 
 import java.io.File;
@@ -12,8 +12,8 @@ import java.util.List;
 import org.junit.Test;
 import org.ocpsoft.prettytime.shade.net.fortuna.ical4j.model.parameter.Dir;
 
-import main.models.Event;
-import main.models.Task;
+import main.model.taskModels.Event;
+import main.model.taskModels.Task;
 import main.storage.DirectoryHandler;
 import main.storage.FileHandler;
 import main.storage.Storage;

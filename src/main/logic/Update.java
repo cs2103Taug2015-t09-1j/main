@@ -7,14 +7,14 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.logging.Logger;
 
-import main.models.Deadline;
-import main.models.EnumTypes;
-import main.models.Event;
-import main.models.ParsedObject;
-import main.models.Task;
-import main.models.Todo;
-import main.models.EnumTypes.COMMAND_TYPE;
-import main.models.EnumTypes.TASK_TYPE.*;
+import main.model.EnumTypes;
+import main.model.ParsedObject;
+import main.model.EnumTypes.COMMAND_TYPE;
+import main.model.EnumTypes.TASK_TYPE.*;
+import main.model.taskModels.Deadline;
+import main.model.taskModels.Event;
+import main.model.taskModels.Task;
+import main.model.taskModels.Todo;
 import main.parser.Parser;
 import main.storage.Storage;
 

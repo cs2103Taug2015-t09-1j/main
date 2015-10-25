@@ -46,12 +46,12 @@ import javax.swing.table.TableRowSorter;
 
 import main.logic.ChangeDirectory;
 import main.logic.Logic;
-import main.models.DeadlinesTableModel;
-import main.models.EnumTypes;
-import main.models.EventsTableModel;
-import main.models.ObserverEvent;
-import main.models.Task;
-import main.models.TodosTableModel;
+import main.model.EnumTypes;
+import main.model.ObserverEvent;
+import main.model.tableModels.DeadlinesTableModel;
+import main.model.tableModels.EventsTableModel;
+import main.model.tableModels.TodosTableModel;
+import main.model.taskModels.Task;
 
 /**
  * @author Dalton
