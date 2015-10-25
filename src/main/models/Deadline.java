@@ -5,11 +5,14 @@ package main.models;
 
 import java.util.Date;
 
+import main.models.EnumTypes.TASK_TYPE;
+
 /**
  * @author Dalton
  *
  */
 public class Deadline extends Task {
+	private static final TASK_TYPE type = TASK_TYPE.DEADLINE;
 	private Date date;
 
 	public Deadline(Date date, String taskDesc, boolean isDone) {
@@ -30,5 +33,10 @@ public class Deadline extends Task {
 
 	public void setDate(Date date) {
 		this.date = date;
+	}
+	
+	@Override
+	public TASK_TYPE getType() {
+		return type;
 	}
 }

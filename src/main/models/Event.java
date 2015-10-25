@@ -4,11 +4,14 @@
 package main.models;
 import java.util.Date;
 
+import main.models.EnumTypes.TASK_TYPE;
+
 /**
  * @author Dalton
  *
  */
 public class Event extends Task {
+	private static final TASK_TYPE type = TASK_TYPE.EVENT;
 	private Date fromDate;
 	private Date toDate;
 
@@ -40,5 +43,10 @@ public class Event extends Task {
 
 	public void setToDate(Date toDate) {
 		this.toDate = toDate;
+	}
+	
+	@Override
+	public TASK_TYPE getType() {
+		return type;
 	}
 }

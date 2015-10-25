@@ -109,15 +109,24 @@ public class Storage {
 
 	public boolean addTask(Task task) {
 		task = task.clone();
-		if (task instanceof Event) {
-			events.add(task);
-			return true;
-		} else if (task instanceof Todo) {
-			todos.add(task);
-			return true;
-		} else if (task instanceof Deadline) {
-			deadlines.add(task);
-			return true;
+		switch (task.getType()) {
+			case EVENT: 
+				events.add(task);
+				return true;
+			case TODO: 
+				todos.add(task);
+				return true;
+			case DEADLINE:
+				deadlines.add(task);
+				return true;
+			default: 
+				return false;
+		}
+	}
+	
+	public boolean updateTask(Task task) {
+		if (delete(task.getTaskID())) {
+			return addTask(task);
 		}
 		return false;
 	}

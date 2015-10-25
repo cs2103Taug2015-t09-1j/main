@@ -27,4 +27,11 @@ public class ModelTest {
 			System.out.println("not equal");
 		}
 	}
+	
+	@Test
+	public void testModels() {
+		List<Task> tasks = Storage.getInstance().getAllTask(TASK_TYPE.EVENT);
+		Task event = tasks.get(0);
+		System.out.println(event.getType());
+	}
 }

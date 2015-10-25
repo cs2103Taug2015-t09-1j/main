@@ -220,7 +220,7 @@ public class UndoRedo extends Command {
 			} else if (t instanceof Deadline) {
 				t = (Deadline)t;
 			}
-			storage.addTask(t);
+			//storage.addTask(t);
 		}
 	}
 
@@ -242,7 +242,7 @@ public class UndoRedo extends Command {
 			} else if (t instanceof Deadline) {
 				t = (Deadline)t;
 			}
-			storage.addTask(t);
+			//storage.addTask(t);
 		}
 	}
 

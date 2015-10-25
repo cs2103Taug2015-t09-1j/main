@@ -14,7 +14,7 @@ import main.models.ParsedObject;
 import main.models.Task;
 import main.models.Todo;
 import main.models.EnumTypes.COMMAND_TYPE;
-import main.models.EnumTypes.TASK_TYPE;
+import main.models.EnumTypes.TASK_TYPE.*;
 import main.parser.Parser;
 import main.storage.Storage;
 
@@ -52,15 +52,16 @@ public class Update extends Command {
 		Task t = storage.getTaskByID(parser.parseInteger(params.get(0)));
 		if (t != null) {
 			message = "<html>Task ID " + t.getTaskID() + ": ";
-			if (t instanceof Event) {
-				taskType = EnumTypes.TASK_TYPE.EVENT;
-				return updateEvent((Event) t, params);
-			} else if (t instanceof Todo) {
-				taskType = EnumTypes.TASK_TYPE.TODO;
-				return updateTodo((Todo) t, params);
-			} else if (t instanceof Deadline) {
-				taskType = EnumTypes.TASK_TYPE.DEADLINE;
-				return updateDeadline((Deadline) t, params);
+			switch (t.getType()) {
+				case EVENT:
+					taskType = EnumTypes.TASK_TYPE.EVENT;
+					return updateEvent((Event) t, params);
+				case TODO:
+					taskType = EnumTypes.TASK_TYPE.TODO;
+					return updateTodo((Todo) t, params);
+				case DEADLINE:
+					taskType = EnumTypes.TASK_TYPE.DEADLINE;
+					return updateDeadline((Deadline) t, params);
 			}
 		}
 		message += "Invalid column or value entered.";
@@ -121,6 +122,7 @@ public class Update extends Command {
 		if (!isReverseCmd) {
 			undoredo.addUndoable(new ParsedObject(EnumTypes.COMMAND_TYPE.UPDATE, null, backup));
 		}
+		storage.updateTask(evt);
 		storage.saveTaskType(EnumTypes.TASK_TYPE.EVENT);
 		return true;
 	}
@@ -147,6 +149,8 @@ public class Update extends Command {
 		if (!isReverseCmd) {
 			undoredo.addUndoable(new ParsedObject(EnumTypes.COMMAND_TYPE.UPDATE, null, backup));
 		}
+		
+		storage.updateTask(t);
 		storage.saveTaskType(EnumTypes.TASK_TYPE.TODO);
 		return true;
 	}
@@ -187,6 +191,8 @@ public class Update extends Command {
 		if (!isReverseCmd) {
 			undoredo.addUndoable(new ParsedObject(EnumTypes.COMMAND_TYPE.UPDATE, null, backup));
 		}
+		
+		storage.updateTask(d);
 		storage.saveTaskType(EnumTypes.TASK_TYPE.DEADLINE);
 		return true;
 	}

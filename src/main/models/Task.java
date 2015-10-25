@@ -5,6 +5,8 @@ package main.models;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import main.models.EnumTypes.TASK_TYPE;
+
 /**
  * @author Dalton
  *
@@ -54,6 +56,10 @@ public abstract class Task implements Cloneable {
 
 	public void setDone(boolean isDone) {
 		this.isDone = isDone;
+	}
+
+	public TASK_TYPE getType() {
+		return null;
 	}
 	
 	public static void setNextId(int initState) {
