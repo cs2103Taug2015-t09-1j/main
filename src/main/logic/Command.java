@@ -12,11 +12,9 @@ import main.model.ParsedObject;
  */
 public abstract class Command {
 	protected EnumTypes.TASK_TYPE taskType;
-	protected String message;
+	protected String message = "";
 
 	public abstract boolean execute(ParsedObject obj);
-	//public abstract void undo(ParsedObject obj);
-	//public abstract void redo(ParsedObject obj);
 
 	public String getMessage() {
 		return this.message;

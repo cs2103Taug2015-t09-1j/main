@@ -1,10 +1,13 @@
 package main.logic;
 
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.logging.Logger;
 
 import main.model.ObserverEvent;
+import main.model.ParsedObject;
+import main.model.taskModels.Task;
 import main.model.EnumTypes.TASK_TYPE;
 import main.parser.Parser;
 import main.storage.Storage;
@@ -43,7 +46,7 @@ public class Logic extends Observable implements Observer {
 			processAddCommand(input);
 			break;
 		case DISPLAY:
-			// display(input);
+			processDisplayCommand(input);
 			break;
 		case SEARCH:
 			// search(input);
@@ -128,11 +131,33 @@ public class Logic extends Observable implements Observer {
 		}
 		updateMessage(vControl.getMessage());
 	}
+	
+	private void processDisplayCommand(String input) {
+		Display display = Display.getInstance(TASK_TYPE.DEADLINE);
+		ParsedObject obj = parser.getDisplayParsedObject(input);
+		
+		if (obj.getTaskType().equals(TASK_TYPE.ALL)) {
+			updateModelData(TASK_TYPE.EVENT, false);
+			updateModelData(TASK_TYPE.DEADLINE, false);
+			updateModelData(TASK_TYPE.TODO, false);
+			return;
+		}
+
+		updateModelData(TASK_TYPE.DEADLINE, display.process(obj), false);
+		
+		display = Display.getInstance(TASK_TYPE.EVENT);
+		updateModelData(TASK_TYPE.EVENT, display.process(obj), false);
+	}
 
 	private void updateModelData(TASK_TYPE type, boolean shouldSwitch) {
 		setChanged();
 		notifyObservers(new ObserverEvent(ObserverEvent.CHANGE_TABLE_CODE, new ObserverEvent.ETasks(storage.getAllTask(type), type, shouldSwitch)));
 	}
+	
+	private void updateModelData(TASK_TYPE type, List<Task> tasks, boolean shouldSwitch) {
+		setChanged();
+		notifyObservers(new ObserverEvent(ObserverEvent.CHANGE_TABLE_CODE, new ObserverEvent.ETasks(tasks, type, shouldSwitch)));
+	} 
 
 	private void updateMessage(String message) {
 		setChanged();

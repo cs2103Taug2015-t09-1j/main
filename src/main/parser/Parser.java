@@ -2,40 +2,46 @@ package main.parser;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.Date;
 
-import org.ocpsoft.prettytime.nlp.*;
+import org.ocpsoft.prettytime.nlp.PrettyTimeParser;
 import org.ocpsoft.prettytime.nlp.parse.DateGroup;
 import org.ocpsoft.prettytime.shade.edu.emory.mathcs.backport.java.util.Arrays;
 
-import main.logic.OldUndoRedo;
+import main.model.EnumTypes.COMMAND_TYPE;
+import main.model.EnumTypes.TASK_TYPE;
 import main.model.ParsedObject;
-import main.model.EnumTypes.*;
 import main.model.taskModels.Deadline;
 import main.model.taskModels.Event;
 import main.model.taskModels.Task;
 import main.model.taskModels.Todo;
-import main.storage.Storage;
 
 public class Parser {
 	private static Parser parser = null;
 	private final PrettyTimeParser ptParser = new PrettyTimeParser();
 	private final Logger logger = Logger.getLogger(Parser.class.getName());
-	private String[] updateCmdList = {"update", "/u", "edit", "/e", "modify", "/m"};
-	private String[] deleteCmdList = {"delete", "del", "/d", "remove", "rm", "/r"};
-	private String[] doneCmdList = {"done", "complete"};
-	private String[] undoneCmdList = {"undone", "incomplete"};
-	private String[] undoCmdList = {"undo", "/un"};
-	private String[] redoCmdList = {"redo", "/re"};
-	private String[] exitCmdList = {"exit", "/e", "quit", "/q"};
+	private static String[] updateCmdList = {"update", "/u", "edit", "/e", "modify", "/m"};
+	private static String[] deleteCmdList = {"delete", "del", "/d", "remove", "rm", "/r"};
+	private static String[] doneCmdList = {"done", "complete"};
+	private static String[] undoneCmdList = {"undone", "incomplete"};
+	private static String[] undoCmdList = {"undo", "/un"};
+	private static String[] redoCmdList = {"redo", "/re"};
+	private static String[] exitCmdList = {"exit", "/e", "quit", "/q"};
+	private String[] displayCmdList = {"display", "/dp", "show", "/sw"};
+	
 	//private String[] searchCmdList = {"search", "/s", "find", "/f"};
-	//private String[] displayCmdList = {"display", "/dp", "show", "/sw"};
 	//private String[] doneCmdList = {"is done", "done"};
+	
+	private static final String UPDATE_REGEX = "\\s+\\d+\\s+\\d+";
+	private static final String DELETE_REGEX = "\\s+\\d+\\s*(((to|-)\\s*\\d+\\s*)?|(\\d+\\s*)*)";
+	private static final String DONE_UNDONE_REGEX= "\\s+\\d+\\s*(((to|-)\\s*\\d+\\s*)?|(\\d+\\s*)*)";
+	private static final String UNDO_REDO_REGEX = "(\\s+\\d+\\s*)*$";
+	
 
 	private Parser() {}
 
@@ -47,26 +53,26 @@ public class Parser {
 	}
 
 	public COMMAND_TYPE determineCommandType(String input) {
-		if (input.trim().isEmpty()) {
+		input.trim();
+		if (input.isEmpty()) {
 			return COMMAND_TYPE.INVALID;
+		}
+		if (isValidCommand(input, updateCmdList, UPDATE_REGEX)) {
+			return COMMAND_TYPE.UPDATE;
+		} else if (isValidCommand(input, deleteCmdList, DELETE_REGEX)) {
+			return COMMAND_TYPE.DELETE;
+		} else if (isValidCommand(input, doneCmdList, DONE_UNDONE_REGEX)) {
+			return COMMAND_TYPE.DONE;
+		} else if (isValidCommand(input, undoneCmdList, DONE_UNDONE_REGEX)) {
+			return COMMAND_TYPE.UNDONE;
+		} else if (isValidCommand(input, undoCmdList, UNDO_REDO_REGEX)) {
+			return COMMAND_TYPE.UNDO;
+		} else if (isValidCommand(input, redoCmdList, UNDO_REDO_REGEX)) {
+			return COMMAND_TYPE.REDO;
+		} else if (isValidCommand(input, exitCmdList, "\\s*$")) {
+			return COMMAND_TYPE.EXIT;
 		} else {
-			if (isValidCommand(input, updateCmdList, "\\s+\\d+\\s+\\d+")) {
-				return COMMAND_TYPE.UPDATE;
-			} else if (isValidCommand(input, deleteCmdList, "\\s+\\d+\\s*(((to|-)\\s*\\d+\\s*)?|(\\d+\\s*)*)")) {
-				return COMMAND_TYPE.DELETE;
-			} else if (isValidCommand(input, doneCmdList, "\\s+\\d+\\s*(((to|-)\\s*\\d+\\s*)?|(\\d+\\s*)*)")) {
-				return COMMAND_TYPE.DONE;
-			} else if (isValidCommand(input, undoneCmdList, "\\s+\\d+\\s*(((to|-)\\s*\\d+\\s*)?|(\\d+\\s*)*)")) {
-				return COMMAND_TYPE.UNDONE;
-			} else if (isValidCommand(input, undoCmdList, "(\\s+\\d+\\s*)*$")) {
-				return COMMAND_TYPE.UNDO;
-			} else if (isValidCommand(input, redoCmdList, "(\\s+\\d+\\s*)*$")) {
-				return COMMAND_TYPE.REDO;
-			} else if (isValidCommand(input, exitCmdList, "\\s*$")) {
-				return COMMAND_TYPE.EXIT;
-			} else {
-				return COMMAND_TYPE.ADD;
-			}
+			return COMMAND_TYPE.ADD;
 		}
 	}
 
@@ -314,6 +320,12 @@ public class Parser {
 
 		return new ParsedObject(COMMAND_TYPE.REDO, null, numOfExec);
 	}
+	
+	// TODO: implement this method
+	public ParsedObject getDisplayParsedObject(String input) {
+		return null;
+	}
+	 
 /*
 	public ParsedObject getIsDoneParsedObject(String input) {
 		String params = removeCommandWord(input, deleteCmdList);
