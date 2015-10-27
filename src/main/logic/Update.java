@@ -9,6 +9,7 @@ import java.util.logging.Logger;
 
 import main.model.EnumTypes;
 import main.model.ParsedObject;
+import main.model.VersionModel;
 import main.model.EnumTypes.COMMAND_TYPE;
 import main.model.EnumTypes.TASK_TYPE.*;
 import main.model.taskModels.Deadline;
@@ -25,6 +26,7 @@ import main.storage.Storage;
 public class Update extends Command {
 	private static final Parser parser = Parser.getInstance();
 	private static final Storage storage = Storage.getInstance();
+	private static final VersionControl vControl = VersionControl.getInstance();
 	private static final Logger logger = Logger.getLogger(Update.class.getName());
 	private static final boolean DEBUG = true;
 	private static Update update = null;
@@ -63,6 +65,7 @@ public class Update extends Command {
 	}
 
 	private boolean updateEvent(Event evt, ArrayList<String> params) {
+		Task oldEvt = evt.clone();
 		switch (params.get(1)) {
 			case "2":
 				try {
@@ -98,10 +101,16 @@ public class Update extends Command {
 		}
 		storage.updateTask(evt);
 		storage.saveTaskType(EnumTypes.TASK_TYPE.EVENT);
+		
+		addNewUpdateModel(oldEvt, evt);
+		
 		return true;
 	}
 
 	private boolean updateTodo(Todo t, ArrayList<String> params) {
+		
+		Task oldTodo = t.clone();
+		
 		switch (params.get(1)) {
 			case "2":
 				String taskDesc = params.get(2);
@@ -116,10 +125,16 @@ public class Update extends Command {
 
 		storage.updateTask(t);
 		storage.saveTaskType(EnumTypes.TASK_TYPE.TODO);
+		
+		addNewUpdateModel(oldTodo, t);
+		
 		return true;
 	}
 
 	private boolean updateDeadline(Deadline d, ArrayList<String> params) {
+		
+		Task oldDeadline = d.clone();
+		
 		switch (params.get(1)) {
 			case "2":
 				try {
@@ -145,6 +160,21 @@ public class Update extends Command {
 		
 		storage.updateTask(d);
 		storage.saveTaskType(EnumTypes.TASK_TYPE.DEADLINE);
+		
+		addNewUpdateModel(oldDeadline, d);
+		
 		return true;
+	}
+	
+	private void addNewUpdateModel(Task oldTask, Task newTask) {
+		vControl.addNewData(new VersionModel.UpdateModel(oldTask, newTask));
+	}
+	
+	public static boolean undo(Task oldTask) {
+		return storage.updateTask(oldTask);
+	}
+	
+	public static boolean redo(Task newTask) {
+		return storage.updateTask(newTask);
 	}
 }

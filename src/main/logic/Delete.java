@@ -4,10 +4,12 @@
 package main.logic;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 import main.model.EnumTypes;
 import main.model.ParsedObject;
+import main.model.VersionModel;
 import main.model.taskModels.Deadline;
 import main.model.taskModels.Event;
 import main.model.taskModels.Task;
@@ -21,6 +23,7 @@ import main.storage.Storage;
 public class Delete extends Command {
 	private static final Storage storage = Storage.getInstance();
 	private static final Logger logger = Logger.getLogger(Delete.class.getName());
+	private static final VersionControl vControl = VersionControl.getInstance();
 	private static final boolean DEBUG = true;
 	private static Delete delete = null;
 
@@ -43,26 +46,27 @@ public class Delete extends Command {
 		}
 
 		ArrayList<Integer> taskIDs = obj.getObjects();
-		ArrayList<Task> backup = new ArrayList<Task>();
-		if (taskIDs.size() > 0) {
-			int cnt = 0;
-			for (int i = 0; i < taskIDs.size(); i++) {
-				Task t = Storage.getInstance().getTaskByID(taskIDs.get(i));
-				if (t != null) {
-					backup.add(t);
-					cnt++;
+		List<Task> deletedTasks = new ArrayList<>();
+		int cnt = 0;
+		for (int i = 0; i < taskIDs.size(); i++) {
+			Task t = Storage.getInstance().getTaskByID(taskIDs.get(i));
+			if (t != null) {
+				cnt++;
+				if (storage.delete(taskIDs.get(i))) {
+					deletedTasks.add(t);
+				}
 
-					storage.delete(taskIDs.get(i));
-
-					if (DEBUG) {
-						System.out.print(taskIDs.get(i));
-						System.out.print(" | ");
-					}
+				if (DEBUG) {
+					System.out.print(taskIDs.get(i));
+					System.out.print(" | ");
 				}
 			}
+		}
+		if (cnt > 0) {
 			storage.saveAllTask();
 			message = String.format("<html> %d %s been deleted <html>", cnt, cnt > 1 ? "tasks have" : "task has");
 			taskType = EnumTypes.TASK_TYPE.ALL;
+			vControl.addNewData(new VersionModel.DeleteModel(deletedTasks));
 			return true;
 		}
 		if (DEBUG) {
@@ -71,5 +75,19 @@ public class Delete extends Command {
 		message = "<html> Invalid task ids. Please try again.</html>";
 		taskType = EnumTypes.TASK_TYPE.INVALID;
 		return false;
+	}
+	
+	public static boolean undo(List<Task> tasks) {
+		for (Task task : tasks) {
+			storage.addTask(task);
+		}
+		return true;
+	}
+	
+	public static boolean redo(List<Task> tasks) {
+		for (Task task : tasks) {
+			storage.delete(task.getTaskID());
+		}
+		return true;
 	}
 }

@@ -218,7 +218,7 @@ public class MainGui extends Observable implements Observer {
 
 		tfUserInput.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				sendUserInput(tfUserInput.getText());
+				sendUserInput(tfUserInput.getText().trim());
 				tfUserInput.setText(null);
 			}
 		});

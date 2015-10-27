@@ -170,19 +170,14 @@ public class Storage {
 	}
 
 	public boolean delete(int id) {
-		for (Task event : events) if (event.getTaskID() == id) {
-			events.remove(event);
+		Task task = getRealTaskById(id);
+		if (task != null) {
+			todos.remove(task);
+			deadlines.remove(task);
+			events.remove(task);
 			return true;
 		}
-		for (Task todo : todos) if (todo.getTaskID() == id) {
-			todos.remove(todo);
-			return true;
-		}
-		for (Task deadline : deadlines) if (deadline.getTaskID() == id) {
-			deadlines.remove(deadline);
-			return true;
-		}
-		return true;
+		return false;
 	}
 
 	public boolean changeStatus(int id, boolean status) {

@@ -69,6 +69,16 @@ public class VersionControl extends Command {
 						count++;
 					}
 					break;
+				case DELETE:
+					if (Delete.undo(((VersionModel.DeleteModel)vModel).getTasks())) {
+						count++;
+					}
+					break;
+				case UPDATE:
+					if (Update.undo(((VersionModel.UpdateModel)vModel).getOldTask())) {
+						count++;
+					}
+					break;
 				default:
 					break;
 			}
@@ -85,6 +95,16 @@ public class VersionControl extends Command {
 			switch (vModel.getCmdType()) {
 				case ADD: 
 					if (Add.redo(((VersionModel.AddModel)vModel).getTask())) {
+						count++;
+					}
+					break;
+				case DELETE:
+					if (Delete.redo(((VersionModel.DeleteModel)vModel).getTasks())) {
+						count++;
+					}
+					break;
+				case UPDATE:
+					if (Update.redo(((VersionModel.UpdateModel)vModel).getNewTask())) {
 						count++;
 					}
 					break;
