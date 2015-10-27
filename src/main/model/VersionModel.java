@@ -61,5 +61,31 @@ public abstract class VersionModel {
 			return this.newTask;
 		}
 	}
+	
+	public static class ChangeStatusModel extends VersionModel {
+		
+		private List<Integer> ids = new ArrayList<>();
+		private List<Boolean> oldStatuses = new ArrayList<>();
+		private boolean newStatus = true;
+		
+		public ChangeStatusModel(List<Integer> ids, List<Boolean> oldStatuses, boolean newStatus) {
+			super(COMMAND_TYPE.DONE_UNDONE);
+			this.ids = ids;
+			this.oldStatuses = oldStatuses;
+			this.newStatus = newStatus;
+		}
+		
+		public List<Integer> getIds() {
+			return this.ids;
+		}
+		
+		public List<Boolean> getOldStatuses() {
+			return this.oldStatuses;
+		}
+		
+		public boolean getNewStatus() {
+			return this.newStatus;
+		}
+	}
 
 }

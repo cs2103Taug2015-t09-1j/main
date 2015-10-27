@@ -130,6 +130,15 @@ public class Storage {
 		}
 		return false;
 	}
+	
+	public boolean changeStatus(int id, boolean newStatus) {
+		Task task = getRealTaskById(id);
+		if (task != null) {
+			task.setDone(newStatus);
+			return true;
+		}
+		return false;
+	}
 
 	private List<Task> cloneList(List<Task> tasks) {
 		List<Task> cloneTasks = new ArrayList<>();
@@ -175,15 +184,6 @@ public class Storage {
 			todos.remove(task);
 			deadlines.remove(task);
 			events.remove(task);
-			return true;
-		}
-		return false;
-	}
-
-	public boolean changeStatus(int id, boolean status) {
-		Task task = getRealTaskById(id);
-		if (task != null) {
-			task.setDone(status);
 			return true;
 		}
 		return false;
