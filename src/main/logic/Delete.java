@@ -63,7 +63,6 @@ public class Delete extends Command {
 			storage.saveAllTask();
 			message = String.format("<html> %d %s been deleted <html>", cnt, cnt > 1 ? "tasks have" : "task has");
 			taskType = EnumTypes.TASK_TYPE.ALL;
-			UndoRedo.getInstance().addUndoable(new ParsedObject(EnumTypes.COMMAND_TYPE.DELETE, null, backup));
 			return true;
 		}
 		if (DEBUG) {
@@ -73,29 +72,4 @@ public class Delete extends Command {
 		taskType = EnumTypes.TASK_TYPE.INVALID;
 		return false;
 	}
-
-	/*
-	@Override
-	public void undo(ParsedObject obj) {
-		ArrayList<Task> temp = obj.getObjects();
-		for (int i = 0; i < temp.size(); i++) {
-			Task t = temp.get(i);
-			if (t instanceof Event) {
-				t = (Event)t;
-			} else if (t instanceof Todo) {
-				t = (Todo)t;
-			} else if (t instanceof Deadline) {
-				t = (Deadline)t;
-			}
-			storage.addTask(t);
-		}
-	}
-
-	@Override
-	public void redo(ParsedObject obj) {
-		ArrayList<Task> temp = obj.getObjects();
-		for (int i = 0; i < temp.size(); i++) {
-			storage.delete(((Task)temp.get(i)).getTaskID());
-		}
-	}*/
 }

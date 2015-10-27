@@ -61,10 +61,10 @@ public class Logic extends Observable implements Observer {
 			processChangeStatusCommand(input, false);
 			break;
 		case UNDO:
-			// processUndoCommand(input);
+			processUndoCommand(input);
 			break;
 		case REDO:
-			// processRedoCommand(input);
+			processRedoCommand(input);
 			break;
 		case EXIT:
 			System.exit(0);
@@ -109,22 +109,26 @@ public class Logic extends Observable implements Observer {
 		updateMessage(changeStatus.getMessage());
 	}
 	
-	/*private void processUndoCommand(String input) {
-		UndoRedo undoCmd = UndoRedo.getInstance();
-		if (undoCmd.execute(parser.getUndoParsedObject(input))) {
-			observable.updateTables(undoCmd.getTaskType());
+	private void processUndoCommand(String input) {	
+		VersionControl vControl = VersionControl.getInstance();
+		if (vControl.execute(parser.getUndoParsedObject(input))) {
+			updateModelData(TASK_TYPE.DEADLINE, false);
+			updateModelData(TASK_TYPE.TODO, false);
+			updateModelData(TASK_TYPE.EVENT, false);
 		}
-		observable.updateStatusMsg(undoCmd.getMessage());
+		updateMessage(vControl.getMessage());
 	}
 
 	private void processRedoCommand(String input) {
-		UndoRedo redoCmd = UndoRedo.getInstance();
-		if (redoCmd.execute(parser.getRedoParsedObject(input))) {
-			observable.updateTables(redoCmd.getTaskType());
+		VersionControl vControl = VersionControl.getInstance();
+		if (vControl.execute(parser.getRedoParsedObject(input))) {
+			updateModelData(TASK_TYPE.DEADLINE, false);
+			updateModelData(TASK_TYPE.TODO, false);
+			updateModelData(TASK_TYPE.EVENT, false);
 		}
-		observable.updateStatusMsg(redoCmd.getMessage());
+		updateMessage(vControl.getMessage());
 	}
-*/
+
 	private void updateModelData(TASK_TYPE type, boolean shouldSwitch) {
 		setChanged();
 		notifyObservers(new ObserverEvent(ObserverEvent.CHANGE_TABLE_CODE, new ObserverEvent.ETasks(storage.getAllTask(type), type, shouldSwitch)));

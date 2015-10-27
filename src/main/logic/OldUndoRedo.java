@@ -22,8 +22,8 @@ import main.storage.Storage;
  * @author Dalton
  *
  */
-public class UndoRedo extends Command {
-	private static UndoRedo undoredo = null;
+public class OldUndoRedo extends Command {
+	private static OldUndoRedo undoredo = null;
 	private static final Storage storage = Storage.getInstance();
 	private static final Logger logger = Logger.getLogger(Delete.class.getName());
 	private static final boolean DEBUG = true;
@@ -33,11 +33,11 @@ public class UndoRedo extends Command {
 	private boolean isRedoable = false;
 	private boolean isUpdateCmd = true;
 
-	private UndoRedo() {}
+	private OldUndoRedo() {}
 
-	public static UndoRedo getInstance() {
+	public static OldUndoRedo getInstance() {
 		if (undoredo == null) {
-			undoredo = new UndoRedo();
+			undoredo = new OldUndoRedo();
 		}
 		return undoredo;
 	}
@@ -254,9 +254,9 @@ public class UndoRedo extends Command {
 			temp.set(2, saved);
 			temp.set(temp.size()-1, updated);
 		}
-		Update.getInstance().setReverseCmd(true);
-		Update.getInstance().execute(obj);
-		Update.getInstance().setReverseCmd(false);
+		//Update.getInstance().setReverseCmd(true);
+		//Update.getInstance().execute(obj);
+		//Update.getInstance().setReverseCmd(false);
 		isUpdateCmd = false;
 	}
 

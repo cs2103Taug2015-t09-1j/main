@@ -13,7 +13,7 @@ import org.ocpsoft.prettytime.nlp.*;
 import org.ocpsoft.prettytime.nlp.parse.DateGroup;
 import org.ocpsoft.prettytime.shade.edu.emory.mathcs.backport.java.util.Arrays;
 
-import main.logic.UndoRedo;
+import main.logic.OldUndoRedo;
 import main.model.ParsedObject;
 import main.model.EnumTypes.*;
 import main.model.taskModels.Deadline;
@@ -196,7 +196,7 @@ public class Parser {
 			tasks.add(new Todo(input.trim(), false));
 			obj = new ParsedObject(COMMAND_TYPE.ADD, TASK_TYPE.TODO, tasks);
 		}
-		//UndoRedo.getInstance().addUndoable(obj);
+		//OldUndoRedo.getInstance().addUndoable(obj);
 		return obj;
 	}
 
