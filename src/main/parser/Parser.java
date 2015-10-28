@@ -33,15 +33,17 @@ public class Parser {
 	private static String[] redoCmdList = {"redo", "/re"};
 	private static String[] exitCmdList = {"exit", "/e", "quit", "/q"};
 	private String[] displayCmdList = {"display", "/dp", "show", "/sw"};
-	
+
 	//private String[] searchCmdList = {"search", "/s", "find", "/f"};
 	//private String[] doneCmdList = {"is done", "done"};
-	
+
 	private static final String UPDATE_REGEX = "\\s+\\d+\\s+\\d+";
 	private static final String DELETE_REGEX = "\\s+\\d+\\s*(((to|-)\\s*\\d+\\s*)?|(\\d+\\s*)*)";
+	private static final String DISPLAY_REGEX = "\\s+(\\w|\\d)+";
 	private static final String DONE_UNDONE_REGEX= "\\s+\\d+\\s*(((to|-)\\s*\\d+\\s*)?|(\\d+\\s*)*)";
 	private static final String UNDO_REDO_REGEX = "(\\s+\\d+\\s*)*$";
-	
+	private static final String EXIT_REGEX = "\\s*$";
+
 
 	private Parser() {}
 
@@ -61,6 +63,8 @@ public class Parser {
 			return COMMAND_TYPE.UPDATE;
 		} else if (isValidCommand(input, deleteCmdList, DELETE_REGEX)) {
 			return COMMAND_TYPE.DELETE;
+		} else if (isValidCommand(input, displayCmdList, DISPLAY_REGEX)) {
+			return COMMAND_TYPE.DISPLAY;
 		} else if (isValidCommand(input, doneCmdList, DONE_UNDONE_REGEX)) {
 			return COMMAND_TYPE.DONE;
 		} else if (isValidCommand(input, undoneCmdList, DONE_UNDONE_REGEX)) {
@@ -69,7 +73,7 @@ public class Parser {
 			return COMMAND_TYPE.UNDO;
 		} else if (isValidCommand(input, redoCmdList, UNDO_REDO_REGEX)) {
 			return COMMAND_TYPE.REDO;
-		} else if (isValidCommand(input, exitCmdList, "\\s*$")) {
+		} else if (isValidCommand(input, exitCmdList, EXIT_REGEX)) {
 			return COMMAND_TYPE.EXIT;
 		} else {
 			return COMMAND_TYPE.ADD;
@@ -132,7 +136,8 @@ public class Parser {
 	private String getTaskDesc(String input) {
 		List<DateGroup> temp = ptParser.parseSyntax(input);
 		String date = temp.get(0).getText();
-		input = input.toLowerCase().replaceAll("\\++((due by)|due|by|before|from|on|at)\\s*" + date, "");
+		input = input.toLowerCase().replaceAll("\\s*((due by)|due|by|before|from|on|at)\\s*" + date, "");
+		input = input.replaceAll("\\++((due by)|due|by|before|from|on|at)\\s*" + date, "");
 		input = input.replaceAll("\\s*" + date + "\\s*", "");
 		input = input.replaceAll("\\s+((due by)|due|by|from|on|at)\\s*((due by)|due|by|from|on|at)*\\s*$", "");
 		input = input.replaceAll("^\\s*((due by)|due|by|from|on|at)\\s*((due by)|due|by|from|on|at)", "");
@@ -146,11 +151,6 @@ public class Parser {
 		String[] paramArray;
 
 		switch (cmdType) {
-		case SEARCH:
-		case DISPLAY:
-			pattern = "\\.+|,+|:+|;+|/+|\\\\+|\\|+";
-			paramArray = input.split(pattern);
-			break;
 		case DELETE:
 			if (input.contains("to") || input.contains("-")) {
 				pattern = "\\-+|to";
@@ -174,6 +174,32 @@ public class Parser {
 		}
 
 		return paramList;
+	}
+
+	// TODO: implement this method
+	public ParsedObject getDisplayParsedObject(String input) {
+		ParsedObject obj;
+		if (getDateList(input) == null) {
+			if (input.toLowerCase().contains("all")) {
+				obj = new ParsedObject(COMMAND_TYPE.DISPLAY_ALL, null, null);
+			} else {
+				obj = new ParsedObject(COMMAND_TYPE.INVALID, null, null);
+			}
+		} else {
+			ArrayList<Date> parsedInput = new ArrayList<Date>(getDateList(input));
+			switch (parsedInput.size()) {
+				case 1:
+					obj = new ParsedObject(COMMAND_TYPE.DISPLAY_ON, null, parsedInput);
+					break;
+				case 2:
+					obj = new ParsedObject(COMMAND_TYPE.DISPLAY_BETWEEN, null, parsedInput);
+					break;
+				default:
+					obj = new ParsedObject(COMMAND_TYPE.INVALID, null, null);
+			}
+		}
+
+		return obj;
 	}
 
 	public ParsedObject getAddParsedObject(String input) {
@@ -239,7 +265,7 @@ public class Parser {
 				fromID = 0;
 				toID = 0;
 			}
-			
+
 			for (int i = fromID; i <= toID; i++) {
 				taskIDs.add(i);
 			}
@@ -250,13 +276,13 @@ public class Parser {
 				} catch (Exception e) {
 					// Not number exception
 				}
-				
+
 			}
 		}
 		obj = new ParsedObject(COMMAND_TYPE.DELETE, null, taskIDs);
 		return obj;
 	}
-	
+
 	public ParsedObject getChangeStatusParsedObject(String input, boolean newStatus) {
 		String params;
 		if (newStatus) {
@@ -278,7 +304,7 @@ public class Parser {
 				fromID = 0;
 				toID = 0;
 			}
-			
+
 			for (int i = fromID; i <= toID; i++) {
 				taskIDs.add(i);
 			}
@@ -289,13 +315,13 @@ public class Parser {
 				} catch (Exception e) {
 					// Not number exception
 				}
-				
+
 			}
 		}
 		obj = new ParsedObject(newStatus ? COMMAND_TYPE.DONE : COMMAND_TYPE.UNDONE, null, taskIDs);
 		return obj;
 	}
-	 
+
 
 	public ParsedObject getUndoParsedObject(String input) {
 		String params = removeCommandWord(input, undoCmdList);
@@ -320,12 +346,7 @@ public class Parser {
 
 		return new ParsedObject(COMMAND_TYPE.REDO, null, numOfExec);
 	}
-	
-	// TODO: implement this method
-	public ParsedObject getDisplayParsedObject(String input) {
-		return null;
-	}
-	 
+
 /*
 	public ParsedObject getIsDoneParsedObject(String input) {
 		String params = removeCommandWord(input, deleteCmdList);

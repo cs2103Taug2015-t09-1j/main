@@ -23,21 +23,21 @@ public class DeadlinesTableModel extends AbstractTableModel {
 	private List<Task> deadlines = new ArrayList<>();
 	private MainGui mainGui;
 
-	public DeadlinesTableModel() {
+	private DeadlinesTableModel() {
 		super();
 	}
 
 	public void setTasks(List<Task> tasks) {
 		this.deadlines = tasks;
 	}
-	
+
 	public static DeadlinesTableModel getInstance() {
 		if (dtm == null) {
 			dtm = new DeadlinesTableModel();
 		}
 		return dtm;
 	}
-	
+
 	public void setMainGui(MainGui mainGui) {
 		this.mainGui = mainGui;
 	}
@@ -86,7 +86,7 @@ public class DeadlinesTableModel extends AbstractTableModel {
 				break;
 			case 3:
 				shouldProcess = true;
-				fakeCommand = ((Boolean)value ?  "done" : "undone") + " " + t.getTaskID(); 
+				fakeCommand = ((Boolean)value ?  "done" : "undone") + " " + t.getTaskID();
 				break;
 		}
 		if (shouldProcess && mainGui != null) {

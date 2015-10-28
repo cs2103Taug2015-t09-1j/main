@@ -20,14 +20,14 @@ public class Logic extends Observable implements Observer {
 	private final Logger logger = Logger.getLogger(Logic.class.getName());
 
 	private Logic() {}
-	
+
 	public static void start() {
 		Logic logic = Logic.getInstance();
 		logic.addObserver(MainGui.getInstance());
-		
+
 		Storage.start();
 		storage = Storage.getInstance();
-		
+
 		logic.updateModelData(TASK_TYPE.DEADLINE, false);
 		logic.updateModelData(TASK_TYPE.TODO, false);
 		logic.updateModelData(TASK_TYPE.EVENT, true);
@@ -57,7 +57,7 @@ public class Logic extends Observable implements Observer {
 		case DELETE:
 			processDeleteCommand(input);
 			break;
-		case DONE: 
+		case DONE:
 			processChangeStatusCommand(input, true);
 			break;
 		case UNDONE:
@@ -111,8 +111,8 @@ public class Logic extends Observable implements Observer {
 		}
 		updateMessage(changeStatus.getMessage());
 	}
-	
-	private void processUndoCommand(String input) {	
+
+	private void processUndoCommand(String input) {
 		VersionControl vControl = VersionControl.getInstance();
 		if (vControl.execute(parser.getUndoParsedObject(input))) {
 			updateModelData(TASK_TYPE.DEADLINE, false);
@@ -131,33 +131,39 @@ public class Logic extends Observable implements Observer {
 		}
 		updateMessage(vControl.getMessage());
 	}
-	
+
 	private void processDisplayCommand(String input) {
-		Display display = Display.getInstance(TASK_TYPE.DEADLINE);
-		ParsedObject obj = parser.getDisplayParsedObject(input);
-		
-		if (obj.getTaskType().equals(TASK_TYPE.ALL)) {
+		Display displayCmd = Display.getInstance(TASK_TYPE.DEADLINE);
+		List<List<Task>> temp = displayCmd.process(parser.getDisplayParsedObject(input));
+		if (temp != null) {
+			updateModelData(TASK_TYPE.DEADLINE, temp.get(0), false);
+			updateModelData(TASK_TYPE.EVENT, temp.get(1), false);
+		}
+
+		updateMessage(displayCmd.getMessage());
+
+		/*if (obj.getTaskType().equals(TASK_TYPE.ALL)) {
 			updateModelData(TASK_TYPE.EVENT, false);
 			updateModelData(TASK_TYPE.DEADLINE, false);
 			updateModelData(TASK_TYPE.TODO, false);
 			return;
-		}
+		}*/
 
-		updateModelData(TASK_TYPE.DEADLINE, display.process(obj), false);
-		
-		display = Display.getInstance(TASK_TYPE.EVENT);
-		updateModelData(TASK_TYPE.EVENT, display.process(obj), false);
+		//updateModelData(TASK_TYPE.DEADLINE, display.process(obj), false);
+
+		//display = Display.getInstance(TASK_TYPE.EVENT);
+		//updateModelData(TASK_TYPE.EVENT, display.process(obj), false);
 	}
 
 	private void updateModelData(TASK_TYPE type, boolean shouldSwitch) {
 		setChanged();
 		notifyObservers(new ObserverEvent(ObserverEvent.CHANGE_TABLE_CODE, new ObserverEvent.ETasks(storage.getAllTask(type), type, shouldSwitch)));
 	}
-	
+
 	private void updateModelData(TASK_TYPE type, List<Task> tasks, boolean shouldSwitch) {
 		setChanged();
 		notifyObservers(new ObserverEvent(ObserverEvent.CHANGE_TABLE_CODE, new ObserverEvent.ETasks(tasks, type, shouldSwitch)));
-	} 
+	}
 
 	private void updateMessage(String message) {
 		setChanged();
@@ -181,49 +187,49 @@ public class Logic extends Observable implements Observer {
 	 * taskLists.add(Storage.getAllTask(Commands.TASK_TYPE.TODO));
 	 * taskLists.add(Storage.getAllTask(Commands.TASK_TYPE.DEADLINE)); return
 	 * taskLists; }
-	 * 
+	 *
 	 * public ArrayList<Event> getAllEvents() { return
 	 * (Storage.getAllTask(Commands.TASK_TYPE.EVENT).size() != 0) ?
 	 * (ArrayList)Storage.getAllTask(Commands.TASK_TYPE.EVENT) : new
 	 * ArrayList(); }
-	 * 
+	 *
 	 * public ArrayList<Todo> getAllTodos() { return
 	 * (Storage.getAllTask(Commands.TASK_TYPE.TODO).size() != 0) ?
 	 * (ArrayList)Storage.getAllTask(Commands.TASK_TYPE.TODO) : new ArrayList();
 	 * }
-	 * 
+	 *
 	 * public ArrayList<Deadline> getAllDeadlineTasks() { return
 	 * (Storage.getAllTask(Commands.TASK_TYPE.DEADLINE).size() != 0) ?
 	 * (ArrayList)Storage.getAllTask(Commands.TASK_TYPE.DEADLINE) : new
 	 * ArrayList(); }
-	 * 
+	 *
 	 * private ArrayList<Event> searchEvents(String input) { ParsedObject obj =
 	 * parser.getSearchParsedObject(input); ArrayList<Event> matches = new
 	 * ArrayList<Event>();
-	 * 
+	 *
 	 * for (Event e : getAllEvents()) { for (String s :
 	 * (ArrayList<String>)obj.getObjects()) { if
 	 * (e.getTaskDesc().toLowerCase().contains(s)) { matches.add(e); } } }
 	 * return matches; }
-	 * 
+	 *
 	 * private ArrayList<Todo> searchTodos(String input) { ParsedObject obj =
 	 * parser.getSearchParsedObject(input); ArrayList<Todo> matches = new
 	 * ArrayList<Todo>();
-	 * 
+	 *
 	 * for (Todo ft : getAllTodos()) { for (String s :
 	 * (ArrayList<String>)obj.getObjects()) { if
 	 * (ft.getTaskDesc().toLowerCase().contains(s)) { matches.add(ft); } } }
 	 * return matches; }
-	 * 
+	 *
 	 * private ArrayList<Deadline> searchDeadlineTasks(String input) {
 	 * ParsedObject obj = parser.getSearchParsedObject(input);
 	 * ArrayList<Deadline> matches = new ArrayList<Deadline>();
-	 * 
+	 *
 	 * for (Deadline dt : getAllDeadlineTasks()) { for (String s :
 	 * (ArrayList<String>)obj.getObjects()) { if
 	 * (dt.getTaskDesc().toLowerCase().contains(s)) { matches.add(dt); } } }
 	 * return matches; }
-	 * 
+	 *
 	 * private String search(String input) { // For Debugging ParsedObject obj =
 	 * parser.getSearchParsedObject(input);
 	 * System.out.println(obj.getCommandType());

@@ -6,6 +6,7 @@ import main.model.taskModels.Event;
 import main.model.taskModels.Task;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -38,73 +39,111 @@ public class Display extends Command {
 		return true;
 	}
 
-	public List<Task> process(ParsedObject obj) {
-		List<Task> result = new ArrayList<>();
-		List<Task> tasks = storage.getAllTask(obj.getTaskType());
+	public List<List<Task>> process(ParsedObject obj) {
+		//List<Task> result = new ArrayList<>();
+		List<List<Task>> result = new ArrayList<List<Task>>();
+		List<Task> tasks = storage.getAllTask(TASK_TYPE.ALL);
+		List<Task> deadlines = new ArrayList();
+		List<Task> events = new ArrayList();
 
 		switch (obj.getCommandType()) {
+		case DISPLAY_ALL:
+			deadlines = storage.getAllTask(TASK_TYPE.DEADLINE);
+			events = storage.getAllTask(TASK_TYPE.EVENT);
+			message = "Displaying all tasks.";
+			break;
 		case DISPLAY_ON:
 			for (Object dateObj : obj.getObjects()) {
 				Date checkDate = (Date) dateObj;
+				message = "Displaying all tasks on " + checkDate + ".";
 				for (Task task : tasks) {
-					boolean isSatisfy = false;
+					//boolean isSatisfy = false;
 					switch (task.getType()) {
 					case EVENT:
 						if (isOn(checkDate, ((Event) task).getFromDate())
 								|| isOn(checkDate, ((Event) task).getToDate())) {
-							isSatisfy = true;
+							//isSatisfy = true;
+							events.add(task);
 						}
 						break;
 					case DEADLINE:
 						if (isOn(checkDate, ((Deadline) task).getDate())) {
-							isSatisfy = true;
+							//isSatisfy = true;
+							deadlines.add(task);
 						}
 						break;
 					default:
 						break;
 					}
-					if (isSatisfy) {
+					/*if (isSatisfy) {
 						result.add(task);
-					}
+					}*/
 				}
 			}
 			break;
 		case DISPLAY_BETWEEN:
 			Date fromDate = (Date) obj.getObjects().get(0);
 			Date toDate = (Date) obj.getObjects().get(1);
+			message = "Displaying all tasks between " + fromDate + " and " + toDate + ".";
 			for (Task task : tasks) {
-				boolean isSatisfy = false;
+				//boolean isSatisfy = false;
 				switch (task.getType()) {
 				case EVENT:
 					if (isBetween(fromDate, toDate, ((Event) task).getFromDate()) || isBetween(fromDate, toDate, ((Event) task).getToDate())) {
-						isSatisfy = true;
+						//isSatisfy = true;
+						events.add(task);
 					}
 					break;
 				case DEADLINE:
 					if (isBetween(fromDate, toDate, ((Deadline) task).getDate())) {
-						isSatisfy = true;
+						//isSatisfy = true;
+						deadlines.add(task);
 					}
 					break;
 				default:
 					break;
 				}
-				if (isSatisfy) {
+				/*if (isSatisfy) {
 					result.add(task);
-				}
+				}*/
 			}
 			break;
 		default:
-			break;
+			message = "No matching tasks found.";
+			return null;
 		}
+		result.add(deadlines);
+		result.add(events);
+
 		return result;
 	}
 
-	private static boolean isBetween(Date left, Date right, Date cur) {
-		return true;
+	private boolean isBetween(Date left, Date right, Date cur) {
+		if (cur.compareTo(left) >= 0 && cur.compareTo(right) <= 0) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
-	private static boolean isOn(Date date, Date cur) {
-		return true;
+	private boolean isOn(Date date, Date cur) {
+		Date currentDate = resetTime((Date)cur.clone());
+		Date comparedDate = resetTime((Date)date.clone());
+
+		if (currentDate.compareTo(comparedDate) == 0) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
+	private Date resetTime(Date d) {
+		Calendar date = Calendar.getInstance();
+		date.setTime(d);
+		date.set(Calendar.HOUR_OF_DAY, 0);
+		date.set(Calendar.MINUTE, 0);
+		date.set(Calendar.SECOND, 0);
+		date.set(Calendar.MILLISECOND, 0);
+		return date.getTime();
+	}
 }

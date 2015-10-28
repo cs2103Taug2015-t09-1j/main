@@ -110,27 +110,27 @@ public class Storage {
 	public boolean addTask(Task task) {
 		task = task.clone();
 		switch (task.getType()) {
-			case EVENT: 
+			case EVENT:
 				events.add(task);
 				return true;
-			case TODO: 
+			case TODO:
 				todos.add(task);
 				return true;
 			case DEADLINE:
 				deadlines.add(task);
 				return true;
-			default: 
+			default:
 				return false;
 		}
 	}
-	
+
 	public boolean updateTask(Task task) {
 		if (delete(task.getTaskID())) {
 			return addTask(task);
 		}
 		return false;
 	}
-	
+
 	public boolean changeStatus(int id, boolean newStatus) {
 		Task task = getRealTaskById(id);
 		if (task != null) {
@@ -147,12 +147,24 @@ public class Storage {
 		}
 		return cloneTasks;
 	}
-	
+
 	public List<Task> getAllTask(TASK_TYPE type) {
 		switch (type) {
 			case TODO: return cloneList(todos);
 			case EVENT: return cloneList(events);
 			case DEADLINE: return cloneList(deadlines);
+			case ALL:
+				List<Task> allTasks = new ArrayList<Task>();
+				for (Task t : cloneList(todos)) {
+					allTasks.add(t);
+				}
+				for (Task t : cloneList(events)) {
+					allTasks.add(t);
+				}
+				for (Task t : cloneList(deadlines)) {
+					allTasks.add(t);
+				}
+				return allTasks;
 			default: return new ArrayList<>();
 		}
 	}
@@ -164,7 +176,7 @@ public class Storage {
 		}
 		return null;
 	}
-	
+
 	private Task getRealTaskById(int id) {
 		for (Task event:events) if (event.getTaskID() == id){
 			return event;

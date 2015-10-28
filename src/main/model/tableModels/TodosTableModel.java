@@ -26,10 +26,10 @@ public class TodosTableModel extends AbstractTableModel {
 	private List<Task> todos = new ArrayList<>();
 	private MainGui mainGui;
 
-	public TodosTableModel() {
+	private TodosTableModel() {
 		super();
 	}
-	
+
 	public void setTasks(List<Task> tasks) {
 		this.todos = tasks;
 	}
@@ -40,11 +40,11 @@ public class TodosTableModel extends AbstractTableModel {
 		}
 		return ttm;
 	}
-	
+
 	public void setMainGui(MainGui mainGui) {
 		this.mainGui = mainGui;
 	}
-	
+
 	public int getColumnCount() {
 		return columnNames.length;
     }
@@ -63,7 +63,7 @@ public class TodosTableModel extends AbstractTableModel {
 
 	public boolean isCellEditable(int row, int col) {
         switch (col) {
-        	case 1: 
+        	case 1:
         		return true;
         	case 2:
         		return true;
@@ -86,7 +86,7 @@ public class TodosTableModel extends AbstractTableModel {
 				fakeCommand = ((Boolean)value ?  "done" : "undone") + " " + t.getTaskID();
 				break;
 		}
-		if (shouldProcess && mainGui != null) {	
+		if (shouldProcess && mainGui != null) {
 			mainGui.fakeInputComeIn(fakeCommand);
 		}
 
