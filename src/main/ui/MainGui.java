@@ -10,6 +10,7 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
@@ -57,9 +58,9 @@ import main.model.taskModels.Task;
  * @author Dalton
  *
  */
-public class MainGui extends Observable implements Observer {
+public class MainGUI extends Observable implements Observer {
 
-	private static MainGui mainGui;
+	private static MainGUI mainGUI;
 
 	private JFrame frmTodokoro;
 	private JPanel inputPanel;
@@ -70,7 +71,8 @@ public class MainGui extends Observable implements Observer {
 	private JScrollPane eventsScrollPane, todosScrollPane, deadlineTasksScrollPane;
 	private TableRowSorter eventsSorter, todosSorter, deadlinesSorter;
 
-	private static final Logger logger = Logger.getLogger(MainGui.class.getName());
+	private static final Logger logger = Logger.getLogger(MainGUI.class.getName());
+	private static final InputHistory history = InputHistory.getInstance();
 	private static EventsTableModel etm = EventsTableModel.getInstance();
 	private static TodosTableModel ttm = TodosTableModel.getInstance();
 	private static DeadlinesTableModel dtm = DeadlinesTableModel.getInstance();
@@ -85,14 +87,11 @@ public class MainGui extends Observable implements Observer {
 		} catch (Throwable e) {
 			logger.log(Level.SEVERE, "LookAndFeel: " + e.toString(), e);
 		}
-		
+
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					// make sure that Logic has instance before MainGui has instance.
-					Logic.start();
-
-					MainGui window = getInstance();
+					MainGUI window = getInstance();
 					window.addObserver(Logic.getInstance());
 					window.frmTodokoro.setVisible(true);
 				} catch (Exception e) {
@@ -103,17 +102,17 @@ public class MainGui extends Observable implements Observer {
 		});
 	}
 
-	public static MainGui getInstance() {
-		if (mainGui == null) {
-			mainGui = new MainGui();
+	public static MainGUI getInstance() {
+		if (mainGUI == null) {
+			mainGUI = new MainGUI();
 		}
-		return mainGui;
+		return mainGUI;
 	}
 
 	/**
 	 * Create the application.
 	 */
-	private MainGui() {
+	private MainGUI() {
 		try {
 			initialize();
 		} catch (Exception e) {
@@ -144,7 +143,7 @@ public class MainGui extends Observable implements Observer {
 		etm.setMainGui(this);
 		ttm.setMainGui(this);
 	}
-	
+
 	private void setupMainFrame() {
 		frmTodokoro = new JFrame();
 		frmTodokoro.setAlwaysOnTop(true);
@@ -188,8 +187,8 @@ public class MainGui extends Observable implements Observer {
 		});
 
 		frmTodokoro.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
-				.put(KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0), "test");
-		frmTodokoro.getRootPane().getActionMap().put("test", new AbstractAction() {
+				.put(KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0), "Change Directory");
+		frmTodokoro.getRootPane().getActionMap().put("Change Directory", new AbstractAction() {
 			public void actionPerformed(ActionEvent e) {
 				ChangeDirectory cd = new ChangeDirectory(frmTodokoro);
 			}
@@ -216,10 +215,32 @@ public class MainGui extends Observable implements Observer {
 		tfUserInput.setBorder(border);
 		tfUserInput.setFocusAccelerator('e');
 
-		tfUserInput.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				sendUserInput(tfUserInput.getText().trim());
-				tfUserInput.setText(null);
+		tfUserInput.addKeyListener(new KeyListener() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				switch (e.getKeyCode()) {
+				case KeyEvent.VK_ENTER:
+					sendUserInput(tfUserInput.getText().trim());
+					history.addInputHistory(tfUserInput.getText());
+					tfUserInput.setText(null);
+					break;
+				case KeyEvent.VK_UP:
+					tfUserInput.setText(history.getPreviousInput());
+					break;
+				case KeyEvent.VK_DOWN:
+					tfUserInput.setText(history.getNextInput());
+					break;
+				}
+			}
+
+			@Override
+			public void keyReleased(KeyEvent e) {
+				// TODO Auto-generated method stub
+			}
+
+			@Override
+			public void keyTyped(KeyEvent e) {
+				// TODO Auto-generated method stub
 			}
 		});
 
@@ -457,7 +478,7 @@ public class MainGui extends Observable implements Observer {
 	public void fakeInputComeIn(String command) {
 		sendUserInput(command);
 	}
-	
+
 	public void updateStatusMsg(String msg) {
 		lblStatusMsg.setText(msg);
 	}
