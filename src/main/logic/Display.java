@@ -108,6 +108,9 @@ public class Display extends Command {
 				}*/
 			}
 			break;
+		case INVALID:
+			message = "Invalid parameters for display command.";
+			return null;
 		default:
 			message = "No matching tasks found.";
 			return null;

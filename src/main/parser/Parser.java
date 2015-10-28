@@ -176,23 +176,23 @@ public class Parser {
 		return paramList;
 	}
 
-	// TODO: implement this method
 	public ParsedObject getDisplayParsedObject(String input) {
 		ParsedObject obj;
-		if (getDateList(input) == null) {
-			if (input.toLowerCase().contains("all")) {
+		String parsedInput = removeCommandWord(input, displayCmdList);
+		if (getDateList(parsedInput) == null) {
+			if (parsedInput.matches("^all\\s*$")) {
 				obj = new ParsedObject(COMMAND_TYPE.DISPLAY_ALL, null, null);
 			} else {
 				obj = new ParsedObject(COMMAND_TYPE.INVALID, null, null);
 			}
 		} else {
-			ArrayList<Date> parsedInput = new ArrayList<Date>(getDateList(input));
-			switch (parsedInput.size()) {
+			ArrayList<Date> dates = new ArrayList<Date>(getDateList(input));
+			switch (dates.size()) {
 				case 1:
-					obj = new ParsedObject(COMMAND_TYPE.DISPLAY_ON, null, parsedInput);
+					obj = new ParsedObject(COMMAND_TYPE.DISPLAY_ON, null, dates);
 					break;
 				case 2:
-					obj = new ParsedObject(COMMAND_TYPE.DISPLAY_BETWEEN, null, parsedInput);
+					obj = new ParsedObject(COMMAND_TYPE.DISPLAY_BETWEEN, null, dates);
 					break;
 				default:
 					obj = new ParsedObject(COMMAND_TYPE.INVALID, null, null);
