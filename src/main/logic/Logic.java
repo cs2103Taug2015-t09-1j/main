@@ -11,22 +11,22 @@ import main.model.taskModels.Task;
 import main.model.EnumTypes.TASK_TYPE;
 import main.parser.Parser;
 import main.storage.Storage;
-import main.ui.MainGui;
+import main.ui.MainGUI;
 
 public class Logic extends Observable implements Observer {
 	private static Logic logic = null;
 	private static Storage storage = null;
-	private static final Parser parser = Parser.getInstance();
+	private static Parser parser = null;
 	private final Logger logger = Logger.getLogger(Logic.class.getName());
 
 	private Logic() {}
 
-	public static void start() {
-		Logic logic = Logic.getInstance();
-		logic.addObserver(MainGui.getInstance());
+	private static void init() {
+		logic = new Logic();
+		logic.addObserver(MainGUI.getInstance());
 
-		Storage.start();
 		storage = Storage.getInstance();
+		parser = Parser.getInstance();
 
 		logic.updateModelData(TASK_TYPE.DEADLINE, false);
 		logic.updateModelData(TASK_TYPE.TODO, false);
@@ -35,7 +35,7 @@ public class Logic extends Observable implements Observer {
 
 	public static Logic getInstance() {
 		if (logic == null) {
-			logic = new Logic();
+			init();
 		}
 		return logic;
 	}

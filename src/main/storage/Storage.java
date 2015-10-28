@@ -34,7 +34,7 @@ public class Storage {
 	private List<Task> events = new ArrayList<>();
 	private List<Task> deadlines = new ArrayList<>();
 
-	private static Storage storage = Storage.getInstance();
+	private static Storage storage = null;
 
 	private Storage() {
 		init();
@@ -45,10 +45,6 @@ public class Storage {
 			storage = new Storage();
 		}
 		return storage;
-	}
-
-	public static void start() {
-		Storage.getInstance();
 	}
 
 	private void initTasks() {

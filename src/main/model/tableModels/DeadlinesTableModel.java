@@ -10,7 +10,7 @@ import main.model.EnumTypes.TASK_TYPE;
 import main.model.taskModels.Deadline;
 import main.model.taskModels.Task;
 import main.storage.Storage;
-import main.ui.MainGui;
+import main.ui.MainGUI;
 
 /**
  * @author Dalton
@@ -21,7 +21,7 @@ public class DeadlinesTableModel extends AbstractTableModel {
 	private final String[] columnNames = { "ID", "Deadline", "Task Description", "Done" };
 	private final Class<?>[] columnTypes = { Integer.class, Date.class, String.class, Boolean.class };
 	private List<Task> deadlines = new ArrayList<>();
-	private MainGui mainGui;
+	private MainGUI mainGui;
 
 	private DeadlinesTableModel() {
 		super();
@@ -38,7 +38,7 @@ public class DeadlinesTableModel extends AbstractTableModel {
 		return dtm;
 	}
 
-	public void setMainGui(MainGui mainGui) {
+	public void setMainGui(MainGUI mainGui) {
 		this.mainGui = mainGui;
 	}
 

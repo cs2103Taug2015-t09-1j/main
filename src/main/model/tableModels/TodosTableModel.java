@@ -13,7 +13,7 @@ import main.model.EnumTypes.TASK_TYPE;
 import main.model.taskModels.Task;
 import main.model.taskModels.Todo;
 import main.storage.Storage;
-import main.ui.MainGui;
+import main.ui.MainGUI;
 
 /**
  * @author Dalton
@@ -24,7 +24,7 @@ public class TodosTableModel extends AbstractTableModel {
 	private final String[] columnNames = { "ID", "Task Description", "Done" };
 	private final Class<?>[] columnTypes = { Integer.class, String.class, Boolean.class };
 	private List<Task> todos = new ArrayList<>();
-	private MainGui mainGui;
+	private MainGUI mainGui;
 
 	private TodosTableModel() {
 		super();
@@ -41,7 +41,7 @@ public class TodosTableModel extends AbstractTableModel {
 		return ttm;
 	}
 
-	public void setMainGui(MainGui mainGui) {
+	public void setMainGui(MainGUI mainGui) {
 		this.mainGui = mainGui;
 	}
 

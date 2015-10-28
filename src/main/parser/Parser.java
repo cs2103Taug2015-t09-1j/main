@@ -25,24 +25,24 @@ public class Parser {
 	private static Parser parser = null;
 	private final PrettyTimeParser ptParser = new PrettyTimeParser();
 	private final Logger logger = Logger.getLogger(Parser.class.getName());
-	private static String[] updateCmdList = {"update", "/u", "edit", "/e", "modify", "/m"};
-	private static String[] deleteCmdList = {"delete", "del", "/d", "remove", "rm", "/r"};
-	private static String[] doneCmdList = {"done", "complete"};
-	private static String[] undoneCmdList = {"undone", "incomplete"};
-	private static String[] undoCmdList = {"undo", "/un"};
-	private static String[] redoCmdList = {"redo", "/re"};
-	private static String[] exitCmdList = {"exit", "/e", "quit", "/q"};
+	private String[] updateCmdList = {"update", "/u", "edit", "/e", "modify", "/m"};
+	private String[] deleteCmdList = {"delete", "del", "/d", "remove", "rm", "/r"};
+	private String[] doneCmdList = {"done", "complete"};
+	private String[] undoneCmdList = {"undone", "incomplete"};
+	private String[] undoCmdList = {"undo", "/un"};
+	private String[] redoCmdList = {"redo", "/re"};
+	private String[] exitCmdList = {"exit", "/e", "quit", "/q"};
 	private String[] displayCmdList = {"display", "/dp", "show", "/sw"};
 
 	//private String[] searchCmdList = {"search", "/s", "find", "/f"};
 	//private String[] doneCmdList = {"is done", "done"};
 
-	private static final String UPDATE_REGEX = "\\s+\\d+\\s+\\d+";
-	private static final String DELETE_REGEX = "\\s+\\d+\\s*(((to|-)\\s*\\d+\\s*)?|(\\d+\\s*)*)";
-	private static final String DISPLAY_REGEX = "\\s+(\\w|\\d)+";
-	private static final String DONE_UNDONE_REGEX= "\\s+\\d+\\s*(((to|-)\\s*\\d+\\s*)?|(\\d+\\s*)*)";
-	private static final String UNDO_REDO_REGEX = "(\\s+\\d+\\s*)*$";
-	private static final String EXIT_REGEX = "\\s*$";
+	private final String UPDATE_REGEX = "\\s+\\d+\\s+\\d+";
+	private final String DELETE_REGEX = "\\s+\\d+\\s*(((to|-)\\s*\\d+\\s*)?|(\\d+\\s*)*)";
+	private final String DISPLAY_REGEX = "\\s+(\\w|\\d)+";
+	private final String DONE_UNDONE_REGEX= "\\s+\\d+\\s*(((to|-)\\s*\\d+\\s*)?|(\\d+\\s*)*)";
+	private final String UNDO_REDO_REGEX = "(\\s+\\d+\\s*)*$";
+	private final String EXIT_REGEX = "\\s*$";
 
 
 	private Parser() {}

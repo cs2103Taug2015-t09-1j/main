@@ -13,7 +13,7 @@ import main.model.EnumTypes.TASK_TYPE;
 import main.model.taskModels.Event;
 import main.model.taskModels.Task;
 import main.storage.Storage;
-import main.ui.MainGui;
+import main.ui.MainGUI;
 
 /**
  * @author Dalton
@@ -24,7 +24,7 @@ public class EventsTableModel extends AbstractTableModel {
 	private final String[] columnNames = { "ID", "Start Date", "End Date", "Task Description", "Done" };
 	private final Class<?>[] columnTypes = { Integer.class, Date.class, Date.class, String.class, Boolean.class };
 	private List<Task> events = new ArrayList<>();
-	private MainGui mainGui;
+	private MainGUI mainGui;
 
 	private EventsTableModel() {
 		super();
@@ -41,7 +41,7 @@ public class EventsTableModel extends AbstractTableModel {
 		return etm;
 	}
 	
-	public void setMainGui(MainGui mainGui) {
+	public void setMainGui(MainGUI mainGui) {
 		this.mainGui = mainGui;
 	}
 
