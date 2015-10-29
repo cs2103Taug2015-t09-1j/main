@@ -32,18 +32,13 @@ public class Parser {
 	private String[] undoCmdList = {"undo", "/un"};
 	private String[] redoCmdList = {"redo", "/re"};
 	private String[] exitCmdList = {"exit", "/e", "quit", "/q"};
-	private String[] displayCmdList = {"display", "/dp", "show", "/sw"};
+	private String[] displayCmdList = {"display", "show", "/sh", "view", "/v"};
 
-	//private String[] searchCmdList = {"search", "/s", "find", "/f"};
-	//private String[] doneCmdList = {"is done", "done"};
-
-	private final String UPDATE_REGEX = "\\s*\\d+\\s+\\d+";
-	private final String DELETE_REGEX = "\\s*\\d+\\s*(((to|-)\\s*\\d+\\s*)?|(\\d+\\s*)*)";
-	private final String DISPLAY_REGEX = "\\s*(\\w|\\d)+";
-	private final String DONE_UNDONE_REGEX= "\\s*\\d+\\s*(((to|-)\\s*\\d+\\s*)?|(\\d+\\s*)*)";
-	private final String UNDO_REDO_REGEX = "\\s*\\d+\\s*$";
-	private final String EXIT_REGEX = "\\s*$";
-
+	private final String UPDATE_REGEX = "\\d+\\s+\\d+\\s+(\\w*|\\d*)+";
+	private final String DELETE_REGEX = "\\d+\\s*(((to|-)\\s*\\d+\\s*)?|(\\d+\\s*)*)";
+	private final String DISPLAY_REGEX = "(\\w|\\d)+";
+	private final String DONE_UNDONE_REGEX= "\\d+\\s*(((to|-)\\s*\\d+\\s*)?|(\\d+\\s*)*)";
+	private final String UNDO_REDO_REGEX = "\\d+\\s*$";
 
 	private Parser() {}
 
@@ -90,7 +85,9 @@ public class Parser {
 				return COMMAND_TYPE.REDO;
 			}
 		} else if (isCommand(input, exitCmdList)) {
+			if (removeCommandWord(input, exitCmdList).isEmpty()) {
 				return COMMAND_TYPE.EXIT;
+			}
 		} else {
 			return COMMAND_TYPE.ADD;
 		}
@@ -112,7 +109,7 @@ public class Parser {
 	private boolean hasValidParameters(String input, String regex) {
 		Pattern pattern = Pattern.compile("(?i)" + regex);
 		Matcher matcher = pattern.matcher(input);
-        if (matcher.find()) {
+        if (matcher.matches()) {
         	return true;
         }
 		return false;

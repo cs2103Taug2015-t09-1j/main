@@ -5,6 +5,7 @@ import main.model.taskModels.Deadline;
 import main.model.taskModels.Event;
 import main.model.taskModels.Task;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -55,7 +56,7 @@ public class Display extends Command {
 		case DISPLAY_ON:
 			for (Object dateObj : obj.getObjects()) {
 				Date checkDate = (Date) dateObj;
-				message = "Displaying all tasks on " + checkDate + ".";
+				message = "Displaying all tasks on " + new SimpleDateFormat("EEE, dd MMM yyyy").format(checkDate) + ".";
 				for (Task task : tasks) {
 					//boolean isSatisfy = false;
 					switch (task.getType()) {
@@ -84,7 +85,7 @@ public class Display extends Command {
 		case DISPLAY_BETWEEN:
 			Date fromDate = (Date) obj.getObjects().get(0);
 			Date toDate = (Date) obj.getObjects().get(1);
-			message = "Displaying all tasks between " + fromDate + " and " + toDate + ".";
+			message = "Displaying all tasks between " + new SimpleDateFormat("EEE, dd MMM yyyy").format(fromDate) + " and " + new SimpleDateFormat("EEE, dd MMM yyyy").format(toDate) + ".";
 			for (Task task : tasks) {
 				//boolean isSatisfy = false;
 				switch (task.getType()) {
@@ -122,7 +123,11 @@ public class Display extends Command {
 	}
 
 	private boolean isBetween(Date left, Date right, Date cur) {
-		if (cur.compareTo(left) >= 0 && cur.compareTo(right) <= 0) {
+		Date currentDate = resetTime((Date)cur.clone(), true);
+		Date startDate = resetTime((Date)left.clone(), true);
+		Date endDate = resetTime((Date)right.clone(), false);
+
+		if (cur.compareTo(startDate) >= 0 && cur.compareTo(endDate) <= 0) {
 			return true;
 		} else {
 			return false;
@@ -130,8 +135,8 @@ public class Display extends Command {
 	}
 
 	private boolean isOn(Date date, Date cur) {
-		Date currentDate = resetTime((Date)cur.clone());
-		Date comparedDate = resetTime((Date)date.clone());
+		Date currentDate = resetTime((Date)cur.clone(), true);
+		Date comparedDate = resetTime((Date)date.clone(), true);
 
 		if (currentDate.compareTo(comparedDate) == 0) {
 			return true;
@@ -140,13 +145,21 @@ public class Display extends Command {
 		}
 	}
 
-	private Date resetTime(Date d) {
+	private Date resetTime(Date d, boolean isStartOfDay) {
 		Calendar date = Calendar.getInstance();
 		date.setTime(d);
-		date.set(Calendar.HOUR_OF_DAY, 0);
-		date.set(Calendar.MINUTE, 0);
-		date.set(Calendar.SECOND, 0);
-		date.set(Calendar.MILLISECOND, 0);
+		if (isStartOfDay) {
+			date.set(Calendar.HOUR_OF_DAY, 0);
+			date.set(Calendar.MINUTE, 0);
+			date.set(Calendar.SECOND, 0);
+			date.set(Calendar.MILLISECOND, 0);
+		} else {
+			date.set(Calendar.HOUR_OF_DAY, 23);
+			date.set(Calendar.MINUTE, 59);
+			date.set(Calendar.SECOND, 59);
+			date.set(Calendar.MILLISECOND, 999);
+		}
+
 		return date.getTime();
 	}
 }
