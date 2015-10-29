@@ -37,11 +37,11 @@ public class Parser {
 	//private String[] searchCmdList = {"search", "/s", "find", "/f"};
 	//private String[] doneCmdList = {"is done", "done"};
 
-	private final String UPDATE_REGEX = "\\s+\\d+\\s+\\d+";
-	private final String DELETE_REGEX = "\\s+\\d+\\s*(((to|-)\\s*\\d+\\s*)?|(\\d+\\s*)*)";
-	private final String DISPLAY_REGEX = "\\s+(\\w|\\d)+";
-	private final String DONE_UNDONE_REGEX= "\\s+\\d+\\s*(((to|-)\\s*\\d+\\s*)?|(\\d+\\s*)*)";
-	private final String UNDO_REDO_REGEX = "(\\s+\\d+\\s*)*$";
+	private final String UPDATE_REGEX = "\\s*\\d+\\s+\\d+";
+	private final String DELETE_REGEX = "\\s*\\d+\\s*(((to|-)\\s*\\d+\\s*)?|(\\d+\\s*)*)";
+	private final String DISPLAY_REGEX = "\\s*(\\w|\\d)+";
+	private final String DONE_UNDONE_REGEX= "\\s*\\d+\\s*(((to|-)\\s*\\d+\\s*)?|(\\d+\\s*)*)";
+	private final String UNDO_REDO_REGEX = "\\s*\\d+\\s*$";
 	private final String EXIT_REGEX = "\\s*$";
 
 
@@ -55,39 +55,66 @@ public class Parser {
 	}
 
 	public COMMAND_TYPE determineCommandType(String input) {
-		input.trim();
-		if (input.isEmpty()) {
+		if (input.trim().isEmpty()) {
 			return COMMAND_TYPE.INVALID;
 		}
-		if (isValidCommand(input, updateCmdList, UPDATE_REGEX)) {
-			return COMMAND_TYPE.UPDATE;
-		} else if (isValidCommand(input, deleteCmdList, DELETE_REGEX)) {
-			return COMMAND_TYPE.DELETE;
-		} else if (isValidCommand(input, displayCmdList, DISPLAY_REGEX)) {
-			return COMMAND_TYPE.DISPLAY;
-		} else if (isValidCommand(input, doneCmdList, DONE_UNDONE_REGEX)) {
-			return COMMAND_TYPE.DONE;
-		} else if (isValidCommand(input, undoneCmdList, DONE_UNDONE_REGEX)) {
-			return COMMAND_TYPE.UNDONE;
-		} else if (isValidCommand(input, undoCmdList, UNDO_REDO_REGEX)) {
-			return COMMAND_TYPE.UNDO;
-		} else if (isValidCommand(input, redoCmdList, UNDO_REDO_REGEX)) {
-			return COMMAND_TYPE.REDO;
-		} else if (isValidCommand(input, exitCmdList, EXIT_REGEX)) {
-			return COMMAND_TYPE.EXIT;
+
+		if (isCommand(input, updateCmdList)) {
+			if (hasValidParameters(removeCommandWord(input, updateCmdList), UPDATE_REGEX)) {
+				return COMMAND_TYPE.UPDATE;
+			}
+		} else if (isCommand(input, deleteCmdList)) {
+			if (hasValidParameters(removeCommandWord(input, deleteCmdList), DELETE_REGEX)) {
+				return COMMAND_TYPE.DELETE;
+			}
+		} else if (isCommand(input, displayCmdList)) {
+			if (hasValidParameters(removeCommandWord(input, displayCmdList), DISPLAY_REGEX)) {
+				return COMMAND_TYPE.DISPLAY;
+			}
+		} else if (isCommand(input, doneCmdList)) {
+			if (hasValidParameters(removeCommandWord(input, doneCmdList), DONE_UNDONE_REGEX)) {
+				return COMMAND_TYPE.DONE;
+			}
+		} else if (isCommand(input, undoneCmdList)) {
+			if (hasValidParameters(removeCommandWord(input, undoneCmdList), DONE_UNDONE_REGEX)) {
+				return COMMAND_TYPE.UNDONE;
+			}
+		} else if (isCommand(input, undoCmdList)) {
+			input = removeCommandWord(input, undoCmdList);
+			if (hasValidParameters(input, UNDO_REDO_REGEX) || input.isEmpty()) {
+				return COMMAND_TYPE.UNDO;
+			}
+		} else if (isCommand(input, redoCmdList)) {
+			input = removeCommandWord(input, redoCmdList);
+			if (hasValidParameters(input, UNDO_REDO_REGEX) || input.isEmpty()) {
+				return COMMAND_TYPE.REDO;
+			}
+		} else if (isCommand(input, exitCmdList)) {
+				return COMMAND_TYPE.EXIT;
 		} else {
 			return COMMAND_TYPE.ADD;
 		}
+
+		return COMMAND_TYPE.INVALID;
 	}
 
-	private boolean isValidCommand(String input, String[] commandList, String regex) {
+	private boolean isCommand(String input, String[] commandList) {
 		for(int i = 0; i < commandList.length; i++) {
-			Pattern pattern = Pattern.compile("(?i)^" + commandList[i] + regex);
+			Pattern pattern = Pattern.compile("(?i)^" + commandList[i] + "\\s*");
 			Matcher matcher = pattern.matcher(input);
 	        if (matcher.find()) {
-	        	return true;
+        		return true;
 	        }
 		}
+		return false;
+	}
+
+	private boolean hasValidParameters(String input, String regex) {
+		Pattern pattern = Pattern.compile("(?i)" + regex);
+		Matcher matcher = pattern.matcher(input);
+        if (matcher.find()) {
+        	return true;
+        }
 		return false;
 	}
 
