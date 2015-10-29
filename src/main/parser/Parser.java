@@ -112,9 +112,9 @@ public class Parser {
 	}
 
 	public List<Date> getDateList(String input) {
-		if (input.contains("+")) {
+		/*if (input.contains("+")) {
 			input = input.split("\\+")[1];
-		}
+		}*/
 
 		List<DateGroup> dGroup = parseDates(input);
 		if (dGroup != null) {
@@ -134,15 +134,21 @@ public class Parser {
 	}
 
 	private String getTaskDesc(String input) {
-		List<DateGroup> temp = ptParser.parseSyntax(input);
-		String date = temp.get(0).getText();
-		input = input.toLowerCase().replaceAll("\\s*((due by)|due|by|before|from|on|at)\\s*" + date, "");
-		input = input.replaceAll("\\++((due by)|due|by|before|from|on|at)\\s*" + date, "");
-		input = input.replaceAll("\\s*" + date + "\\s*", "");
-		input = input.replaceAll("\\s+((due by)|due|by|from|on|at)\\s*((due by)|due|by|from|on|at)*\\s*$", "");
-		input = input.replaceAll("^\\s*((due by)|due|by|from|on|at)\\s*((due by)|due|by|from|on|at)", "");
-		input = input.replaceAll("^\\s+|\\s+$", "");
-		input = input.replaceAll("^\\+", "");
+		Pattern p = Pattern.compile("\"([^\"]*)\"");
+		Matcher m = p.matcher(input);
+		if (m.find()) {
+			input = m.group().replace("\"", "");
+		} else {
+			List<DateGroup> temp = ptParser.parseSyntax(input);
+			String date = temp.get(0).getText();
+			input = input.toLowerCase().replaceAll("\\s*((due by)|due|by|before|from|on|at)\\s*" + date, "");
+			//input = input.replaceAll("\\++((due by)|due|by|before|from|on|at)*\\s*" + date, "");
+			input = input.replaceAll("\\s*" + date + "\\s*", "");
+			input = input.replaceAll("\\s+((due by)|due|by|from|on|at)\\s*((due by)|due|by|from|on|at)*\\s*$", "");
+			input = input.replaceAll("^\\s*((due by)|due|by|from|on|at)\\s*((due by)|due|by|from|on|at)", "");
+			input = input.replaceAll("^\\s+|\\s+$", "");
+			//input = input.replaceAll("^\\+", "");
+		}
 		return input.trim();
 	}
 
@@ -178,15 +184,16 @@ public class Parser {
 
 	public ParsedObject getDisplayParsedObject(String input) {
 		ParsedObject obj;
-		String parsedInput = removeCommandWord(input, displayCmdList);
-		if (getDateList(parsedInput) == null) {
-			if (parsedInput.matches("^all\\s*$")) {
+		input = removeCommandWord(input, displayCmdList);
+		List<Date> parsedInput = getDateList(input);
+		if (parsedInput == null) {
+			if (input.matches("^\\s*all\\s*$")) {
 				obj = new ParsedObject(COMMAND_TYPE.DISPLAY_ALL, null, null);
 			} else {
 				obj = new ParsedObject(COMMAND_TYPE.INVALID, null, null);
 			}
 		} else {
-			ArrayList<Date> dates = new ArrayList<Date>(getDateList(input));
+			ArrayList<Date> dates = new ArrayList<Date>(parsedInput);
 			switch (dates.size()) {
 				case 1:
 					obj = new ParsedObject(COMMAND_TYPE.DISPLAY_ON, null, dates);

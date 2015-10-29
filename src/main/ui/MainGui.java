@@ -77,13 +77,29 @@ public class MainGUI extends Observable implements Observer {
 	private static TodosTableModel ttm = TodosTableModel.getInstance();
 	private static DeadlinesTableModel dtm = DeadlinesTableModel.getInstance();
 
+	private static final int FRAME_WIDTH = 768;
+	private static final int FRAME_HEIGHT = 640;
+	private static final float FRAME_OPACITY = 1f;
+
+	private static final int INPUT_PANEL_HEIGHT = 137;
+	private static final int INPUT_PANEL_WIDTH = 762;
+
+	private static final int FRAME_SIMPLE_MODE_WIDTH = 768;
+	private static final int FRAME_SIMPLE_MODE_HEIGHT = 167;
+	private static final float FRAME_SIMPLE_MODE_OPACITY = 0.9f;
+
+	private static final int TABLE_FONT_SIZE = 14;
+
 	/**
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
-
 		try {
-			UIManager.setLookAndFeel("com.jtattoo.plaf.smart.SmartLookAndFeel");
+			//UIManager.setLookAndFeel("com.jtattoo.plaf.bernstein.BernsteinLookAndFeel");
+			//UIManager.setLookAndFeel("com.jtattoo.plaf.smart.SmartLookAndFeel");
+			//UIManager.setLookAndFeel("com.jtattoo.plaf.mint.MintLookAndFeel");
+			//UIManager.setLookAndFeel("com.jtattoo.plaf.mcwin.McWinLookAndFeel");
+			UIManager.setLookAndFeel("com.jtattoo.plaf.noire.NoireLookAndFeel");
 		} catch (Throwable e) {
 			logger.log(Level.SEVERE, "LookAndFeel: " + e.toString(), e);
 		}
@@ -97,7 +113,6 @@ public class MainGUI extends Observable implements Observer {
 				} catch (Exception e) {
 					logger.log(Level.SEVERE, "EventQueue Invoke: " + e.toString(), e);
 				}
-
 			}
 		});
 	}
@@ -149,10 +164,13 @@ public class MainGUI extends Observable implements Observer {
 		frmTodokoro.setAlwaysOnTop(true);
 		frmTodokoro.setTitle("Todokoro");
 		frmTodokoro.setResizable(false);
-		frmTodokoro.setBounds(0, 0, 768, 640);
-		frmTodokoro.setLocationRelativeTo(null);
+		frmTodokoro.setBounds(0, 0, FRAME_WIDTH, FRAME_HEIGHT);
 		frmTodokoro.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frmTodokoro.setLocationRelativeTo(null);
 		frmTodokoro.getContentPane().setLayout(null);
+		/*java.awt.Image img = new javax.swing.ImageIcon("resources/test.jpg").getImage();
+		java.awt.Image newimg = img.getScaledInstance(FRAME_WIDTH, FRAME_HEIGHT,  java.awt.Image.SCALE_SMOOTH);
+		frmTodokoro.setContentPane(new JLabel(new javax.swing.ImageIcon(newimg)));*/
 
 		frmTodokoro.addWindowListener(new WindowAdapter() {
 			public void windowOpened(WindowEvent e) {
@@ -161,8 +179,8 @@ public class MainGUI extends Observable implements Observer {
 		});
 
 		frmTodokoro.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
-				.put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), "SimpleMode");
-		frmTodokoro.getRootPane().getActionMap().put("SimpleMode", new AbstractAction() {
+				.put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), "Simple Mode");
+		frmTodokoro.getRootPane().getActionMap().put("Simple Mode", new AbstractAction() {
 			boolean isSimpleMode = false;
 
 			public void actionPerformed(ActionEvent e) {
@@ -170,16 +188,16 @@ public class MainGUI extends Observable implements Observer {
 					tabbedPane.setVisible(true);
 					lblFilter.setVisible(true);
 					tfFilter.setVisible(true);
-					frmTodokoro.setBounds(frmTodokoro.getX(), frmTodokoro.getY(), 768, 640);
-					frmTodokoro.setOpacity(1f);
-					inputPanel.setBounds(0, 475, 762, 137);
+					frmTodokoro.setBounds(frmTodokoro.getX(), frmTodokoro.getY(), FRAME_WIDTH, FRAME_HEIGHT);
+					frmTodokoro.setOpacity(FRAME_OPACITY);
+					inputPanel.setBounds(0, 475, INPUT_PANEL_WIDTH, INPUT_PANEL_HEIGHT);
 				} else {
 					tabbedPane.setVisible(false);
 					lblFilter.setVisible(false);
 					tfFilter.setVisible(false);
-					frmTodokoro.setBounds(frmTodokoro.getX(), frmTodokoro.getY(), 768, 167);
-					frmTodokoro.setOpacity(0.9f);
-					inputPanel.setBounds(0, 0, 762, 137);
+					frmTodokoro.setBounds(frmTodokoro.getX(), frmTodokoro.getY(), FRAME_SIMPLE_MODE_WIDTH, FRAME_SIMPLE_MODE_HEIGHT);
+					frmTodokoro.setOpacity(FRAME_SIMPLE_MODE_OPACITY);
+					inputPanel.setBounds(0, 0, INPUT_PANEL_WIDTH, INPUT_PANEL_HEIGHT);
 				}
 
 				isSimpleMode = !isSimpleMode;
@@ -197,14 +215,15 @@ public class MainGUI extends Observable implements Observer {
 
 	private void setupPanels() {
 		inputPanel = new JPanel();
-		inputPanel.setBounds(0, 475, 762, 137);
+		inputPanel.setBounds(0, 475, INPUT_PANEL_WIDTH, INPUT_PANEL_HEIGHT);
 		inputPanel.setLayout(null);
+		//inputPanel.setBackground(new Color(0,0,0,0));
 		frmTodokoro.getContentPane().add(inputPanel);
 	}
 
 	private void setupTextFields() {
-		Border rounded = new LineBorder(new Color(210, 210, 210), 3, true);
-		Border empty = new EmptyBorder(0, 3, 0, 0);
+		Border rounded = new LineBorder(new Color(210, 210, 210), 2, true);
+		Border empty = new EmptyBorder(0, 3, 0, 3);
 		Border border = new CompoundBorder(rounded, empty);
 
 		tfUserInput = new JTextField();
@@ -225,10 +244,16 @@ public class MainGUI extends Observable implements Observer {
 					tfUserInput.setText(null);
 					break;
 				case KeyEvent.VK_UP:
-					tfUserInput.setText(history.getPreviousInput());
+					String prevInput = history.getPreviousInput();
+					if (prevInput != null) {
+						tfUserInput.setText(prevInput);
+					}
 					break;
 				case KeyEvent.VK_DOWN:
-					tfUserInput.setText(history.getNextInput());
+					String nextInput = history.getNextInput();
+					if (nextInput != null) {
+						tfUserInput.setText(nextInput);
+					}
 					break;
 				}
 			}

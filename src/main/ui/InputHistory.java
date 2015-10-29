@@ -37,14 +37,18 @@ public class InputHistory {
 	public String getPreviousInput() {
 		if (history.size() > 0 && pointer > 0) {
 			pointer -= 1;
+			return history.get(pointer);
 		}
-		return history.get(pointer);
+		return null;
 	}
 
 	public String getNextInput() {
 		if (history.size() > 0 && pointer < history.size()-1) {
 			pointer += 1;
+			return history.get(pointer);
+		} else {
+			return null;
 		}
-		return history.get(pointer);
+
 	}
 }
