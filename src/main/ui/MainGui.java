@@ -78,6 +78,7 @@ public class MainGUI extends Observable implements Observer {
 	private static DeadlinesTableModel dtm = DeadlinesTableModel.getInstance();
 
 	private static final int FRAME_WIDTH = 768;
+	//private static final int FRAME_WIDTH = 1024;
 	private static final int FRAME_HEIGHT = 640;
 	private static final float FRAME_OPACITY = 1f;
 
@@ -88,6 +89,9 @@ public class MainGUI extends Observable implements Observer {
 	private static final int FRAME_SIMPLE_MODE_HEIGHT = 167;
 	private static final float FRAME_SIMPLE_MODE_OPACITY = 0.9f;
 
+	private static final int FRAME_HELP_LIST_WIDTH = 1024;
+	private static final int FRAME_HELP_LIST_HEIGHT = 640;
+	
 	private static final int TABLE_FONT_SIZE = 14;
 
 	/**
@@ -98,8 +102,8 @@ public class MainGUI extends Observable implements Observer {
 			//UIManager.setLookAndFeel("com.jtattoo.plaf.bernstein.BernsteinLookAndFeel");
 			//UIManager.setLookAndFeel("com.jtattoo.plaf.smart.SmartLookAndFeel");
 			//UIManager.setLookAndFeel("com.jtattoo.plaf.mint.MintLookAndFeel");
-			//UIManager.setLookAndFeel("com.jtattoo.plaf.mcwin.McWinLookAndFeel");
-			UIManager.setLookAndFeel("com.jtattoo.plaf.noire.NoireLookAndFeel");
+			UIManager.setLookAndFeel("com.jtattoo.plaf.mcwin.McWinLookAndFeel");
+			//UIManager.setLookAndFeel("com.jtattoo.plaf.noire.NoireLookAndFeel");
 		} catch (Throwable e) {
 			logger.log(Level.SEVERE, "LookAndFeel: " + e.toString(), e);
 		}
@@ -211,6 +215,30 @@ public class MainGUI extends Observable implements Observer {
 				ChangeDirectory cd = new ChangeDirectory(frmTodokoro);
 			}
 		});
+		
+		GetHelpList demo = new GetHelpList();
+		demo.setBounds(768, 0, 240, 600);
+		demo.setVisible(true);
+		frmTodokoro.getContentPane().add(demo);
+		
+		frmTodokoro.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+				.put(KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0), "Help List");
+		frmTodokoro.getRootPane().getActionMap().put("Help List", new AbstractAction() {
+			boolean isSimpleMode = false;
+			public void actionPerformed(ActionEvent e) {
+				if (isSimpleMode) {
+					tfUserInput.requestFocusInWindow();
+					frmTodokoro.setBounds(frmTodokoro.getX(), frmTodokoro.getY(), FRAME_WIDTH, FRAME_HEIGHT);
+				} else {
+					demo.requestListFocus();
+					frmTodokoro.setBounds(frmTodokoro.getX(), frmTodokoro.getY(), FRAME_HELP_LIST_WIDTH, FRAME_HELP_LIST_HEIGHT);
+				}
+	
+				isSimpleMode = !isSimpleMode;
+				//GetHelpList.createAndShowGUI(frmTodokoro.getWidth(), 0);
+			}
+		});
+
 	}
 
 	private void setupPanels() {
@@ -315,7 +343,7 @@ public class MainGUI extends Observable implements Observer {
 
 		lblFilter = new JLabel("Filter:");
 		lblFilter.setFont(new Font("Segoe UI", Font.BOLD, 14));
-		lblFilter.setBounds(551, 22, 39, 16);
+		lblFilter.setBounds(549, 22, 41, 16);
 		frmTodokoro.getContentPane().add(lblFilter);
 	}
 
