@@ -8,9 +8,8 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
@@ -20,6 +19,8 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import javax.swing.AbstractAction;
@@ -31,19 +32,27 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowFilter;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableRowSorter;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyleContext;
 
 import main.logic.ChangeDirectory;
 import main.logic.Logic;
@@ -53,6 +62,7 @@ import main.model.tableModels.DeadlinesTableModel;
 import main.model.tableModels.EventsTableModel;
 import main.model.tableModels.TodosTableModel;
 import main.model.taskModels.Task;
+import javax.swing.JTextArea;
 
 /**
  * @author Dalton
@@ -64,12 +74,14 @@ public class MainGUI extends Observable implements Observer {
 
 	private JFrame frmTodokoro;
 	private JPanel inputPanel;
-	private JTextField tfUserInput, tfFilter;
-	private JLabel lblStatusMsg, lblFilter, lblStatus;
+	private JTextField tfFilter;
+	private JTextPane tpUserInput;
+	private JLabel lblFilter;
 	private JTable eventsTable, todosTable, deadlinesTable;
 	private JTabbedPane tabbedPane;
 	private JScrollPane eventsScrollPane, todosScrollPane, deadlineTasksScrollPane;
 	private TableRowSorter eventsSorter, todosSorter, deadlinesSorter;
+	private JTextArea taStatusMessage;
 
 	private static final Logger logger = Logger.getLogger(MainGUI.class.getName());
 	private static final InputHistory history = InputHistory.getInstance();
@@ -89,17 +101,22 @@ public class MainGUI extends Observable implements Observer {
 	private static final float FRAME_SIMPLE_MODE_OPACITY = 0.9f;
 
 	private static final int TABLE_FONT_SIZE = 14;
+	private static final int LABEL_FONT_SIZE = 15;
+
+	private static Color normalTextColour = Color.BLACK;
+	private static Color highlightedTextColour = Color.RED;
+
+	private static String[] themes = {"bernstein.BernsteinLookAndFeel", "noire.NoireLookAndFeel", "smart.SmartLookAndFeel", "mint.MintLookAndFeel", "mcwin.McWinLookAndFeel"};
+	private static int themeIndex = 0;
+
+	private static int tabIndex = 0;
 
 	/**
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
 		try {
-			//UIManager.setLookAndFeel("com.jtattoo.plaf.bernstein.BernsteinLookAndFeel");
-			//UIManager.setLookAndFeel("com.jtattoo.plaf.smart.SmartLookAndFeel");
-			//UIManager.setLookAndFeel("com.jtattoo.plaf.mint.MintLookAndFeel");
-			//UIManager.setLookAndFeel("com.jtattoo.plaf.mcwin.McWinLookAndFeel");
-			UIManager.setLookAndFeel("com.jtattoo.plaf.noire.NoireLookAndFeel");
+			UIManager.setLookAndFeel("com.jtattoo.plaf." + themes[themeIndex]);
 		} catch (Throwable e) {
 			logger.log(Level.SEVERE, "LookAndFeel: " + e.toString(), e);
 		}
@@ -107,9 +124,9 @@ public class MainGUI extends Observable implements Observer {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					MainGUI window = getInstance();
-					window.addObserver(Logic.getInstance());
-					window.frmTodokoro.setVisible(true);
+					//getInstance().addObserver(Logic.getInstance());
+					getInstance().addObserver(Logic.getInstance());
+					getInstance().frmTodokoro.setVisible(true);
 				} catch (Exception e) {
 					logger.log(Level.SEVERE, "EventQueue Invoke: " + e.toString(), e);
 				}
@@ -129,7 +146,7 @@ public class MainGUI extends Observable implements Observer {
 	 */
 	private MainGUI() {
 		try {
-			initialize();
+			initialise();
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, "MainGui Constructor: " + e.toString(), e);
 		}
@@ -142,7 +159,7 @@ public class MainGUI extends Observable implements Observer {
 	/**
 	 * Initialize the contents of the frame.
 	 */
-	private void initialize() throws Exception {
+	private void initialise() throws Exception {
 		setupTableModels();
 		setupMainFrame();
 		setupPanels();
@@ -166,25 +183,20 @@ public class MainGUI extends Observable implements Observer {
 		frmTodokoro.setResizable(false);
 		frmTodokoro.setBounds(0, 0, FRAME_WIDTH, FRAME_HEIGHT);
 		frmTodokoro.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frmTodokoro.setLocationRelativeTo(null);
 		frmTodokoro.getContentPane().setLayout(null);
-		/*java.awt.Image img = new javax.swing.ImageIcon("resources/test.jpg").getImage();
-		java.awt.Image newimg = img.getScaledInstance(FRAME_WIDTH, FRAME_HEIGHT,  java.awt.Image.SCALE_SMOOTH);
-		frmTodokoro.setContentPane(new JLabel(new javax.swing.ImageIcon(newimg)));*/
 
 		frmTodokoro.addWindowListener(new WindowAdapter() {
 			public void windowOpened(WindowEvent e) {
-				tfUserInput.requestFocusInWindow();
+				tpUserInput.requestFocusInWindow();
 			}
 		});
 
-		frmTodokoro.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
-				.put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), "Simple Mode");
+		frmTodokoro.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), "Simple Mode");
 		frmTodokoro.getRootPane().getActionMap().put("Simple Mode", new AbstractAction() {
-			boolean isSimpleMode = false;
+			boolean isNormalMode = false;
 
 			public void actionPerformed(ActionEvent e) {
-				if (isSimpleMode) {
+				if (isNormalMode) {
 					tabbedPane.setVisible(true);
 					lblFilter.setVisible(true);
 					tfFilter.setVisible(true);
@@ -200,72 +212,180 @@ public class MainGUI extends Observable implements Observer {
 					inputPanel.setBounds(0, 0, INPUT_PANEL_WIDTH, INPUT_PANEL_HEIGHT);
 				}
 
-				isSimpleMode = !isSimpleMode;
+				isNormalMode = !isNormalMode;
 			}
 		});
 
-		frmTodokoro.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
-				.put(KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0), "Change Directory");
+		frmTodokoro.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0), "Change Directory");
 		frmTodokoro.getRootPane().getActionMap().put("Change Directory", new AbstractAction() {
 			public void actionPerformed(ActionEvent e) {
 				ChangeDirectory cd = new ChangeDirectory(frmTodokoro);
 			}
 		});
+
+		frmTodokoro.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_QUOTE, InputEvent.CTRL_DOWN_MASK), "Cycle Themes");
+		frmTodokoro.getRootPane().getActionMap().put("Cycle Themes", new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {
+				if (themeIndex == themes.length-1) {
+					themeIndex = 0;
+				} else {
+					themeIndex++;
+				}
+				try {
+					UIManager.setLookAndFeel("com.jtattoo.plaf." + themes[themeIndex]);
+					switch (themeIndex) {
+						case 1:
+							normalTextColour = Color.WHITE;
+							highlightedTextColour = Color.ORANGE;
+							break;
+						default:
+							normalTextColour = Color.BLACK;
+							highlightedTextColour = Color.RED;
+					}
+				} catch (ClassNotFoundException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} catch (InstantiationException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} catch (IllegalAccessException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} catch (UnsupportedLookAndFeelException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				SwingUtilities.updateComponentTreeUI(frmTodokoro);
+				eventsTable.setRowHeight(40);
+				todosTable.setRowHeight(40);
+				deadlinesTable.setRowHeight(40);
+			}
+		});
+
+		frmTodokoro.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.CTRL_DOWN_MASK), "Cycle Tabs");
+		frmTodokoro.getRootPane().getActionMap().put("Cycle Tabs", new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {
+				if (tabIndex == 2) {
+					tabIndex = 0;
+				} else {
+					tabIndex++;
+				}
+				tabbedPane.setSelectedIndex(tabIndex);
+			}
+		});
 	}
+
+	private void highlightText() {
+		String[] keywords = {"update", "delete", "display", "undo", "redo", "exit", "!done", "done"};
+		String[] days = {"mon", "tue", "wed", "thurs", "fri", "sat", "sun", "monday", "tueday", "wednesday", "thursday", "friday", "saturday", "sunday"};
+        String input = tpUserInput.getText();
+
+        SimpleAttributeSet defaultSet = new SimpleAttributeSet();
+        StyleConstants.setForeground(defaultSet, normalTextColour);
+        tpUserInput.getStyledDocument().setCharacterAttributes(0, input.length(), defaultSet, true);
+        SimpleAttributeSet customSet = new SimpleAttributeSet();
+        StyleConstants.setForeground(customSet, highlightedTextColour);
+        if (!tpUserInput.getText().isEmpty()) {
+        	taStatusMessage.setText(null);
+        }
+
+        for (String keyword : keywords) {
+            Pattern pattern = Pattern.compile("(?ui)^" + keyword);
+            Matcher matcher = pattern.matcher(input);
+            while (matcher.find()) {
+
+            	/*
+                System.out.print("Start index: " + matcher.start());
+                System.out.print(" End index: " + matcher.end());
+                System.out.println(" Found: " + matcher.group());
+                */
+
+                tpUserInput.getStyledDocument().setCharacterAttributes(matcher.start(), keyword.length(), customSet, true);
+            }
+        }
+
+        for (String day : days) {
+            Pattern pattern = Pattern.compile("(?ui)" + day + "\\s+(\\d+|(?:Jan(?:uary)?|Feb(?:ruary)?|"
+            									+ "Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|"
+            									+ "Sep(?:tember)?|Oct(?:ober)?|(Nov|Dec)(?:ember)?))");
+            Matcher matcher = pattern.matcher(input);
+            while (matcher.find()) {
+                tpUserInput.getStyledDocument().setCharacterAttributes(matcher.start(), day.length(), customSet, true);
+                taStatusMessage.setText("Special case detected. Please surround your task description with double quotes to prevent parsing errors. (e.g. \"lunch with john\" at 1pm)");
+            }
+        }
+    }
 
 	private void setupPanels() {
 		inputPanel = new JPanel();
 		inputPanel.setBounds(0, 475, INPUT_PANEL_WIDTH, INPUT_PANEL_HEIGHT);
 		inputPanel.setLayout(null);
-		//inputPanel.setBackground(new Color(0,0,0,0));
 		frmTodokoro.getContentPane().add(inputPanel);
 	}
 
 	private void setupTextFields() {
 		Border rounded = new LineBorder(new Color(210, 210, 210), 2, true);
-		Border empty = new EmptyBorder(0, 3, 0, 3);
+		Border empty = new EmptyBorder(4, 4, 0, 4);
 		Border border = new CompoundBorder(rounded, empty);
+		tpUserInput = new JTextPane();
+		inputPanel.add(tpUserInput);
+		tpUserInput.setFont(new Font("Segoe UI Semibold", Font.BOLD, 20));
+		tpUserInput.setBounds(12, 87, 738, 38);
+		tpUserInput.setBorder(border);
+		tpUserInput.setFocusAccelerator('e');
 
-		tfUserInput = new JTextField();
-		inputPanel.add(tfUserInput);
-		tfUserInput.setFont(new Font("Segoe UI Semibold", Font.BOLD, 16));
-		tfUserInput.setBounds(12, 84, 738, 41);
-		tfUserInput.setColumns(10);
-		tfUserInput.setBorder(border);
-		tfUserInput.setFocusAccelerator('e');
+		tpUserInput.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "Send Command");
+		tpUserInput.getActionMap().put("Send Command", new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {
+				sendUserInput(tpUserInput.getText().trim());
+				history.addInputHistory(tpUserInput.getText());
+				tpUserInput.setText(null);
+			}
+		});
 
-		tfUserInput.addKeyListener(new KeyListener() {
-			@Override
-			public void keyPressed(KeyEvent e) {
-				switch (e.getKeyCode()) {
-				case KeyEvent.VK_ENTER:
-					sendUserInput(tfUserInput.getText().trim());
-					history.addInputHistory(tfUserInput.getText());
-					tfUserInput.setText(null);
-					break;
-				case KeyEvent.VK_UP:
-					String prevInput = history.getPreviousInput();
-					if (prevInput != null) {
-						tfUserInput.setText(prevInput);
-					}
-					break;
-				case KeyEvent.VK_DOWN:
-					String nextInput = history.getNextInput();
-					if (nextInput != null) {
-						tfUserInput.setText(nextInput);
-					}
-					break;
+		tpUserInput.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), "Previous Input");
+		tpUserInput.getActionMap().put("Previous Input", new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {
+				String prevInput = history.getPreviousInput();
+				if (prevInput != null) {
+					tpUserInput.setText(prevInput);
 				}
 			}
+		});
 
-			@Override
-			public void keyReleased(KeyEvent e) {
-				// TODO Auto-generated method stub
+		tpUserInput.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), "Next Input");
+		tpUserInput.getActionMap().put("Next Input", new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {
+				String nextInput = history.getNextInput();
+				if (nextInput != null) {
+					tpUserInput.setText(nextInput);
+				}
+			}
+		});
+
+		tpUserInput.getDocument().addDocumentListener(new DocumentListener() {
+			public void changedUpdate(DocumentEvent e) {
+
 			}
 
-			@Override
-			public void keyTyped(KeyEvent e) {
-				// TODO Auto-generated method stub
+			public void insertUpdate(DocumentEvent e) {
+				Runnable doHighlight = new Runnable() {
+			        @Override
+			        public void run() {
+			        	highlightText();
+			        }
+			    };
+			    SwingUtilities.invokeLater(doHighlight);
+			}
+
+			public void removeUpdate(DocumentEvent e) {
+				Runnable doHighlight = new Runnable() {
+			        @Override
+			        public void run() {
+			        	highlightText();
+			        }
+			    };
+			    SwingUtilities.invokeLater(doHighlight);
 			}
 		});
 
@@ -273,49 +393,79 @@ public class MainGUI extends Observable implements Observer {
 		tfFilter.setBounds(594, 18, 156, 26);
 		frmTodokoro.getContentPane().add(tfFilter);
 		tfFilter.setColumns(10);
-		tfFilter.setBorder(border);
+		Border inner = new EmptyBorder(0, 4, 0, 4);
+		Border compBorder = new CompoundBorder(rounded, inner);
+		tfFilter.setBorder(compBorder);
 		tfFilter.setFocusAccelerator('f');
-
 		tfFilter.getDocument().addDocumentListener(new DocumentListener() {
 			public void changedUpdate(DocumentEvent e) {
-				rowFilter(eventsSorter);
-				rowFilter(todosSorter);
-				rowFilter(deadlinesSorter);
+				rowFilter(eventsSorter, 3);
+				rowFilter(todosSorter, 1);
+				rowFilter(deadlinesSorter, 2);
 			}
 
 			public void insertUpdate(DocumentEvent e) {
-				rowFilter(eventsSorter);
-				rowFilter(todosSorter);
-				rowFilter(deadlinesSorter);
+				rowFilter(eventsSorter, 3);
+				rowFilter(todosSorter, 1);
+				rowFilter(deadlinesSorter, 2);
 			}
 
 			public void removeUpdate(DocumentEvent e) {
-				rowFilter(eventsSorter);
-				rowFilter(todosSorter);
-				rowFilter(deadlinesSorter);
+				rowFilter(eventsSorter, 3);
+				rowFilter(todosSorter, 1);
+				rowFilter(deadlinesSorter, 2);
 			}
 		});
 	}
 
 	private void setupLabels() {
-		lblStatusMsg = new JLabel();
-		lblStatusMsg.setVerticalAlignment(SwingConstants.TOP);
-		lblStatusMsg.setHorizontalAlignment(SwingConstants.LEFT);
-		lblStatusMsg.setFont(new Font("Segoe UI", Font.PLAIN, 15));
-		// lblStatusMsg.setBounds(67, 484, 683, 39);
-		lblStatusMsg.setBounds(67, 12, 683, 59);
-		inputPanel.add(lblStatusMsg);
+		Border rounded = new LineBorder(new Color(210, 210, 210), 2, true);
+		Border empty = new EmptyBorder(0, 5, 0, 5);
+		Border border = new CompoundBorder(rounded, empty);
+		TitledBorder titled = new TitledBorder(border, "Status Message", 0, 0, new Font("Segoe UI", Font.BOLD, 14));
+		taStatusMessage = new JTextArea(2, 20);
+		taStatusMessage.setBounds(12, 4, 738, 75);
+		taStatusMessage.setWrapStyleWord(true);
+		taStatusMessage.setLineWrap(true);
+		taStatusMessage.setOpaque(false);
+		taStatusMessage.setEditable(false);
+		taStatusMessage.setFocusable(false);
+		taStatusMessage.setBackground(UIManager.getColor("Label.background"));
+		taStatusMessage.setFont(new Font("Segoe UI", Font.BOLD, 14));
+		taStatusMessage.setBorder(titled);
+		inputPanel.add(taStatusMessage);
 
-		lblStatus = new JLabel("Status:");
-		lblStatus.setLabelFor(lblStatusMsg);
-		lblStatus.setFont(new Font("Segoe UI", Font.BOLD, 15));
-		// lblStatus.setBounds(12, 484, 53, 21);
-		lblStatus.setBounds(12, 12, 53, 21);
-		inputPanel.add(lblStatus);
+		/*tpStatusMessage = new JTextPane();
+		tpStatusMessage.setBounds(12, 4, 738, 75);
+		tpStatusMessage.setOpaque(false);
+		tpStatusMessage.setEditable(false);
+		tpStatusMessage.setFocusable(false);
+		tpStatusMessage.setMaximumSize(new Dimension(738, 75));
+		tpStatusMessage.setBackground(UIManager.getColor("Label.background"));
+		TitledBorder titled = new TitledBorder("Status Message");
+		UIManager.put("TitledBorder.border", border);
+		tpStatusMessage.setFont(new Font("Segoe UI", Font.PLAIN, 15));
+		tpStatusMessage.setBorder(titled);
+		inputPanel.add(tpStatusMessage);*/
+
+		//lblStatusMsg = new JLabel();
+		//TitledBorder titled = new TitledBorder("Status Message");
+		//UIManager.put("TitledBorder.border", new LineBorder(new Color(200,200,200), 2));
+		//lblStatusMsg.setBorder(titled);
+		//lblStatusMsg.setVerticalAlignment(SwingConstants.TOP);
+		//lblStatusMsg.setHorizontalAlignment(SwingConstants.LEFT);
+		//lblStatusMsg.setPreferredSize(new Dimension(1, 1));
+		//lblStatusMsg.setVerticalAlignment(SwingConstants.CENTER);
+		//lblStatusMsg.setHorizontalAlignment(SwingConstants.CENTER);
+		//lblStatusMsg.setFont(new Font("Segoe UI", Font.PLAIN, 15));
+		// lblStatusMsg.setBounds(67, 484, 683, 39);
+		//lblStatusMsg.setBounds(298, 35, 738, 79);
+		//inputPanel.add(lblStatusMsg);
 
 		lblFilter = new JLabel("Filter:");
+		lblFilter.setHorizontalAlignment(SwingConstants.RIGHT);
 		lblFilter.setFont(new Font("Segoe UI", Font.BOLD, 14));
-		lblFilter.setBounds(551, 22, 39, 16);
+		lblFilter.setBounds(530, 22, 60, 16);
 		frmTodokoro.getContentPane().add(lblFilter);
 	}
 
@@ -335,7 +485,7 @@ public class MainGUI extends Observable implements Observer {
 
 	private void setupTabbedPane() {
 		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-		tabbedPane.setFont(new Font("Segoe UI Semibold", Font.PLAIN, 13));
+		//tabbedPane.setFont(new Font("Segoe UI Semibold", Font.PLAIN, 13));
 		tabbedPane.setBounds(12, 12, 738, 462);
 		eventsScrollPane = new JScrollPane();
 		todosScrollPane = new JScrollPane();
@@ -343,15 +493,12 @@ public class MainGUI extends Observable implements Observer {
 		eventsScrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(0, 0));
 		todosScrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(0, 0));
 		deadlineTasksScrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(0, 0));
-		tabbedPane.addTab(
-				"<html><body leftmargin=15 topmargin=8 marginwidth=15 marginheight=5><b>Events (1)</b></body></html>",
-				null, eventsScrollPane, null);
-		tabbedPane.addTab(
-				"<html><body leftmargin=15 topmargin=8 marginwidth=15 marginheight=5><b>Todos (2)</b></body></html>",
-				null, todosScrollPane, null);
-		tabbedPane.addTab(
-				"<html><body leftmargin=15 topmargin=8 marginwidth=15 marginheight=5><b>Deadlines (3)</b></body></html>",
-				null, deadlineTasksScrollPane, null);
+		tabbedPane.addTab("<html><body leftmargin=15 topmargin=8 marginwidth=15 marginheight=5><b>Events (1)</b></body></html>",
+							null, eventsScrollPane, null);
+		tabbedPane.addTab("<html><body leftmargin=15 topmargin=8 marginwidth=15 marginheight=5><b>Todos (2)</b></body></html>",
+							null, todosScrollPane, null);
+		tabbedPane.addTab("<html><body leftmargin=15 topmargin=8 marginwidth=15 marginheight=5><b>Deadlines (3)</b></body></html>",
+							null, deadlineTasksScrollPane, null);
 		tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
 		tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
 		tabbedPane.setMnemonicAt(2, KeyEvent.VK_3);
@@ -409,7 +556,7 @@ public class MainGUI extends Observable implements Observer {
 		}
 	}
 
-	private void rowFilter(TableRowSorter sorter) {
+	private void rowFilter(TableRowSorter<?> sorter, int index) {
 		RowFilter<Object, Object> rowFilter = null;
 		List<RowFilter<Object, Object>> rowfilterList = new ArrayList<RowFilter<Object, Object>>();
 
@@ -417,14 +564,14 @@ public class MainGUI extends Observable implements Observer {
 			String text = tfFilter.getText();
 
 			if (text.equals("done")) {
-				rowFilter = RowFilter.regexFilter("^true");
+				rowFilter = RowFilter.regexFilter("^true$");
 			} else if (text.equals("!done") || text.equals("not done") || text.equals("undone")) {
-				rowFilter = RowFilter.regexFilter("^false");
+				rowFilter = RowFilter.regexFilter("^false$");
 			} else {
 				String[] textArray = text.split(" ");
 
 				for (int i = 0; i < textArray.length; i++) {
-					rowfilterList.add(RowFilter.regexFilter("(?iu)" + textArray[i]));
+					rowfilterList.add(RowFilter.regexFilter("(?iu)" + textArray[i], index, index+1));
 				}
 
 				rowFilter = RowFilter.andFilter(rowfilterList);
@@ -492,6 +639,7 @@ public class MainGUI extends Observable implements Observer {
 
 	private void setupTableProperties(JTable table) {
 		// table.setAutoCreateRowSorter(false);
+		table.getTableHeader().setReorderingAllowed(false);
 		table.setCellSelectionEnabled(true);
 		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
@@ -505,7 +653,9 @@ public class MainGUI extends Observable implements Observer {
 	}
 
 	public void updateStatusMsg(String msg) {
-		lblStatusMsg.setText(msg);
+		//lblStatusMsg.setText("<html><body style='width:100px'>" + msg + "</body></html>");
+		taStatusMessage.setText(msg);
+		//tpStatusMessage.setText(msg);
 	}
 
 	private void sendUserInput(String command) {
