@@ -5,6 +5,7 @@ package main.ui;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Font;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -49,7 +50,7 @@ public class CustomDateCellEditor extends DefaultCellEditor {
 	@Override
 	public Component getTableCellEditorComponent(final JTable table, final Object value, final boolean isSelected, final int row, final int column) {
 		JTextField tf = ((JTextField)getComponent());
-
+		tf.setFont(new Font("Segoe UI Semibold", Font.PLAIN, 12));
 		tf.setBorder(new LineBorder(Color.BLACK));
 
 		try {
