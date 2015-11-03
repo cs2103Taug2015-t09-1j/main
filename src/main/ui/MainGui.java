@@ -90,6 +90,7 @@ public class MainGUI extends Observable implements Observer {
 	private static DeadlinesTableModel dtm = DeadlinesTableModel.getInstance();
 
 	private static final int FRAME_WIDTH = 768;
+	//private static final int FRAME_WIDTH = 1024;
 	private static final int FRAME_HEIGHT = 640;
 	private static final float FRAME_OPACITY = 1f;
 
@@ -99,6 +100,9 @@ public class MainGUI extends Observable implements Observer {
 	private static final int FRAME_SIMPLE_MODE_WIDTH = 768;
 	private static final int FRAME_SIMPLE_MODE_HEIGHT = 167;
 	private static final float FRAME_SIMPLE_MODE_OPACITY = 0.9f;
+
+	private static final int FRAME_HELP_LIST_WIDTH = 1024;
+	private static final int FRAME_HELP_LIST_HEIGHT = 640;
 
 	private static final int TABLE_FONT_SIZE = 14;
 	private static final int LABEL_FONT_SIZE = 15;
@@ -273,6 +277,30 @@ public class MainGUI extends Observable implements Observer {
 				tabbedPane.setSelectedIndex(tabIndex);
 			}
 		});
+
+		/*
+		GetHelpList demo = new GetHelpList();
+		demo.setBounds(768, 0, 240, 600);
+		demo.setVisible(true);
+		frmTodokoro.getContentPane().add(demo);
+
+		frmTodokoro.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+				.put(KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0), "Help List");
+		frmTodokoro.getRootPane().getActionMap().put("Help List", new AbstractAction() {
+			boolean isSimpleMode = false;
+			public void actionPerformed(ActionEvent e) {
+				if (isSimpleMode) {
+					tfUserInput.requestFocusInWindow();
+					frmTodokoro.setBounds(frmTodokoro.getX(), frmTodokoro.getY(), FRAME_WIDTH, FRAME_HEIGHT);
+				} else {
+					demo.requestListFocus();
+					frmTodokoro.setBounds(frmTodokoro.getX(), frmTodokoro.getY(), FRAME_HELP_LIST_WIDTH, FRAME_HELP_LIST_HEIGHT);
+				}
+
+				isSimpleMode = !isSimpleMode;
+				//GetHelpList.createAndShowGUI(frmTodokoro.getWidth(), 0);
+			}
+		});*/
 	}
 
 	private void highlightText() {
