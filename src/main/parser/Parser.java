@@ -2,6 +2,7 @@ package main.parser;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
@@ -28,17 +29,17 @@ public class Parser {
 	private String[] updateCmdList = {"update", "/u", "edit", "/e", "modify", "/m"};
 	private String[] deleteCmdList = {"delete", "del", "/d", "remove", "rm", "/r"};
 	private String[] doneCmdList = {"done", "complete"};
-	private String[] undoneCmdList = {"undone", "incomplete"};
+	private String[] undoneCmdList = {"!done", "undone", "incomplete"};
 	private String[] undoCmdList = {"undo", "/un"};
 	private String[] redoCmdList = {"redo", "/re"};
 	private String[] exitCmdList = {"exit", "/e", "quit", "/q"};
 	private String[] displayCmdList = {"display", "show", "/sh", "view", "/v"};
 
-	private final String UPDATE_REGEX = "\\d+\\s+\\d+\\s+(\\w*|\\d*)+";
-	private final String DELETE_REGEX = "\\d+\\s*(((to|-)\\s*\\d+\\s*)?|(\\d+\\s*)*)";
-	private final String DISPLAY_REGEX = "(\\w|\\d)+";
-	private final String DONE_UNDONE_REGEX= "\\d+\\s*(((to|-)\\s*\\d+\\s*)?|(\\d+\\s*)*)";
-	private final String UNDO_REDO_REGEX = "\\d+\\s*$";
+	private final String UPDATE_REGEX = "^\\d+\\s+\\d+\\s+(\\w*|\\d*|\\s*)+";
+	private final String DELETE_REGEX = "^\\d+\\s*(((to|-)\\s*\\d+\\s*)?|(\\d+\\s*)*)";
+	private final String DISPLAY_REGEX = "^(\\w|\\d|\\s)+";
+	private final String DONE_UNDONE_REGEX= "^\\d+\\s*(((to|-)\\s*\\d+\\s*)?|(\\d+\\s*)*)";
+	private final String UNDO_REDO_REGEX = "^\\d+\\s*$";
 
 	private Parser() {}
 
@@ -97,7 +98,7 @@ public class Parser {
 
 	private boolean isCommand(String input, String[] commandList) {
 		for(int i = 0; i < commandList.length; i++) {
-			Pattern pattern = Pattern.compile("(?i)^" + commandList[i] + "\\s*");
+			Pattern pattern = Pattern.compile("(?ui)^" + commandList[i] + "\\s*");
 			Matcher matcher = pattern.matcher(input);
 	        if (matcher.find()) {
         		return true;
@@ -107,7 +108,7 @@ public class Parser {
 	}
 
 	private boolean hasValidParameters(String input, String regex) {
-		Pattern pattern = Pattern.compile("(?i)" + regex);
+		Pattern pattern = Pattern.compile("(?ui)" + regex);
 		Matcher matcher = pattern.matcher(input);
         if (matcher.matches()) {
         	return true;
@@ -116,19 +117,16 @@ public class Parser {
 	}
 
 	private String removeCommandWord(String input, String[] commandList) {
-		String temp = input;
+		String regexStr;
 		for(int i = 0; i < commandList.length; i++) {
-			if (!input.equalsIgnoreCase(commandList[i]) && input.startsWith(commandList[i])) {
-				input = input.toLowerCase().replaceAll(commandList[i] + "\\s*", "");
-				break;
+			regexStr = "(?ui)^" + commandList[i] + "\\s*";
+			Pattern pattern = Pattern.compile("(?ui)^" + commandList[i] + "\\s*");
+			Matcher matcher = pattern.matcher(input);
+			if (matcher.find()) {
+				return input.replaceAll(regexStr, "");
 			}
 		}
-
-		if (temp.equals(input)) {
-			input = "";
-		}
-
-		return input;
+		return null;
 	}
 
 	public String formatDate(Date d, String format) {
@@ -136,13 +134,39 @@ public class Parser {
 	}
 
 	public List<Date> getDateList(String input) {
-		/*if (input.contains("+")) {
-			input = input.split("\\+")[1];
-		}*/
-
+		String[] keywords = {"yesterday", "today", "tomorrow", "day", "month", "year", "week", "before", "after", "next", "last", "ago"};
 		List<DateGroup> dGroup = parseDates(input);
+		List<Date> dates = new ArrayList<Date>();
+		Calendar cal = Calendar.getInstance();
 		if (dGroup != null) {
-			return dGroup.get(0).getDates();
+			switch (dGroup.size()) {
+				case 1:
+					return dGroup.get(0).getDates();
+				case 2:
+					Calendar tempDate = Calendar.getInstance();
+					Calendar tempTime = Calendar.getInstance();
+					for (int i = 0; i < keywords.length; i++) {
+						if (dGroup.get(0).getText().contains(keywords[i])) {
+							tempDate.setTime(dGroup.get(0).getDates().get(0));
+							tempTime.setTime(dGroup.get(1).getDates().get(0));
+							break;
+						} else if (dGroup.get(1).getText().contains(keywords[i])) {
+							tempDate.setTime(dGroup.get(1).getDates().get(0));
+							tempTime.setTime(dGroup.get(0).getDates().get(0));
+							break;
+						}
+					}
+					cal.set(tempDate.get(Calendar.YEAR),
+							tempDate.get(Calendar.MONTH),
+							tempDate.get(Calendar.DATE),
+							tempTime.get(Calendar.HOUR_OF_DAY),
+							tempTime.get(Calendar.MINUTE),
+							tempTime.get(Calendar.SECOND));
+					dates.add(cal.getTime());
+					return dates;
+				default:
+					return null;
+			}
 		} else {
 			return null;
 		}
@@ -158,22 +182,23 @@ public class Parser {
 	}
 
 	private String getTaskDesc(String input) {
-		Pattern p = Pattern.compile("\"([^\"]*)\"");
-		Matcher m = p.matcher(input);
-		if (m.find()) {
-			input = m.group().replace("\"", "");
+		Pattern pattern = Pattern.compile("\"([^\"]*)\"");
+		Matcher matcher = pattern.matcher(input);
+		if (matcher.find()) {
+			input = matcher.group().replace("\"", "");
 		} else {
-			List<DateGroup> temp = ptParser.parseSyntax(input);
-			String date = temp.get(0).getText();
-			input = input.toLowerCase().replaceAll("\\s*((due by)|due|by|before|from|on|at)\\s*" + date, "");
-			//input = input.replaceAll("\\++((due by)|due|by|before|from|on|at)*\\s*" + date, "");
-			input = input.replaceAll("\\s*" + date + "\\s*", "");
-			input = input.replaceAll("\\s+((due by)|due|by|from|on|at)\\s*((due by)|due|by|from|on|at)*\\s*$", "");
-			input = input.replaceAll("^\\s*((due by)|due|by|from|on|at)\\s*((due by)|due|by|from|on|at)", "");
-			input = input.replaceAll("^\\s+|\\s+$", "");
-			//input = input.replaceAll("^\\+", "");
+			List<DateGroup> dateGroup = ptParser.parseSyntax(input);
+			for (int i = 0; i < dateGroup.size(); i++) {
+				String date = dateGroup.get(i).getText();
+				input = input.replaceAll("(?ui)\\s*((due on)|(due by)|due|by|before|from|on|at)\\s*" + date, "");
+				input = input.replaceAll("(?ui)\\s*" + date + "\\s*", " ");
+			}
+			input = input.replaceAll("(?ui)\\s+((due on)|(due by)|due|by|from|on|at)\\s*((due on)|(due by)|due|by|from|on|at)*\\s*$", "");
+			input = input.replaceAll("^(?ui)\\s*((due on)|(due by)|due|by|from|on|at)\\s*((due on)|(due by)|due|by|from|on|at)", "");
 		}
-		return input.trim();
+
+		input = input.replaceAll("^\\s+|\\s+$", "");
+		return input;
 	}
 
 	public ArrayList<String> getCommandParameters(String input, COMMAND_TYPE cmdType) {
@@ -211,7 +236,7 @@ public class Parser {
 		input = removeCommandWord(input, displayCmdList);
 		List<Date> parsedInput = getDateList(input);
 		if (parsedInput == null) {
-			if (input.matches("^\\s*all\\s*$")) {
+			if (input.matches("(?ui)^\\s*all\\s*$")) {
 				obj = new ParsedObject(COMMAND_TYPE.DISPLAY_ALL, null, null);
 			} else {
 				obj = new ParsedObject(COMMAND_TYPE.INVALID, null, null);
@@ -259,7 +284,6 @@ public class Parser {
 			tasks.add(new Todo(input.trim(), false));
 			obj = new ParsedObject(COMMAND_TYPE.ADD, TASK_TYPE.TODO, tasks);
 		}
-		//OldUndoRedo.getInstance().addUndoable(obj);
 		return obj;
 	}
 
@@ -300,6 +324,8 @@ public class Parser {
 			for (int i = fromID; i <= toID; i++) {
 				taskIDs.add(i);
 			}
+		} else if (input.matches("(?ui)^\\s*all\\s*$")) {
+			taskIDs.add(-1);
 		} else {
 			for (int i = 0; i < taskIDList.size(); i++) {
 				try {
@@ -377,55 +403,4 @@ public class Parser {
 
 		return new ParsedObject(COMMAND_TYPE.REDO, null, numOfExec);
 	}
-
-/*
-	public ParsedObject getIsDoneParsedObject(String input) {
-		String params = removeCommandWord(input, deleteCmdList);
-		ArrayList<Integer> taskIDs = new ArrayList<Integer>();
-		ArrayList<String> taskIDList = getCommandParameters(params, COMMAND_TYPE.DELETE);
-
-		if (input.contains("to") || input.contains("-")) {
-			int fromID = parseInteger(taskIDList.get(0));
-			int toID = parseInteger(taskIDList.get(1));
-
-			for (int i = fromID; i < toID; i++) {
-				if (Storage.getTaskByID(i) != null) {
-					taskIDs.add(i);
-				}
-			}
-		} else {
-			taskIDs.add(parseInteger(taskIDList.get(0)));
-		}
-
-		return new ParsedObject(COMMAND_TYPE.DELETE, null, taskIDs);
-	}
-
-	public ParsedObject getDisplayParsedObject(String input) {
-		String params = removeCommandWord(input, displayCmdList);
-
-		ArrayList<String> columns = new ArrayList<String>();
-		ArrayList<String> colArray = getCommandParameters(params, COMMAND_TYPE.DISPLAY);
-		for (String colName : colArray) {
-			if (!colName.trim().isEmpty()) {
-				columns.add(colName);
-			}
-		}
-
-		return new ParsedObject(COMMAND_TYPE.DISPLAY, null, columns);
-	}
-
-	public ParsedObject getSearchParsedObject(String input) {
-		String params = removeCommandWord(input, searchCmdList);
-
-		ArrayList<String> searchTerms = new ArrayList<String>();
-		ArrayList<String> termArray = getCommandParameters(params, COMMAND_TYPE.SEARCH);
-		for (String term : termArray) {
-			if (!term.trim().isEmpty()) {
-				searchTerms.add(term);
-			}
-		}
-
-		return new ParsedObject(COMMAND_TYPE.SEARCH, null, searchTerms);
-	}
-*/
 }
