@@ -69,7 +69,7 @@ public class Update extends Command {
 		switch (params.get(1)) {
 			case "2":
 				try {
-					Date fromDate = parser.getDateList(params.get(2)).get(0);
+					Date fromDate = parser.parseDateGroups(params.get(2)).get(0);
 					message += "Previous Start Date \"" + parser.formatDate(evt.getFromDate(),  "EEE, d MMM yyyy") + "\" has been updated to \"" + parser.formatDate(fromDate,  "EEE, d MMM yyyy") + "\".";
 					evt.setFromDate(fromDate);
 				} catch (Exception e) {
@@ -80,7 +80,7 @@ public class Update extends Command {
 				break;
 			case "3":
 				try {
-					Date toDate = parser.getDateList(params.get(2)).get(0);
+					Date toDate = parser.parseDateGroups(params.get(2)).get(0);
 					message += "Previous End Date \"" + parser.formatDate(evt.getToDate(),  "EEE, d MMM yyyy") + "\" has been updated to \"" + parser.formatDate(toDate,  "EEE, d MMM yyyy") + "\".";
 					evt.setToDate(toDate);
 				} catch (Exception e) {
@@ -138,7 +138,7 @@ public class Update extends Command {
 		switch (params.get(1)) {
 			case "2":
 				try {
-					Date deadline = parser.getDateList(params.get(2)).get(0);
+					Date deadline = parser.parseDateGroups(params.get(2)).get(0);
 					d.setDate(deadline);
 					message += "Deadline has been updated to " + parser.formatDate(deadline,  "EEE, d MMM yyyy") + ".";
 				} catch (Exception e) {

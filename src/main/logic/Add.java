@@ -4,6 +4,7 @@
 package main.logic;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -104,7 +105,8 @@ public class Add extends Command {
 					addNewTask(dt);
 
 					taskType = EnumTypes.TASK_TYPE.DEADLINE;
-					message = "\"" + dt.getTaskDesc() + "\" has been successfully added as a Deadline task that must be completed by " + parser.formatDate(dt.getDate(), "EEE, d MMM yyyy") + ".";
+					Date d = dt.getDate();
+					message = "\"" + dt.getTaskDesc() + "\" has been successfully added as a Deadline task that must be completed by " + parser.formatDate(d, "h:mm aa") + " on " + parser.formatDate(d, "EEE, d MMM yyyy") + ".";
 
 					if (DEBUG) {
 						logger.log(Level.FINE, dt.getTaskID() + ", " + dt.getTaskDesc() + ", " + dt.getDate());

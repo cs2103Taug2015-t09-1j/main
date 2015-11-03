@@ -61,14 +61,14 @@ public class MainParserTest {
 
 	@Test
 	public void testGetDateList() {
-		assertNotNull(testParser.getDateList("29 November"));
-		assertNull(testParser.getDateList("nothing"));
+		assertNotNull(testParser.parseDateGroups("29 November"));
+		assertNull(testParser.parseDateGroups("nothing"));
 	}
 
 	@Test
 	public void testParseDates() {
-		assertNotNull(testParser.parseDates("29 NOvember"));
-		assertNull(testParser.parseDates("random"));
+		assertNotNull(testParser.getDateGroups("29 NOvember"));
+		assertNull(testParser.getDateGroups("random"));
 	}
 
 	@Test
