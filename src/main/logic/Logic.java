@@ -21,7 +21,7 @@ public class Logic extends Observable implements Observer {
 
 	private Logic() {}
 
-	private static void init() {
+	private static void initialise() {
 		logic = new Logic();
 		logic.addObserver(MainGUI.getInstance());
 
@@ -35,7 +35,7 @@ public class Logic extends Observable implements Observer {
 
 	public static Logic getInstance() {
 		if (logic == null) {
-			init();
+			initialise();
 		}
 		return logic;
 	}
@@ -47,9 +47,6 @@ public class Logic extends Observable implements Observer {
 			break;
 		case DISPLAY:
 			processDisplayCommand(input);
-			break;
-		case SEARCH:
-			// search(input);
 			break;
 		case UPDATE:
 			processUpdateCommand(input);
@@ -141,18 +138,6 @@ public class Logic extends Observable implements Observer {
 		}
 
 		updateMessage(displayCmd.getMessage());
-
-		/*if (obj.getTaskType().equals(TASK_TYPE.ALL)) {
-			updateModelData(TASK_TYPE.EVENT, false);
-			updateModelData(TASK_TYPE.DEADLINE, false);
-			updateModelData(TASK_TYPE.TODO, false);
-			return;
-		}*/
-
-		//updateModelData(TASK_TYPE.DEADLINE, display.process(obj), false);
-
-		//display = Display.getInstance(TASK_TYPE.EVENT);
-		//updateModelData(TASK_TYPE.EVENT, display.process(obj), false);
 	}
 
 	private void updateModelData(TASK_TYPE type, boolean shouldSwitch) {
@@ -179,65 +164,4 @@ public class Logic extends Observable implements Observer {
 		}
 
 	}
-
-	/*
-	 * public ArrayList<List<Task>> getAllTaskLists() { ArrayList<List<Task>>
-	 * taskLists = new ArrayList<List<Task>>();
-	 * taskLists.add(Storage.getAllTask(Commands.TASK_TYPE.EVENT));
-	 * taskLists.add(Storage.getAllTask(Commands.TASK_TYPE.TODO));
-	 * taskLists.add(Storage.getAllTask(Commands.TASK_TYPE.DEADLINE)); return
-	 * taskLists; }
-	 *
-	 * public ArrayList<Event> getAllEvents() { return
-	 * (Storage.getAllTask(Commands.TASK_TYPE.EVENT).size() != 0) ?
-	 * (ArrayList)Storage.getAllTask(Commands.TASK_TYPE.EVENT) : new
-	 * ArrayList(); }
-	 *
-	 * public ArrayList<Todo> getAllTodos() { return
-	 * (Storage.getAllTask(Commands.TASK_TYPE.TODO).size() != 0) ?
-	 * (ArrayList)Storage.getAllTask(Commands.TASK_TYPE.TODO) : new ArrayList();
-	 * }
-	 *
-	 * public ArrayList<Deadline> getAllDeadlineTasks() { return
-	 * (Storage.getAllTask(Commands.TASK_TYPE.DEADLINE).size() != 0) ?
-	 * (ArrayList)Storage.getAllTask(Commands.TASK_TYPE.DEADLINE) : new
-	 * ArrayList(); }
-	 *
-	 * private ArrayList<Event> searchEvents(String input) { ParsedObject obj =
-	 * parser.getSearchParsedObject(input); ArrayList<Event> matches = new
-	 * ArrayList<Event>();
-	 *
-	 * for (Event e : getAllEvents()) { for (String s :
-	 * (ArrayList<String>)obj.getObjects()) { if
-	 * (e.getTaskDesc().toLowerCase().contains(s)) { matches.add(e); } } }
-	 * return matches; }
-	 *
-	 * private ArrayList<Todo> searchTodos(String input) { ParsedObject obj =
-	 * parser.getSearchParsedObject(input); ArrayList<Todo> matches = new
-	 * ArrayList<Todo>();
-	 *
-	 * for (Todo ft : getAllTodos()) { for (String s :
-	 * (ArrayList<String>)obj.getObjects()) { if
-	 * (ft.getTaskDesc().toLowerCase().contains(s)) { matches.add(ft); } } }
-	 * return matches; }
-	 *
-	 * private ArrayList<Deadline> searchDeadlineTasks(String input) {
-	 * ParsedObject obj = parser.getSearchParsedObject(input);
-	 * ArrayList<Deadline> matches = new ArrayList<Deadline>();
-	 *
-	 * for (Deadline dt : getAllDeadlineTasks()) { for (String s :
-	 * (ArrayList<String>)obj.getObjects()) { if
-	 * (dt.getTaskDesc().toLowerCase().contains(s)) { matches.add(dt); } } }
-	 * return matches; }
-	 *
-	 * private String search(String input) { // For Debugging ParsedObject obj =
-	 * parser.getSearchParsedObject(input);
-	 * System.out.println(obj.getCommandType());
-	 * System.out.println(obj.getTaskType()); ArrayList<String> v =
-	 * obj.getObjects(); for (int i = 0; i < v.size(); i++) {
-	 * System.out.print(v.get(i)); if (i < v.size()-1) { System.out.print("|");
-	 * } } System.out.println(); return null; // return
-	 * Storage.search(parser.getSearchParsedObject(input)); }
-	 */
-
 }

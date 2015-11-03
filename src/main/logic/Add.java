@@ -55,11 +55,11 @@ public class Add extends Command {
 					Event sEvt = (Event)tasks.get(0);
 					storage.addTask(sEvt);
 					storage.saveTaskType(EnumTypes.TASK_TYPE.EVENT);
-					
+
 					addNewTask(sEvt);
-					
+
 					taskType = EnumTypes.TASK_TYPE.EVENT;
-					message = "<html><b>\"" + sEvt.getTaskDesc() + "\"</b><br/>has been successfully added as an Event on <b>" + parser.formatDate(sEvt.getFromDate(), "EEE, d MMM yyyy") + "</b> at <b>" + parser.formatDate(sEvt.getFromDate(), "h:mm a") + "</b>.</html>";
+					message = "\"" + sEvt.getTaskDesc() + "\" has been successfully added as an Event on " + parser.formatDate(sEvt.getFromDate(), "EEE, d MMM yyyy") + " at " + parser.formatDate(sEvt.getFromDate(), "h:mm a") + ".";
 
 					if (DEBUG) {
 						logger.log(Level.FINE, sEvt.getTaskID() + ", " + sEvt.getTaskDesc() + ", " + sEvt.getFromDate() + ", " + sEvt.getToDate());
@@ -70,11 +70,11 @@ public class Add extends Command {
 					Event dEvt = (Event)tasks.get(0);
 					storage.addTask(dEvt);
 					storage.saveTaskType(EnumTypes.TASK_TYPE.EVENT);
-					
+
 					addNewTask(dEvt);
-					
+
 					taskType = EnumTypes.TASK_TYPE.EVENT;
-					message = "<html><b>\"" + dEvt.getTaskDesc() + "\"</b><br/>has been successfully added as an Event from <b>" + parser.formatDate(dEvt.getFromDate(), "EEE, d MMM yyyy h:mm a") + "</b> to <b>" + parser.formatDate(dEvt.getToDate(), "EEE, d MMM yyyy h:mm a") + "</b>.</html>";
+					message = "\"" + dEvt.getTaskDesc() + "\" has been successfully added as an Event from " + parser.formatDate(dEvt.getFromDate(), "EEE, d MMM yyyy h:mm a") + " to " + parser.formatDate(dEvt.getToDate(), "EEE, d MMM yyyy h:mm a") + ".";
 
 					if (DEBUG) {
 						logger.log(Level.FINE, dEvt.getTaskID() + ", " + dEvt.getTaskDesc() + ", " + dEvt.getFromDate() + ", " + dEvt.getToDate());
@@ -85,11 +85,11 @@ public class Add extends Command {
 					Todo flt = (Todo)tasks.get(0);
 					storage.addTask(flt);
 					storage.saveTaskType(EnumTypes.TASK_TYPE.TODO);
-					
+
 					addNewTask(flt);
-					
+
 					taskType = EnumTypes.TASK_TYPE.TODO;
-					message = "<html><b>\"" + flt.getTaskDesc() + "\"</b><br/>has been successfully added as a Todo task.</html>";
+					message = "\"" + flt.getTaskDesc() + "\" has been successfully added as a Todo task.";
 
 					if (DEBUG) {
 						logger.log(Level.FINE, flt.getTaskID() + ", " + flt.getTaskDesc());
@@ -100,11 +100,11 @@ public class Add extends Command {
 					Deadline dt = (Deadline)tasks.get(0);
 					storage.addTask(dt);
 					storage.saveTaskType(EnumTypes.TASK_TYPE.DEADLINE);
-					
+
 					addNewTask(dt);
-					
+
 					taskType = EnumTypes.TASK_TYPE.DEADLINE;
-					message = "<html><b>\"" + dt.getTaskDesc() + "\"</b><br/>has been successfully added as a Deadline task that must be completed by <b>" + parser.formatDate(dt.getDate(), "EEE, d MMM yyyy") + "</b>.</html>";
+					message = "\"" + dt.getTaskDesc() + "\" has been successfully added as a Deadline task that must be completed by " + parser.formatDate(dt.getDate(), "EEE, d MMM yyyy") + ".";
 
 					if (DEBUG) {
 						logger.log(Level.FINE, dt.getTaskID() + ", " + dt.getTaskDesc() + ", " + dt.getDate());
@@ -125,16 +125,16 @@ public class Add extends Command {
 		message = "Add command has failed.";
 		return false;
 	}
-	
-	public static boolean undo(Task task) {
+
+	public boolean undo(Task task) {
 		return storage.delete(task.getTaskID());
 	}
-	
-	public static boolean redo(Task task) {
+
+	public boolean redo(Task task) {
 		return storage.addTask(task);
 	}
-	
-	private static void addNewTask(Task task) {
+
+	private void addNewTask(Task task) {
 		vControl.addNewData(new VersionModel.AddModel(task));
 	}
 }

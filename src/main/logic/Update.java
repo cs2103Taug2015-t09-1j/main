@@ -46,7 +46,7 @@ public class Update extends Command {
 		ArrayList<String> params = obj.getObjects();
 		Task t = storage.getTaskByID(parser.parseInteger(params.get(0)));
 		if (t != null) {
-			message = "<html>Task ID " + t.getTaskID() + ": ";
+			message = "Task ID " + t.getTaskID() + ": ";
 			switch (t.getType()) {
 				case EVENT:
 					taskType = EnumTypes.TASK_TYPE.EVENT;
@@ -70,8 +70,8 @@ public class Update extends Command {
 			case "2":
 				try {
 					Date fromDate = parser.getDateList(params.get(2)).get(0);
+					message += "Previous Start Date \"" + parser.formatDate(evt.getFromDate(),  "EEE, d MMM yyyy") + "\" has been updated to \"" + parser.formatDate(fromDate,  "EEE, d MMM yyyy") + "\".";
 					evt.setFromDate(fromDate);
-					message += "Start Date has been updated to <b>" + parser.formatDate(fromDate,  "EEE, d MMM yyyy") + "</b>.</html>";
 				} catch (Exception e) {
 					message += "Invalid column or value entered.";
 					taskType = EnumTypes.TASK_TYPE.INVALID;
@@ -81,8 +81,8 @@ public class Update extends Command {
 			case "3":
 				try {
 					Date toDate = parser.getDateList(params.get(2)).get(0);
+					message += "Previous End Date \"" + parser.formatDate(evt.getToDate(),  "EEE, d MMM yyyy") + "\" has been updated to \"" + parser.formatDate(toDate,  "EEE, d MMM yyyy") + "\".";
 					evt.setToDate(toDate);
-					message += "End Date has been updated to <b>" + parser.formatDate(toDate,  "EEE, d MMM yyyy") + "</b>.</html>";
 				} catch (Exception e) {
 					message += "Invalid column or value entered.";
 					taskType = EnumTypes.TASK_TYPE.INVALID;
@@ -91,8 +91,8 @@ public class Update extends Command {
 				break;
 			case "4":
 				String taskDesc = params.get(2);
+				message += "Previous Task Description \"" + evt.getTaskDesc() + "\" has been updated to \"" + taskDesc + "\".";
 				evt.setTaskDesc(taskDesc);
-				message += "Task Description has been updated to <b>" + taskDesc + "</b>.</html>";
 				break;
 			default:
 				message += "Invalid column or value entered.";
@@ -101,21 +101,21 @@ public class Update extends Command {
 		}
 		storage.updateTask(evt);
 		storage.saveTaskType(EnumTypes.TASK_TYPE.EVENT);
-		
+
 		addNewUpdateModel(oldEvt, evt);
-		
+
 		return true;
 	}
 
 	private boolean updateTodo(Todo t, ArrayList<String> params) {
-		
+
 		Task oldTodo = t.clone();
-		
+
 		switch (params.get(1)) {
 			case "2":
 				String taskDesc = params.get(2);
 				t.setTaskDesc(taskDesc);
-				message += "Task Description has been updated to <b>" + taskDesc + "</b>.</html>";
+				message += "Task Description has been updated to " + taskDesc + ".";
 				break;
 			default:
 				message += "Invalid column or value entered.";
@@ -125,22 +125,22 @@ public class Update extends Command {
 
 		storage.updateTask(t);
 		storage.saveTaskType(EnumTypes.TASK_TYPE.TODO);
-		
+
 		addNewUpdateModel(oldTodo, t);
-		
+
 		return true;
 	}
 
 	private boolean updateDeadline(Deadline d, ArrayList<String> params) {
-		
+
 		Task oldDeadline = d.clone();
-		
+
 		switch (params.get(1)) {
 			case "2":
 				try {
 					Date deadline = parser.getDateList(params.get(2)).get(0);
 					d.setDate(deadline);
-					message += "Deadline has been updated to <b>" + parser.formatDate(deadline,  "EEE, d MMM yyyy") + "</b>.</html>";
+					message += "Deadline has been updated to " + parser.formatDate(deadline,  "EEE, d MMM yyyy") + ".";
 				} catch (Exception e) {
 					message += "Invalid column or value entered.";
 					taskType = EnumTypes.TASK_TYPE.INVALID;
@@ -150,30 +150,30 @@ public class Update extends Command {
 			case "3":
 				String taskDesc = params.get(2);
 				d.setTaskDesc(taskDesc);
-				message += "Task Description has been updated to <b>" + taskDesc + "</b>.</html>";
+				message += "Task Description has been updated to " + taskDesc + ".";
 				break;
 			default:
 				message += "Invalid column or value entered.";
 				taskType = EnumTypes.TASK_TYPE.INVALID;
 				return false;
 		}
-		
+
 		storage.updateTask(d);
 		storage.saveTaskType(EnumTypes.TASK_TYPE.DEADLINE);
-		
+
 		addNewUpdateModel(oldDeadline, d);
-		
+
 		return true;
 	}
-	
+
 	private void addNewUpdateModel(Task oldTask, Task newTask) {
 		vControl.addNewData(new VersionModel.UpdateModel(oldTask, newTask));
 	}
-	
+
 	public static boolean undo(Task oldTask) {
 		return storage.updateTask(oldTask);
 	}
-	
+
 	public static boolean redo(Task newTask) {
 		return storage.updateTask(newTask);
 	}

@@ -36,13 +36,17 @@ public class ChangeStatus extends Command {
 		return changeStatus;
 	}
 
+	public static ChangeStatus getInstance() {
+		return changeStatus;
+	}
+
 	@Override
 	public boolean execute(ParsedObject obj) {
 		ArrayList<Integer> taskIDs = obj.getObjects();
-		
+
 		List<Integer> ids = new ArrayList<>();
 		List<Boolean> oldStatuses = new ArrayList<>();
-		
+
 		int cnt = 0;
 		for (int i = 0; i < taskIDs.size(); i++) {
 			Task t = Storage.getInstance().getTaskByID(taskIDs.get(i));
@@ -64,33 +68,33 @@ public class ChangeStatus extends Command {
 
 		if (cnt > 0) {
 			storage.saveAllTask();
-			
-			message = String.format("<html> %d %s been marked as %s</html>", cnt, cnt > 1 ? "tasks have" : "task has", newStatus ? "completed" : "incompleted");
+
+			message = String.format("%d %s been marked as %s ", cnt, cnt > 1 ? "tasks have" : "task has", newStatus ? "completed" : "incompleted");
 			taskType = EnumTypes.TASK_TYPE.ALL;
-			
+
 			vControl.addNewData(new VersionModel.ChangeStatusModel(ids, oldStatuses, newStatus));
-			
+
 			return true;
 		}
-		
-	
+
+
 		message = "<html> Invalid task ids. Please try again.</html>";
 		taskType = EnumTypes.TASK_TYPE.INVALID;
 		return false;
 	}
-	
-	public static boolean undo(List<Integer> ids, List<Boolean> oldStatuses) {
+
+	public boolean undo(List<Integer> ids, List<Boolean> oldStatuses) {
 		for (int i = 0; i < ids.size(); i++) {
 			storage.changeStatus(ids.get(i), oldStatuses.get(i));
 		}
 		return true;
 	}
-	
-	public static boolean redo(List<Integer> ids, boolean newStatus) {
+
+	public boolean redo(List<Integer> ids, boolean newStatus) {
 		for (int i = 0; i < ids.size(); i++) {
 			storage.changeStatus(ids.get(i), newStatus);
 		}
 		return true;
 	}
-	
+
 }
