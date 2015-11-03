@@ -15,6 +15,11 @@ public class VersionControl extends Command {
 
 	private static VersionControl instance = null;
 
+	private static final Add add = Add.getInstance();
+	private static final Delete delete = Delete.getInstance();
+	private static final Update update = Update.getInstance();
+	private static final ChangeStatus changeStatus = ChangeStatus.getInstance();
+
 	private VersionControl() {
 	}
 
@@ -35,20 +40,20 @@ public class VersionControl extends Command {
 		case UNDO:
 			count = undo(numOfExec);
 			if (count > 0) {
-				message = "<html>The previous " + count + " commands have been reversed.</html>";
+				message = "The previous " + count + " commands have been reversed.";
 				return true;
 			} else {
-				message = "<html>There are no available tasks to undo.</html>";
+				message = "There are no available tasks to undo.";
 				taskType = EnumTypes.TASK_TYPE.INVALID;
 				return false;
 			}
 		case REDO:
 			count = redo(numOfExec);
 			if (count > 0) {
-				message = "<html>The previous " + count + " commands have been reversed.</html>";
+				message = "The previous " + count + " commands have been reversed.";
 				return true;
 			} else {
-				message = "<html>There are no available tasks to redo.</html>";
+				message = "There are no available tasks to redo.";
 				taskType = EnumTypes.TASK_TYPE.INVALID;
 				return false;
 			}
@@ -63,22 +68,22 @@ public class VersionControl extends Command {
 			VersionModel vModel = vList.get(curPosition);
 			switch (vModel.getCmdType()) {
 			case ADD:
-				if (Add.undo(((VersionModel.AddModel) vModel).getTask())) {
+				if (add.undo(((VersionModel.AddModel) vModel).getTask())) {
 					count++;
 				}
 				break;
 			case DELETE:
-				if (Delete.undo(((VersionModel.DeleteModel) vModel).getTasks())) {
+				if (delete.undo(((VersionModel.DeleteModel) vModel).getTasks())) {
 					count++;
 				}
 				break;
 			case UPDATE:
-				if (Update.undo(((VersionModel.UpdateModel) vModel).getOldTask())) {
+				if (update.undo(((VersionModel.UpdateModel) vModel).getOldTask())) {
 					count++;
 				}
 				break;
 			case DONE_UNDONE:
-				if (ChangeStatus.undo(((VersionModel.ChangeStatusModel) vModel).getIds(),
+				if (changeStatus.undo(((VersionModel.ChangeStatusModel) vModel).getIds(),
 						((VersionModel.ChangeStatusModel) vModel).getOldStatuses())) {
 					count++;
 				}
@@ -98,23 +103,22 @@ public class VersionControl extends Command {
 			VersionModel vModel = vList.get(curPosition + 1);
 			switch (vModel.getCmdType()) {
 			case ADD:
-				if (Add.redo(((VersionModel.AddModel) vModel).getTask())) {
+				if (add.redo(((VersionModel.AddModel) vModel).getTask())) {
 					count++;
 				}
 				break;
 			case DELETE:
-				if (Delete.redo(((VersionModel.DeleteModel) vModel).getTasks())) {
+				if (delete.getInstance().redo(((VersionModel.DeleteModel) vModel).getTasks())) {
 					count++;
 				}
 				break;
 			case UPDATE:
-				if (Update.redo(((VersionModel.UpdateModel) vModel).getNewTask())) {
+				if (update.redo(((VersionModel.UpdateModel) vModel).getNewTask())) {
 					count++;
 				}
 				break;
-				
 			case DONE_UNDONE:
-				if (ChangeStatus.redo(((VersionModel.ChangeStatusModel) vModel).getIds(),
+				if (changeStatus.redo(((VersionModel.ChangeStatusModel) vModel).getIds(),
 						((VersionModel.ChangeStatusModel) vModel).getNewStatus())) {
 					count++;
 				}
