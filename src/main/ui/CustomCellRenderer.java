@@ -24,8 +24,12 @@ public class CustomCellRenderer extends JTextArea implements TableCellRenderer {
     	this.setWrapStyleWord(true);
         this.setLineWrap(true);
         this.setMargin(new Insets(2,10,2,10));
-        this.setFont(new Font("Segoe UI Semibold", Font.PLAIN, 12));
-        
+        if (System.getProperty("os.name").startsWith("Windows")) {
+        	this.setFont(new Font("Segoe UI Semibold", Font.PLAIN, 12));
+        } else {
+        	this.setFont(new Font("Segoe UI Semibold", Font.PLAIN, 10));
+        }
+
         if (isSelected) {
             setBackground(table.getSelectionBackground());
             setForeground(table.getSelectionForeground());
