@@ -44,8 +44,18 @@ public class Delete extends Command {
 			System.out.println(obj.getCommandType());
 			System.out.println(obj.getTaskType());
 		}
+		
 
-		ArrayList<Integer> taskIDs = obj.getObjects();
+		List<Integer> taskIDs = new ArrayList<>();
+		switch (obj.getParamType()) {
+		case ID: 
+			taskIDs = obj.getObjects(); 
+			break;
+		case CATEGORY:
+			taskIDs = storage.getIdByCategory(obj.getObjects());
+			break;
+		default: 
+		}
 		List<Task> deletedTasks = new ArrayList<>();
 		int cnt = 0;
 		for (int i = 0; i < taskIDs.size(); i++) {

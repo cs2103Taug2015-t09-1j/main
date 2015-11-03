@@ -11,6 +11,7 @@ import java.util.List;
 import org.ocpsoft.prettytime.shade.net.fortuna.ical4j.model.parameter.Dir;
 
 import main.logic.Logic;
+import main.model.EnumTypes.CATEGORY;
 import main.model.EnumTypes.TASK_TYPE;
 import main.model.taskModels.Deadline;
 import main.model.taskModels.Event;
@@ -171,6 +172,20 @@ public class Storage {
 			return task.clone();
 		}
 		return null;
+	}
+	
+	public List<Integer> getIdByCategory(List<CATEGORY> categories) {
+		List<Integer> ids = new ArrayList<>();
+		for (Task todo: todos) if (TaskChecker.isSatisfied(categories, todo)) {
+			ids.add(todo.getTaskID());
+		}
+		for (Task event: events) if (TaskChecker.isSatisfied(categories, event)) {
+			ids.add(event.getTaskID());
+		}
+		for (Task deadline: deadlines) if (TaskChecker.isSatisfied(categories, deadline)) {
+			ids.add(deadline.getTaskID());
+		}
+		return ids;
 	}
 
 	private Task getRealTaskById(int id) {

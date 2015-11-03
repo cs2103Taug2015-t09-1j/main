@@ -136,7 +136,6 @@ public class Logic extends Observable implements Observer {
 			updateModelData(TASK_TYPE.DEADLINE, temp.get(0), false);
 			updateModelData(TASK_TYPE.EVENT, temp.get(1), false);
 		}
-
 		updateMessage(displayCmd.getMessage());
 	}
 

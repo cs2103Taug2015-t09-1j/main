@@ -37,12 +37,21 @@ public class ChangeStatus extends Command {
 	}
 
 	public static ChangeStatus getInstance() {
-		return changeStatus;
+		return getInstance(true);
 	}
 
 	@Override
 	public boolean execute(ParsedObject obj) {
-		ArrayList<Integer> taskIDs = obj.getObjects();
+		List<Integer> taskIDs = new ArrayList<>();
+		switch (obj.getParamType()) {
+		case ID: 
+			taskIDs = obj.getObjects(); 
+			break;
+		case CATEGORY:
+			taskIDs = storage.getIdByCategory(obj.getObjects());
+			break;
+		default: 
+		}
 
 		List<Integer> ids = new ArrayList<>();
 		List<Boolean> oldStatuses = new ArrayList<>();

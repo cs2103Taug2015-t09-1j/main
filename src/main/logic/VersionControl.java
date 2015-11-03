@@ -15,11 +15,11 @@ public class VersionControl extends Command {
 
 	private static VersionControl instance = null;
 
-	private static final Add add = Add.getInstance();
+	/*private static final Add add = Add.getInstance();
 	private static final Delete delete = Delete.getInstance();
 	private static final Update update = Update.getInstance();
 	private static final ChangeStatus changeStatus = ChangeStatus.getInstance();
-
+*/
 	private VersionControl() {
 	}
 
@@ -68,22 +68,22 @@ public class VersionControl extends Command {
 			VersionModel vModel = vList.get(curPosition);
 			switch (vModel.getCmdType()) {
 			case ADD:
-				if (add.undo(((VersionModel.AddModel) vModel).getTask())) {
+				if (Add.getInstance().undo(((VersionModel.AddModel) vModel).getTask())) {
 					count++;
 				}
 				break;
 			case DELETE:
-				if (delete.undo(((VersionModel.DeleteModel) vModel).getTasks())) {
+				if (Delete.getInstance().undo(((VersionModel.DeleteModel) vModel).getTasks())) {
 					count++;
 				}
 				break;
 			case UPDATE:
-				if (update.undo(((VersionModel.UpdateModel) vModel).getOldTask())) {
+				if (Update.getInstance().undo(((VersionModel.UpdateModel) vModel).getOldTask())) {
 					count++;
 				}
 				break;
 			case DONE_UNDONE:
-				if (changeStatus.undo(((VersionModel.ChangeStatusModel) vModel).getIds(),
+				if (ChangeStatus.getInstance().undo(((VersionModel.ChangeStatusModel) vModel).getIds(),
 						((VersionModel.ChangeStatusModel) vModel).getOldStatuses())) {
 					count++;
 				}
@@ -103,22 +103,22 @@ public class VersionControl extends Command {
 			VersionModel vModel = vList.get(curPosition + 1);
 			switch (vModel.getCmdType()) {
 			case ADD:
-				if (add.redo(((VersionModel.AddModel) vModel).getTask())) {
+				if (Add.getInstance().redo(((VersionModel.AddModel) vModel).getTask())) {
 					count++;
 				}
 				break;
 			case DELETE:
-				if (delete.getInstance().redo(((VersionModel.DeleteModel) vModel).getTasks())) {
+				if (Delete.getInstance().getInstance().redo(((VersionModel.DeleteModel) vModel).getTasks())) {
 					count++;
 				}
 				break;
 			case UPDATE:
-				if (update.redo(((VersionModel.UpdateModel) vModel).getNewTask())) {
+				if (Update.getInstance().redo(((VersionModel.UpdateModel) vModel).getNewTask())) {
 					count++;
 				}
 				break;
 			case DONE_UNDONE:
-				if (changeStatus.redo(((VersionModel.ChangeStatusModel) vModel).getIds(),
+				if (ChangeStatus.getInstance().redo(((VersionModel.ChangeStatusModel) vModel).getIds(),
 						((VersionModel.ChangeStatusModel) vModel).getNewStatus())) {
 					count++;
 				}

@@ -15,6 +15,7 @@ public class ParsedObject {
 	private COMMAND_TYPE commandType;
 	private TASK_TYPE taskType;
 	private ArrayList objects;
+	private PARAM_TYPE paramType = PARAM_TYPE.ID;
 
 	public ParsedObject() {
 	}
@@ -25,6 +26,14 @@ public class ParsedObject {
 		this.objects = objects;
 	}
 
+	public ParsedObject(COMMAND_TYPE commandType, TASK_TYPE taskType, ArrayList objects, PARAM_TYPE paramType) {
+		this.commandType = commandType;
+		this.taskType = taskType;
+		this.objects = objects;
+		this.paramType = paramType;
+	}
+
+	
 	/**
 	 * @return the commandType
 	 */
@@ -65,5 +74,13 @@ public class ParsedObject {
 	 */
 	public void setTasks(ArrayList objects) {
 		this.objects = objects;
+	}
+	
+	public PARAM_TYPE getParamType() {
+		return this.paramType;
+	}
+	
+	public void setParamType(PARAM_TYPE paramType) {
+		this.paramType = paramType;
 	}
 }
