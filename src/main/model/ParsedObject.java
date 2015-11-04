@@ -25,6 +25,7 @@ public class ParsedObject {
 
 	public ParsedObject(COMMAND_TYPE commandType, PARAM_TYPE paramType, ArrayList objects) {
 		this.commandType = commandType;
+		this.paramType = paramType;
 		this.objects = objects;
 	}
 
