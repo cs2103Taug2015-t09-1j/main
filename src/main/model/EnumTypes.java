@@ -17,11 +17,11 @@ public class EnumTypes {
 	};
 
 	public static enum PARAM_TYPE {
-		ID, CATEGORY, TIME
-	}
+		ID, CATEGORY, TIME, TASK, DATE, INTEGER, STRING
+	};
 
 	public static enum CATEGORY {
 		COMPLETED, INCOMPLETED, EXPIRED, ALL
-	}
+	};
 
 }

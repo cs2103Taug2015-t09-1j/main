@@ -67,7 +67,7 @@ public class Display extends Command {
 					}
 				}
 			}
-			message = "Tasks are display!";
+			message = "Tasks are displayed.";
 		} else {
 			Date fromDate, toDate;
 			switch (obj.getCommandType()) {

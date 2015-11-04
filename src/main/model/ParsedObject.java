@@ -17,16 +17,18 @@ public class ParsedObject {
 	private ArrayList objects;
 	private PARAM_TYPE paramType = PARAM_TYPE.ID;
 
-	public ParsedObject() {
+	public ParsedObject() {}
+
+	public ParsedObject(COMMAND_TYPE commandType) {
+		this.commandType = commandType;
 	}
 
-	public ParsedObject(COMMAND_TYPE commandType, TASK_TYPE taskType, ArrayList objects) {
+	public ParsedObject(COMMAND_TYPE commandType, PARAM_TYPE paramType, ArrayList objects) {
 		this.commandType = commandType;
-		this.taskType = taskType;
 		this.objects = objects;
 	}
 
-	public ParsedObject(COMMAND_TYPE commandType, TASK_TYPE taskType, ArrayList objects, PARAM_TYPE paramType) {
+	public ParsedObject(COMMAND_TYPE commandType, PARAM_TYPE paramType, TASK_TYPE taskType, ArrayList objects) {
 		this.commandType = commandType;
 		this.taskType = taskType;
 		this.objects = objects;

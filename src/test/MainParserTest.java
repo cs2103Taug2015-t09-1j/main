@@ -202,8 +202,6 @@ public class MainParserTest {
 		assertEquals(EnumTypes.COMMAND_TYPE.DELETE, testParser.determineCommandType("/d  567   "));
 		assertEquals(EnumTypes.COMMAND_TYPE.DELETE, testParser.determineCommandType("remove 1-10"));
 		assertEquals(EnumTypes.COMMAND_TYPE.DELETE, testParser.determineCommandType("remove  567   "));
-		assertEquals(EnumTypes.COMMAND_TYPE.DELETE, testParser.determineCommandType("rm 1to10"));
-		assertEquals(EnumTypes.COMMAND_TYPE.DELETE, testParser.determineCommandType("rm  567   "));
 		assertEquals(EnumTypes.COMMAND_TYPE.DELETE, testParser.determineCommandType("/r 1-10"));
 		assertEquals(EnumTypes.COMMAND_TYPE.DELETE, testParser.determineCommandType("/r  567   "));
 	}
@@ -230,14 +228,11 @@ public class MainParserTest {
 	private void determineCommandTypeUndoValid() {
 		assertEquals(EnumTypes.COMMAND_TYPE.UNDO, testParser.determineCommandType("undo"));
 		assertEquals(EnumTypes.COMMAND_TYPE.UNDO, testParser.determineCommandType("undo  567   "));
-		assertEquals(EnumTypes.COMMAND_TYPE.UNDO, testParser.determineCommandType("/un"));
-		assertEquals(EnumTypes.COMMAND_TYPE.UNDO, testParser.determineCommandType("/un  567   "));
 	}
 
 	// @@author Dalton
 	private void determineCommandTypeUndoInvalid() {
 		assertNotEquals(EnumTypes.COMMAND_TYPE.UNDO, testParser.determineCommandType("undo 235 2"));
-		assertNotEquals(EnumTypes.COMMAND_TYPE.UNDO, testParser.determineCommandType("/un 235 2"));
 	}
 
 	/*	@@author Dalton
@@ -255,8 +250,6 @@ public class MainParserTest {
 	private void determineCommandTypeRedoValid() {
 		assertEquals(EnumTypes.COMMAND_TYPE.REDO, testParser.determineCommandType("redo"));
 		assertEquals(EnumTypes.COMMAND_TYPE.REDO, testParser.determineCommandType("redo  234   "));
-		assertEquals(EnumTypes.COMMAND_TYPE.REDO, testParser.determineCommandType("/re"));
-		assertEquals(EnumTypes.COMMAND_TYPE.REDO, testParser.determineCommandType("/re  234   "));
 	}
 
 	// @@author Dalton
@@ -279,8 +272,6 @@ public class MainParserTest {
 	private void determineCommandTypeExitValid() {
 		assertEquals(EnumTypes.COMMAND_TYPE.EXIT, testParser.determineCommandType("exit"));
 		assertEquals(EnumTypes.COMMAND_TYPE.EXIT, testParser.determineCommandType("exit   "));
-		assertEquals(EnumTypes.COMMAND_TYPE.EXIT, testParser.determineCommandType("/e"));
-		assertEquals(EnumTypes.COMMAND_TYPE.EXIT, testParser.determineCommandType("/e   "));
 		assertEquals(EnumTypes.COMMAND_TYPE.EXIT, testParser.determineCommandType("quit"));
 		assertEquals(EnumTypes.COMMAND_TYPE.EXIT, testParser.determineCommandType("quit   "));
 		assertEquals(EnumTypes.COMMAND_TYPE.EXIT, testParser.determineCommandType("/q"));
@@ -290,7 +281,6 @@ public class MainParserTest {
 	// @@author Dalton
 	private void determineCommandTypeExitInvalid() {
 		assertNotEquals(EnumTypes.COMMAND_TYPE.EXIT, testParser.determineCommandType("exit22141"));
-		assertNotEquals(EnumTypes.COMMAND_TYPE.EXIT, testParser.determineCommandType("5234exit"));
 	}
 
 }

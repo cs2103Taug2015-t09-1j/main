@@ -14,7 +14,9 @@ import org.ocpsoft.prettytime.nlp.PrettyTimeParser;
 import org.ocpsoft.prettytime.nlp.parse.DateGroup;
 import org.ocpsoft.prettytime.shade.edu.emory.mathcs.backport.java.util.Arrays;
 
+import main.model.EnumTypes.CATEGORY;
 import main.model.EnumTypes.COMMAND_TYPE;
+import main.model.EnumTypes.PARAM_TYPE;
 import main.model.EnumTypes.TASK_TYPE;
 import main.model.ParsedObject;
 import main.model.taskModels.Deadline;
@@ -31,12 +33,12 @@ public class Parser {
 	private static PrettyTimeParser ptParser;
 	private final Logger logger = Logger.getLogger(Parser.class.getName());
 	private final String[] updateCmdList = {"update", "/u", "edit", "/e", "modify", "/m", "change"};
-	private final String[] deleteCmdList = {"delete", "del", "/d", "remove", "rm", "/r"};
+	private final String[] deleteCmdList = {"delete", "del", "/d", "remove", "/r"};
 	private final String[] doneCmdList = {"done", "complete"};
 	private final String[] undoneCmdList = {"!done", "undone", "incomplete"};
-	private final String[] undoCmdList = {"undo", "/un"};
-	private final String[] redoCmdList = {"redo", "/re"};
-	private final String[] exitCmdList = {"exit", "/e", "quit", "/q"};
+	private final String[] undoCmdList = {"undo"};
+	private final String[] redoCmdList = {"redo"};
+	private final String[] exitCmdList = {"exit", "quit", "/q"};
 	private final String[] displayCmdList = {"display", "show", "/sh", "view", "/v"};
 
 	private final String UPDATE_REGEX = "^\\d+\\s+\\d+\\s+(\\w*|\\d*|\\s*)+";
@@ -139,7 +141,8 @@ public class Parser {
 	}
 
 	public List<Date> parseDateGroups(String input) {
-		String timeRegexPattern = "(((\\d+\\s+(minutes|min|seconds|sec|hours))|[0-9](am|pm|a.m.|p.m.)|1[0-2](am|pm|a.m.|p.m.))|(0[0-9]|1[0-9]|2[0-3])\\:?([0-5][0-9]))\\:?([0-5][0-9])?(am|pm|a.m.|p.m.|h|\\shours)?";
+		String timeRegexPattern = "(((\\d+\\s+(minutes|min|seconds|sec|hours))|[0-9](am|pm|a.m.|p.m.)|1[0-2](am|pm|a.m.|p.m.))|"
+								+ "(0[0-9]|1[0-9]|2[0-3])\\:?([0-5][0-9]))\\:?([0-5][0-9])?(am|pm|a.m.|p.m.|h|\\shours)?";
 		Pattern timePattern = Pattern.compile("(?ui)" + timeRegexPattern);
 		input = input.replaceAll("until", "till");
 		List<DateGroup> dGroups = getDateGroups(input);
@@ -387,23 +390,34 @@ public class Parser {
 		ParsedObject obj;
 		input = removeCommandWord(input, displayCmdList);
 		List<Date> parsedInput = parseDateGroups(input);
+		ArrayList<CATEGORY> categories = new ArrayList<CATEGORY>();
 		if (parsedInput == null) {
+			obj = new ParsedObject(COMMAND_TYPE.INVALID);
+
 			if (input.matches("(?ui)^\\s*all\\s*$")) {
-				obj = new ParsedObject(COMMAND_TYPE.DISPLAY_ALL, null, null);
-			} else {
-				obj = new ParsedObject(COMMAND_TYPE.INVALID, null, null);
+				categories.add(CATEGORY.ALL);
+				obj = new ParsedObject(COMMAND_TYPE.DISPLAY, PARAM_TYPE.CATEGORY, categories);
+			} else if(input.matches("(?ui)^\\s*expire(?:d)?\\s*$")) {
+				categories.add(CATEGORY.EXPIRED);
+				obj = new ParsedObject(COMMAND_TYPE.DISPLAY, PARAM_TYPE.CATEGORY, categories);
+			} else if(input.matches("(?ui)^\\s*(complete(?:d)?|done)\\s*$")) {
+				categories.add(CATEGORY.COMPLETED);
+				obj = new ParsedObject(COMMAND_TYPE.DISPLAY, PARAM_TYPE.CATEGORY, categories);
+			} else if(input.matches("(?ui)^\\s*(incomplete|incomplete(?:d)?|uncomplete|uncomplete(?:d)?|(?:(not |! ))complete(?:d)?|undone|!done|not done)\\s*$")) {
+				categories.add(CATEGORY.INCOMPLETED);
+				obj = new ParsedObject(COMMAND_TYPE.DISPLAY, PARAM_TYPE.CATEGORY, categories);
 			}
 		} else {
 			ArrayList<Date> dates = new ArrayList<Date>(parsedInput);
 			switch (dates.size()) {
 				case 1:
-					obj = new ParsedObject(COMMAND_TYPE.DISPLAY_ON, null, dates);
+					obj = new ParsedObject(COMMAND_TYPE.DISPLAY_ON, PARAM_TYPE.DATE, dates);
 					break;
 				case 2:
-					obj = new ParsedObject(COMMAND_TYPE.DISPLAY_BETWEEN, null, dates);
+					obj = new ParsedObject(COMMAND_TYPE.DISPLAY_BETWEEN, PARAM_TYPE.DATE, dates);
 					break;
 				default:
-					obj = new ParsedObject(COMMAND_TYPE.INVALID, null, null);
+					obj = new ParsedObject(COMMAND_TYPE.INVALID);
 			}
 		}
 
@@ -419,22 +433,22 @@ public class Parser {
 				case 1:
 					if (input.contains("by") || input.contains("due") || input.contains("before")) {
 						tasks.add(new Deadline(parsedInput.get(0), getTaskDesc(input), false));
-						obj = new ParsedObject(COMMAND_TYPE.ADD, TASK_TYPE.DEADLINE, tasks);
+						obj = new ParsedObject(COMMAND_TYPE.ADD, PARAM_TYPE.TASK, TASK_TYPE.DEADLINE, tasks);
 					} else {
 						tasks.add(new Event(parsedInput.get(0), parsedInput.get(0), getTaskDesc(input), false));
-						obj = new ParsedObject(COMMAND_TYPE.ADD, TASK_TYPE.SINGLE_DATE_EVENT, tasks);
+						obj = new ParsedObject(COMMAND_TYPE.ADD, PARAM_TYPE.TASK, TASK_TYPE.SINGLE_DATE_EVENT, tasks);
 					}
 					break;
 				case 2:
 					tasks.add(new Event(parsedInput.get(0), parsedInput.get(1), getTaskDesc(input), false));
-					obj = new ParsedObject(COMMAND_TYPE.ADD, TASK_TYPE.DOUBLE_DATE_EVENT, tasks);
+					obj = new ParsedObject(COMMAND_TYPE.ADD, PARAM_TYPE.TASK, TASK_TYPE.DOUBLE_DATE_EVENT, tasks);
 					break;
 				default:
-					obj = new ParsedObject(COMMAND_TYPE.INVALID, null, null);
+					obj = new ParsedObject(COMMAND_TYPE.INVALID);
 			}
 		} else {
 			tasks.add(new Todo(input.trim(), false));
-			obj = new ParsedObject(COMMAND_TYPE.ADD, TASK_TYPE.TODO, tasks);
+			obj = new ParsedObject(COMMAND_TYPE.ADD, PARAM_TYPE.TASK, TASK_TYPE.TODO, tasks);
 		}
 		return obj;
 	}
@@ -442,7 +456,7 @@ public class Parser {
 	public ParsedObject getUpdateParsedObject(String input) {
 		String params = removeCommandWord(input, updateCmdList);
 		ArrayList<String> paramsList = getCommandParameters(params, COMMAND_TYPE.UPDATE);
-		ParsedObject obj = new ParsedObject(COMMAND_TYPE.UPDATE, null, paramsList);
+		ParsedObject obj = new ParsedObject(COMMAND_TYPE.UPDATE, PARAM_TYPE.STRING, paramsList);
 		return obj;
 	}
 
@@ -488,7 +502,7 @@ public class Parser {
 
 			}
 		}
-		obj = new ParsedObject(COMMAND_TYPE.DELETE, null, taskIDs);
+		obj = new ParsedObject(COMMAND_TYPE.DELETE, PARAM_TYPE.ID, taskIDs);
 		return obj;
 	}
 
@@ -527,7 +541,7 @@ public class Parser {
 
 			}
 		}
-		obj = new ParsedObject(newStatus ? COMMAND_TYPE.DONE : COMMAND_TYPE.UNDONE, null, taskIDs);
+		obj = new ParsedObject(newStatus ? COMMAND_TYPE.DONE : COMMAND_TYPE.UNDONE, PARAM_TYPE.ID, taskIDs);
 		return obj;
 	}
 
@@ -541,7 +555,7 @@ public class Parser {
 			numOfExec.add(parseInteger(params));
 		}
 
-		return new ParsedObject(COMMAND_TYPE.UNDO, null, numOfExec);
+		return new ParsedObject(COMMAND_TYPE.UNDO, PARAM_TYPE.INTEGER, numOfExec);
 	}
 
 	public ParsedObject getRedoParsedObject(String input) {
@@ -553,7 +567,7 @@ public class Parser {
 			numOfExec.add(parseInteger(params));
 		}
 
-		return new ParsedObject(COMMAND_TYPE.REDO, null, numOfExec);
+		return new ParsedObject(COMMAND_TYPE.REDO, PARAM_TYPE.INTEGER, numOfExec);
 	}
 
 	public Calendar setDateTime(Calendar cal, int year, int month, int date, int hours, int minutes, int seconds) {
