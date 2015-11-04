@@ -21,7 +21,7 @@ import main.ui.MainGUI;
  */
 public class TodosTableModel extends AbstractTableModel {
 	private static TodosTableModel ttm = TodosTableModel.getInstance();
-	private final String[] columnNames = { "ID", "Task Description", "Done" };
+	private final String[] columnNames = { "ID", "Task Description (2)", "Done" };
 	private final Class<?>[] columnTypes = { Integer.class, String.class, Boolean.class };
 	private List<Task> todos = new ArrayList<>();
 	private MainGUI mainGui;

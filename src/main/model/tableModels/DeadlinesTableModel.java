@@ -18,7 +18,7 @@ import main.ui.MainGUI;
  */
 public class DeadlinesTableModel extends AbstractTableModel {
 	private static DeadlinesTableModel dtm = DeadlinesTableModel.getInstance();
-	private final String[] columnNames = { "ID", "Deadline", "Task Description", "Done" };
+	private final String[] columnNames = { "ID", "Deadline (2)", "Task Description (3)", "Done" };
 	private final Class<?>[] columnTypes = { Integer.class, Date.class, String.class, Boolean.class };
 	private List<Task> deadlines = new ArrayList<>();
 	private MainGUI mainGui;

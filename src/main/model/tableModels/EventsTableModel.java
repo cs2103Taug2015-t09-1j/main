@@ -21,7 +21,7 @@ import main.ui.MainGUI;
  */
 public class EventsTableModel extends AbstractTableModel {
 	private static EventsTableModel etm = EventsTableModel.getInstance();
-	private final String[] columnNames = { "ID", "Start Date", "End Date", "Task Description", "Done" };
+	private final String[] columnNames = { "ID", "Start Date (2)", "End Date (3)", "Task Description (4)", "Done" };
 	private final Class<?>[] columnTypes = { Integer.class, Date.class, Date.class, String.class, Boolean.class };
 	private List<Task> events = new ArrayList<>();
 	private MainGUI mainGui;
