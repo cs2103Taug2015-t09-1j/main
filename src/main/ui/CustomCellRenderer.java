@@ -28,7 +28,7 @@ public class CustomCellRenderer extends JTextArea implements TableCellRenderer {
         if (System.getProperty("os.name").startsWith("Mac")) {
         	this.setFont(new Font("Segoe UI Semibold", Font.PLAIN, 11));
         } else {
-        	this.setFont(new Font("Segoe UI Semibold", Font.PLAIN, 12));
+        	this.setFont(new Font("Segoe UI Semibold", Font.PLAIN, 13));
         }
 
         if (isSelected) {
