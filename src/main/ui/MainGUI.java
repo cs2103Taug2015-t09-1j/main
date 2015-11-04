@@ -24,6 +24,8 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -106,14 +108,13 @@ public class MainGUI extends Observable implements Observer {
 
 	private static final int TABLE_FONT_SIZE = 14;
 	private static final int LABEL_FONT_SIZE = 15;
+	private static final int TABLE_ROW_HEIGHT = 50;
 
 	private static Color normalTextColour = Color.BLACK;
 	private static Color highlightedTextColour = Color.RED;
 
 	private static String[] themes = {"bernstein.BernsteinLookAndFeel", "noire.NoireLookAndFeel", "smart.SmartLookAndFeel", "mint.MintLookAndFeel", "mcwin.McWinLookAndFeel"};
 	private static int themeIndex = 0;
-
-	private static int tabIndex = 0;
 
 	/**
 	 * Launch the application.
@@ -128,7 +129,6 @@ public class MainGUI extends Observable implements Observer {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					//getInstance().addObserver(Logic.getInstance());
 					getInstance().addObserver(Logic.getInstance());
 					getInstance().frmTodokoro.setVisible(true);
 				} catch (Exception e) {
@@ -185,7 +185,7 @@ public class MainGUI extends Observable implements Observer {
 		frmTodokoro.setAlwaysOnTop(true);
 		frmTodokoro.setTitle("Todokoro");
 		frmTodokoro.setResizable(false);
-		frmTodokoro.setBounds(0, 0, FRAME_WIDTH, FRAME_HEIGHT);
+		frmTodokoro.setBounds(0, 23, FRAME_WIDTH, FRAME_HEIGHT);
 		frmTodokoro.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frmTodokoro.getContentPane().setLayout(null);
 
@@ -195,8 +195,11 @@ public class MainGUI extends Observable implements Observer {
 			}
 		});
 
-		frmTodokoro.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), "Simple Mode");
-		frmTodokoro.getRootPane().getActionMap().put("Simple Mode", new AbstractAction() {
+		InputMap im = frmTodokoro.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+		ActionMap am = frmTodokoro.getRootPane().getActionMap();
+
+		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), "Simple Mode");
+		am.put("Simple Mode", new AbstractAction() {
 			boolean isNormalMode = false;
 
 			public void actionPerformed(ActionEvent e) {
@@ -220,15 +223,15 @@ public class MainGUI extends Observable implements Observer {
 			}
 		});
 
-		frmTodokoro.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0), "Change Directory");
-		frmTodokoro.getRootPane().getActionMap().put("Change Directory", new AbstractAction() {
+		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0), "Change Directory");
+		am.put("Change Directory", new AbstractAction() {
 			public void actionPerformed(ActionEvent e) {
 				ChangeDirectory cd = new ChangeDirectory(frmTodokoro);
 			}
 		});
 
-		frmTodokoro.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_QUOTE, InputEvent.CTRL_DOWN_MASK), "Cycle Themes");
-		frmTodokoro.getRootPane().getActionMap().put("Cycle Themes", new AbstractAction() {
+		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_QUOTE, InputEvent.CTRL_DOWN_MASK), "Cycle Themes");
+		am.put("Cycle Themes", new AbstractAction() {
 			public void actionPerformed(ActionEvent e) {
 				if (themeIndex == themes.length-1) {
 					themeIndex = 0;
@@ -260,21 +263,54 @@ public class MainGUI extends Observable implements Observer {
 					e1.printStackTrace();
 				}
 				SwingUtilities.updateComponentTreeUI(frmTodokoro);
-				eventsTable.setRowHeight(40);
-				todosTable.setRowHeight(40);
-				deadlinesTable.setRowHeight(40);
+				eventsTable.setRowHeight(TABLE_ROW_HEIGHT);
+				todosTable.setRowHeight(TABLE_ROW_HEIGHT);
+				deadlinesTable.setRowHeight(TABLE_ROW_HEIGHT);
 			}
 		});
 
-		frmTodokoro.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.CTRL_DOWN_MASK), "Cycle Tabs");
-		frmTodokoro.getRootPane().getActionMap().put("Cycle Tabs", new AbstractAction() {
+		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.CTRL_DOWN_MASK), "Cycle Tabs");
+		am.put("Cycle Tabs", new AbstractAction() {
 			public void actionPerformed(ActionEvent e) {
-				if (tabIndex == 2) {
-					tabIndex = 0;
+				if (tabbedPane.getSelectedIndex() == 2) {
+					tabbedPane.setSelectedIndex(0);
 				} else {
-					tabIndex++;
+					tabbedPane.setSelectedIndex(tabbedPane.getSelectedIndex()+1);
 				}
-				tabbedPane.setSelectedIndex(tabIndex);
+			}
+		});
+
+		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_F1, InputEvent.CTRL_DOWN_MASK), "Scroll Down Tables");
+		am.put("Scroll Down Tables", new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {
+				switch (tabbedPane.getSelectedIndex()) {
+				case 0:
+					eventsScrollPane.getVerticalScrollBar().setValue(eventsScrollPane.getVerticalScrollBar().getValue()+eventsScrollPane.getHeight()-24);
+					break;
+				case 1:
+					todosScrollPane.getVerticalScrollBar().setValue(todosScrollPane.getVerticalScrollBar().getValue()+eventsScrollPane.getHeight()-24);
+					break;
+				case 2:
+					deadlineTasksScrollPane.getVerticalScrollBar().setValue(deadlineTasksScrollPane.getVerticalScrollBar().getValue()+eventsScrollPane.getHeight()-24);
+					break;
+				}
+			}
+		});
+
+		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, InputEvent.CTRL_DOWN_MASK), "Scroll Up Tables");
+		am.put("Scroll Up Tables", new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {
+				switch (tabbedPane.getSelectedIndex()) {
+				case 0:
+					eventsScrollPane.getVerticalScrollBar().setValue(eventsScrollPane.getVerticalScrollBar().getValue()-eventsScrollPane.getHeight()-24);
+					break;
+				case 1:
+					todosScrollPane.getVerticalScrollBar().setValue(todosScrollPane.getVerticalScrollBar().getValue()-eventsScrollPane.getHeight()-24);
+					break;
+				case 2:
+					deadlineTasksScrollPane.getVerticalScrollBar().setValue(deadlineTasksScrollPane.getVerticalScrollBar().getValue()-eventsScrollPane.getHeight()-24);
+					break;
+				}
 			}
 		});
 
@@ -418,7 +454,7 @@ public class MainGUI extends Observable implements Observer {
 		});
 
 		tfFilter = new JTextField();
-		tfFilter.setBounds(594, 18, 156, 26);
+		tfFilter.setBounds(594, 12, 156, 26);
 		frmTodokoro.getContentPane().add(tfFilter);
 		tfFilter.setColumns(10);
 		Border inner = new EmptyBorder(0, 4, 0, 4);
@@ -493,7 +529,7 @@ public class MainGUI extends Observable implements Observer {
 		lblFilter = new JLabel("Filter:");
 		lblFilter.setHorizontalAlignment(SwingConstants.RIGHT);
 		lblFilter.setFont(new Font("Segoe UI", Font.BOLD, 14));
-		lblFilter.setBounds(530, 22, 60, 16);
+		lblFilter.setBounds(530, 16, 60, 16);
 		frmTodokoro.getContentPane().add(lblFilter);
 	}
 
@@ -513,8 +549,9 @@ public class MainGUI extends Observable implements Observer {
 
 	private void setupTabbedPane() {
 		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		tabbedPane.setBorder(null);
 		//tabbedPane.setFont(new Font("Segoe UI Semibold", Font.PLAIN, 13));
-		tabbedPane.setBounds(12, 12, 738, 462);
+		tabbedPane.setBounds(12, 8, 738, 465);
 		eventsScrollPane = new JScrollPane();
 		todosScrollPane = new JScrollPane();
 		deadlineTasksScrollPane = new JScrollPane();
@@ -639,17 +676,17 @@ public class MainGUI extends Observable implements Observer {
 	}
 
 	private void setupDimensions(JTable table) {
-		table.setRowHeight(40);
+		table.setRowHeight(TABLE_ROW_HEIGHT);
 		table.getColumnModel().getColumn(0).setMaxWidth(45);
 
 		switch (table.getName()) {
 		case "Events":
-			table.getColumnModel().getColumn(1).setMinWidth(123);
-			table.getColumnModel().getColumn(1).setMaxWidth(123);
-			table.getColumnModel().getColumn(2).setMinWidth(123);
-			table.getColumnModel().getColumn(2).setMaxWidth(123);
-			table.getColumnModel().getColumn(3).setMinWidth(393);
-			table.getColumnModel().getColumn(3).setMaxWidth(700);
+			table.getColumnModel().getColumn(1).setMinWidth(130);
+			table.getColumnModel().getColumn(1).setMaxWidth(130);
+			table.getColumnModel().getColumn(2).setMinWidth(130);
+			table.getColumnModel().getColumn(2).setMaxWidth(130);
+			table.getColumnModel().getColumn(3).setMinWidth(379);
+			table.getColumnModel().getColumn(3).setMaxWidth(684);
 			table.getColumnModel().getColumn(4).setMaxWidth(50);
 			break;
 		case "Todos":
@@ -657,9 +694,9 @@ public class MainGUI extends Observable implements Observer {
 			table.getColumnModel().getColumn(2).setMaxWidth(50);
 			break;
 		case "Deadlines":
-			table.getColumnModel().getColumn(1).setMinWidth(123);
-			table.getColumnModel().getColumn(1).setMaxWidth(123);
-			table.getColumnModel().getColumn(2).setMinWidth(516);
+			table.getColumnModel().getColumn(1).setMinWidth(130);
+			table.getColumnModel().getColumn(1).setMaxWidth(130);
+			table.getColumnModel().getColumn(2).setMinWidth(507);
 			table.getColumnModel().getColumn(3).setMaxWidth(50);
 			break;
 		}
@@ -671,7 +708,7 @@ public class MainGUI extends Observable implements Observer {
 		table.setCellSelectionEnabled(true);
 		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-		table.setFont(new Font("Segoe UI Semibold", Font.PLAIN, 14));
+		//table.setFont(new Font("Segoe UI Semibold", Font.PLAIN, 14));
 		table.setShowVerticalLines(false);
 		table.setFillsViewportHeight(true);
 	}
