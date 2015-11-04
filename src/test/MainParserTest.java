@@ -8,6 +8,7 @@ import java.util.Date;
 import org.junit.Test;
 
 import main.model.ParsedObject;
+import main.model.EnumTypes;
 import main.model.EnumTypes.COMMAND_TYPE;
 import main.model.EnumTypes.TASK_TYPE;
 import main.parser.Parser;
@@ -131,6 +132,165 @@ public class MainParserTest {
 	@Test
 	public void testGetRedoParsedObject() {
 		fail("Not yet implemented");
+	}
+
+	/*	@@author Dalton
+	 *  Command is deemed invalid when the string is empty regardless of any whitespaces
+	 */
+	@Test
+	public void determineCommandTypeInvalid() {
+		assertEquals(EnumTypes.COMMAND_TYPE.INVALID, testParser.determineCommandType("          "));
+	}
+
+	/*	@@author Dalton
+	 *  Add command is flexible as it it parsed using Natural Language Processing
+	 */
+	@Test
+	public void determineCommandTypeAdd() {
+		assertEquals(EnumTypes.COMMAND_TYPE.ADD, testParser.determineCommandType("lunch with john at 9pm tomorrow"));
+		assertEquals(EnumTypes.COMMAND_TYPE.ADD, testParser.determineCommandType("lunch at 9pm tomorrow with john"));
+		assertEquals(EnumTypes.COMMAND_TYPE.ADD, testParser.determineCommandType("at 9pm tomorrow lunch with john"));
+	}
+
+	/*	@@author Dalton
+	 *  Update command is parsed using the regex pattern ("(?i)^" + command + "\\s+\\d+\\s+\\d+")
+	 *  where command is a word from the string array updateCmdList with values {"update", "/u", "edit", "/e", "modify", "/m"};
+	 *	The following test is to test the boundary of the regex pattern for the Update command
+	 */
+	@Test
+	public void testDetermineCommandTypeUpdate() {
+		determineCommandTypeUpdateValid();
+		determineCommandTypeUpdateInvalid();
+	}
+
+	// @@author Dalton
+	private void determineCommandTypeUpdateValid() {
+		assertEquals(EnumTypes.COMMAND_TYPE.UPDATE, testParser.determineCommandType("update   1   4   testing one two three"));
+		assertEquals(EnumTypes.COMMAND_TYPE.UPDATE, testParser.determineCommandType("/u 1  4   one  two    three"));
+		assertEquals(EnumTypes.COMMAND_TYPE.UPDATE, testParser.determineCommandType("edit 1  4  four   five  six"));
+		assertEquals(EnumTypes.COMMAND_TYPE.UPDATE, testParser.determineCommandType("/e 1  4  789"));
+		assertEquals(EnumTypes.COMMAND_TYPE.UPDATE, testParser.determineCommandType("modify 1  4   abc"));
+		assertEquals(EnumTypes.COMMAND_TYPE.UPDATE, testParser.determineCommandType("/m 1   4   def"));
+	}
+
+	// @@author Dalton
+	private void determineCommandTypeUpdateInvalid() {
+		assertNotEquals(EnumTypes.COMMAND_TYPE.UPDATE, testParser.determineCommandType("update"));
+		assertNotEquals(EnumTypes.COMMAND_TYPE.UPDATE, testParser.determineCommandType("update test 124"));
+		assertNotEquals(EnumTypes.COMMAND_TYPE.UPDATE, testParser.determineCommandType("update 1 test"));
+		assertNotEquals(EnumTypes.COMMAND_TYPE.UPDATE, testParser.determineCommandType("test update"));
+	}
+
+	/*	@@author Dalton
+	 *  Delete command is parsed using the regex pattern ("(?i)^" + command + "\\s+\\d+\\s*(((to|-)\\s*\\d+\\s*)?|(\\d+\\s*)*)$")
+	 *  where command is a word from the string array deleteCmdList with values {"delete", "del", "/d", "remove", "rm", "/r"};
+	 *	The following test is to test the boundary of the regex pattern for the Delete command
+	 */
+	@Test
+	public void testDetermineCommandTypeDelete() {
+		determineCommandTypeDeleteValid();
+		determineCommandTypeDeleteInvalid();
+	}
+
+	// @@author Dalton
+	private void determineCommandTypeDeleteValid() {
+		assertEquals(EnumTypes.COMMAND_TYPE.DELETE, testParser.determineCommandType("delete 1   to   10"));
+		assertEquals(EnumTypes.COMMAND_TYPE.DELETE, testParser.determineCommandType("delete  5  6   7   "));
+		assertEquals(EnumTypes.COMMAND_TYPE.DELETE, testParser.determineCommandType("del 1  -    10"));
+		assertEquals(EnumTypes.COMMAND_TYPE.DELETE, testParser.determineCommandType("del  567   "));
+		assertEquals(EnumTypes.COMMAND_TYPE.DELETE, testParser.determineCommandType("/d 1-10"));
+		assertEquals(EnumTypes.COMMAND_TYPE.DELETE, testParser.determineCommandType("/d  567   "));
+		assertEquals(EnumTypes.COMMAND_TYPE.DELETE, testParser.determineCommandType("remove 1-10"));
+		assertEquals(EnumTypes.COMMAND_TYPE.DELETE, testParser.determineCommandType("remove  567   "));
+		assertEquals(EnumTypes.COMMAND_TYPE.DELETE, testParser.determineCommandType("rm 1to10"));
+		assertEquals(EnumTypes.COMMAND_TYPE.DELETE, testParser.determineCommandType("rm  567   "));
+		assertEquals(EnumTypes.COMMAND_TYPE.DELETE, testParser.determineCommandType("/r 1-10"));
+		assertEquals(EnumTypes.COMMAND_TYPE.DELETE, testParser.determineCommandType("/r  567   "));
+	}
+
+	// @@author Dalton
+	private void determineCommandTypeDeleteInvalid() {
+		assertNotEquals(EnumTypes.COMMAND_TYPE.DELETE, testParser.determineCommandType("delete"));
+		assertNotEquals(EnumTypes.COMMAND_TYPE.DELETE, testParser.determineCommandType("123 delete"));
+		assertNotEquals(EnumTypes.COMMAND_TYPE.DELETE, testParser.determineCommandType("delete 1to10 1 2 3"));
+	}
+
+	/*	@@author Dalton
+	 *  Undo command is parsed using the regex pattern ("(?i)^" + command + "(\\s+\\d+\\s*)?$")
+	 *  where command is a word from the string array undoCmdList with values {"undo", "/un"};
+	 *	The following test is to test the boundary of the regex pattern for the Undo command
+	 */
+	@Test
+	public void testDetermineCommandTypeUndo() {
+		determineCommandTypeUndoValid();
+		determineCommandTypeUndoInvalid();
+	}
+
+	// @@author Dalton
+	private void determineCommandTypeUndoValid() {
+		assertEquals(EnumTypes.COMMAND_TYPE.UNDO, testParser.determineCommandType("undo"));
+		assertEquals(EnumTypes.COMMAND_TYPE.UNDO, testParser.determineCommandType("undo  567   "));
+		assertEquals(EnumTypes.COMMAND_TYPE.UNDO, testParser.determineCommandType("/un"));
+		assertEquals(EnumTypes.COMMAND_TYPE.UNDO, testParser.determineCommandType("/un  567   "));
+	}
+
+	// @@author Dalton
+	private void determineCommandTypeUndoInvalid() {
+		assertNotEquals(EnumTypes.COMMAND_TYPE.UNDO, testParser.determineCommandType("undo 235 2"));
+		assertNotEquals(EnumTypes.COMMAND_TYPE.UNDO, testParser.determineCommandType("/un 235 2"));
+	}
+
+	/*	@@author Dalton
+	 *  Redo command is parsed using the regex pattern ("(?i)^" + command + "(\\s+\\d+\\s*)?$")
+	 *  where command is a word from the string array redoCmdList with values {"redo", "/re"};
+	 *	The following test is to test the boundary of the regex pattern for the Redo command
+	 */
+	@Test
+	public void testDetermineCommandTypeRedo() {
+		determineCommandTypeRedoValid();
+		determineCommandTypeRedoInvalid();
+	}
+
+	// @@author Dalton
+	private void determineCommandTypeRedoValid() {
+		assertEquals(EnumTypes.COMMAND_TYPE.REDO, testParser.determineCommandType("redo"));
+		assertEquals(EnumTypes.COMMAND_TYPE.REDO, testParser.determineCommandType("redo  234   "));
+		assertEquals(EnumTypes.COMMAND_TYPE.REDO, testParser.determineCommandType("/re"));
+		assertEquals(EnumTypes.COMMAND_TYPE.REDO, testParser.determineCommandType("/re  234   "));
+	}
+
+	// @@author Dalton
+	private void determineCommandTypeRedoInvalid() {
+		assertNotEquals(EnumTypes.COMMAND_TYPE.REDO, testParser.determineCommandType("redo 32 2"));
+	}
+
+	/*	@@author Dalton
+	 *  Exit command is parsed using the regex pattern ("(?i)^" + command + "\\s*$")
+	 *  where command is a word from the string array exitCmdList with values {"exit", "/e", "quit", "/q"}
+	 *	The following test is to test the boundary of the regex pattern for the Exit command
+	 */
+	@Test
+	public void testDetermineCommandTypeExit() {
+		determineCommandTypeExitValid();
+		determineCommandTypeExitInvalid();
+	}
+
+	// @@author Dalton
+	private void determineCommandTypeExitValid() {
+		assertEquals(EnumTypes.COMMAND_TYPE.EXIT, testParser.determineCommandType("exit"));
+		assertEquals(EnumTypes.COMMAND_TYPE.EXIT, testParser.determineCommandType("exit   "));
+		assertEquals(EnumTypes.COMMAND_TYPE.EXIT, testParser.determineCommandType("/e"));
+		assertEquals(EnumTypes.COMMAND_TYPE.EXIT, testParser.determineCommandType("/e   "));
+		assertEquals(EnumTypes.COMMAND_TYPE.EXIT, testParser.determineCommandType("quit"));
+		assertEquals(EnumTypes.COMMAND_TYPE.EXIT, testParser.determineCommandType("quit   "));
+		assertEquals(EnumTypes.COMMAND_TYPE.EXIT, testParser.determineCommandType("/q"));
+		assertEquals(EnumTypes.COMMAND_TYPE.EXIT, testParser.determineCommandType("/q   "));
+	}
+
+	// @@author Dalton
+	private void determineCommandTypeExitInvalid() {
+		assertNotEquals(EnumTypes.COMMAND_TYPE.EXIT, testParser.determineCommandType("exit22141"));
+		assertNotEquals(EnumTypes.COMMAND_TYPE.EXIT, testParser.determineCommandType("5234exit"));
 	}
 
 }
