@@ -12,6 +12,7 @@ import main.model.taskModels.Event;
 import main.model.taskModels.Task;
 import main.storage.Storage;
 
+//@@author Xiang Jie
 public class ModelTest {
 
 	@Test
@@ -27,7 +28,7 @@ public class ModelTest {
 			System.out.println("not equal");
 		}
 	}
-	
+
 	@Test
 	public void testModels() {
 		List<Task> tasks = Storage.getInstance().getAllTask(TASK_TYPE.EVENT);

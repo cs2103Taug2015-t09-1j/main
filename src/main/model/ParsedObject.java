@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import main.model.EnumTypes.*;
 
 /**
- * @author Dalton
+ * @@author Dalton
  *
  */
 public class ParsedObject {
@@ -33,7 +33,7 @@ public class ParsedObject {
 		this.paramType = paramType;
 	}
 
-	
+
 	/**
 	 * @return the commandType
 	 */
@@ -75,11 +75,11 @@ public class ParsedObject {
 	public void setTasks(ArrayList objects) {
 		this.objects = objects;
 	}
-	
+
 	public PARAM_TYPE getParamType() {
 		return this.paramType;
 	}
-	
+
 	public void setParamType(PARAM_TYPE paramType) {
 		this.paramType = paramType;
 	}

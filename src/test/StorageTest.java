@@ -19,6 +19,7 @@ import main.storage.FileHandler;
 import main.storage.Storage;
 import sun.awt.RepaintArea;
 
+//@@author Hiep
 public class StorageTest {
 
 	@Test
@@ -34,27 +35,27 @@ public class StorageTest {
 		List<Task> events = Storage.getInstance().getAllTask(EVENT);
 		System.out.println(((Event)events.get(0)).getFromDate().toString());*/
 	}
-	
-	@Test 
+
+	@Test
 	public void testStorageInit() {
 		String workingDir = System.getProperty("user.dir");
 		workingDir = DirectoryHandler.fixDir(workingDir);
 
 		Storage storage = Storage.getInstance();
 		storage.init();
-		
+
 		assertEquals(workingDir, FileHandler.readFromFile("config.txt"));
 	}
-	
-	@Test 
+
+	@Test
 	public void testFileHandler() {
 		String content = "Some content";
 		FileHandler.writeToFile("tem.txt", content);
 		String readBackContent = FileHandler.readFromFile("tem.txt");
 		assertEquals(content, readBackContent);
 	}
-	
-	@Test 
+
+	@Test
 	public void testChangeDir() {
 		Storage storage = Storage.getInstance();
 		String newDir = "F:\\TEM";

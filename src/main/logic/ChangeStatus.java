@@ -14,7 +14,7 @@ import main.model.taskModels.Todo;
 import main.storage.Storage;
 
 /**
-* @author Dalton
+* @@author Dalton
 *
 */
 public class ChangeStatus extends Command {
@@ -44,13 +44,13 @@ public class ChangeStatus extends Command {
 	public boolean execute(ParsedObject obj) {
 		List<Integer> taskIDs = new ArrayList<>();
 		switch (obj.getParamType()) {
-		case ID: 
-			taskIDs = obj.getObjects(); 
+		case ID:
+			taskIDs = obj.getObjects();
 			break;
 		case CATEGORY:
 			taskIDs = storage.getIdByCategory(obj.getObjects());
 			break;
-		default: 
+		default:
 		}
 
 		List<Integer> ids = new ArrayList<>();
@@ -92,6 +92,7 @@ public class ChangeStatus extends Command {
 		return false;
 	}
 
+	// @@author Hiep
 	public boolean undo(List<Integer> ids, List<Boolean> oldStatuses) {
 		for (int i = 0; i < ids.size(); i++) {
 			storage.changeStatus(ids.get(i), oldStatuses.get(i));
@@ -99,6 +100,7 @@ public class ChangeStatus extends Command {
 		return true;
 	}
 
+	// @@author Hiep
 	public boolean redo(List<Integer> ids, boolean newStatus) {
 		for (int i = 0; i < ids.size(); i++) {
 			storage.changeStatus(ids.get(i), newStatus);

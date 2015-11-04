@@ -8,7 +8,7 @@ import main.model.EnumTypes;
 import main.model.EnumTypes.TASK_TYPE;
 
 /**
- * @author Dalton
+ * @@author Dalton
  *
  */
 public class Event extends Task {
@@ -21,8 +21,8 @@ public class Event extends Task {
 		this.fromDate = fromDate;
 		this.toDate = toDate;
 	}
-	
-	@Override 
+
+	@Override
 	public Event clone() {
 		Event event = (Event)super.clone();
 		event.setFromDate((Date)event.getFromDate().clone());
@@ -45,7 +45,7 @@ public class Event extends Task {
 	public void setToDate(Date toDate) {
 		this.toDate = toDate;
 	}
-	
+
 	@Override
 	public TASK_TYPE getType() {
 		return type;

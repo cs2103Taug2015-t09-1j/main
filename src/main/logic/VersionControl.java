@@ -8,6 +8,7 @@ import main.model.ParsedObject;
 import main.model.VersionModel;
 import main.storage.Storage;
 
+//@@author Hiep
 public class VersionControl extends Command {
 
 	private int curPosition = -1;

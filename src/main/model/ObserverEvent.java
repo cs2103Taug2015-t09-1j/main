@@ -8,6 +8,7 @@ import java.util.List;
 import main.model.EnumTypes.TASK_TYPE;
 import main.model.taskModels.Task;
 
+//@@author Hiep
 public class ObserverEvent {
 	public static int CHANGE_MESSAGE_CODE = 0;
 	public static int CHANGE_TABLE_CODE = 1;
@@ -71,7 +72,7 @@ public class ObserverEvent {
 		public TASK_TYPE getTaskType() {
 			return this.taskType;
 		}
-		
+
 		public boolean shouldSwitch() {
 			return this.shouldSwitch;
 		}

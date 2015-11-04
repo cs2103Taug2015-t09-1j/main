@@ -22,7 +22,7 @@ import main.parser.Parser;
 import main.storage.Storage;
 
 /**
- * @author Dalton
+ * @@author Dalton
  *
  */
 public class Add extends Command {
@@ -128,14 +128,17 @@ public class Add extends Command {
 		return false;
 	}
 
+	// @@author Hiep
 	public boolean undo(Task task) {
 		return storage.delete(task.getTaskID());
 	}
 
+	// @@author Hiep
 	public boolean redo(Task task) {
 		return storage.addTask(task);
 	}
 
+	// @@author Hiep
 	private void addNewTask(Task task) {
 		vControl.addNewData(new VersionModel.AddModel(task));
 	}

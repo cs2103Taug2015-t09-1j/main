@@ -15,6 +15,10 @@ import main.model.EnumTypes.PARAM_TYPE;
 import main.model.EnumTypes.TASK_TYPE;
 import main.storage.Storage;
 
+/**
+ * @@author Hiep
+ *
+ */
 public class Display extends Command {
 
 	private static Display display = null;
@@ -63,7 +67,7 @@ public class Display extends Command {
 					}
 				}
 			}
-			message = "Tasks are display!";			
+			message = "Tasks are display!";
 		} else {
 			Date fromDate, toDate;
 			switch (obj.getCommandType()) {
@@ -140,8 +144,8 @@ public class Display extends Command {
 				return null;
 			}
 		}
-		
-		
+
+
 		result.add(deadlines);
 		result.add(events);
 
@@ -159,8 +163,8 @@ public class Display extends Command {
 			return false;
 		}
 	}
-	
-	private boolean isBetween(Date left, Date right, Date cur) { 
+
+	private boolean isBetween(Date left, Date right, Date cur) {
 		return (left.compareTo(cur) <= 0 && cur.compareTo(right) <= 0);
 	}
 

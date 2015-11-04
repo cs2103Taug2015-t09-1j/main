@@ -13,7 +13,7 @@ import main.storage.Storage;
 import main.ui.MainGUI;
 
 /**
- * @author Dalton
+ * @@author Dalton
  *
  */
 public class DeadlinesTableModel extends AbstractTableModel {

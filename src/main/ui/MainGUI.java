@@ -67,7 +67,7 @@ import main.model.taskModels.Task;
 import javax.swing.JTextArea;
 
 /**
- * @author Dalton
+ * @@author Dalton
  *
  */
 public class MainGUI extends Observable implements Observer {

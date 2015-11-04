@@ -16,7 +16,7 @@ import main.storage.Storage;
 import main.ui.MainGUI;
 
 /**
- * @author Dalton
+ * @@author Dalton
  *
  */
 public class EventsTableModel extends AbstractTableModel {
@@ -29,7 +29,7 @@ public class EventsTableModel extends AbstractTableModel {
 	private EventsTableModel() {
 		super();
 	}
-	
+
 	public void setTasks(List<Task> tasks) {
 		this.events = tasks;
 	}
@@ -40,7 +40,7 @@ public class EventsTableModel extends AbstractTableModel {
 		}
 		return etm;
 	}
-	
+
 	public void setMainGui(MainGUI mainGui) {
 		this.mainGui = mainGui;
 	}

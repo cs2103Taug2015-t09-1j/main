@@ -15,7 +15,7 @@ import javax.swing.JTextArea;
 import javax.swing.table.TableCellRenderer;
 
 /**
- * @author Dalton
+ * @@author Dalton
  *
  */
 public class CustomCellRenderer extends JTextArea implements TableCellRenderer {

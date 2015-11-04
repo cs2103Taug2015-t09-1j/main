@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @author Dalton
+ * @@author Dalton
  *
  */
 class StringFinder {

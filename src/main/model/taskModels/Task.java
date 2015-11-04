@@ -9,7 +9,7 @@ import main.model.EnumTypes;
 import main.model.EnumTypes.TASK_TYPE;
 
 /**
- * @author Dalton
+ * @@author Dalton
  *
  */
 public abstract class Task implements Cloneable {

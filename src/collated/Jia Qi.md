@@ -1,21 +1,6 @@
-package main.ui;
-
-
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
-
-
-
-import java.awt.*;
-
-
-/**
- * @@author Jia Qi
+# Jia Qi
+###### main\ui\GetHelpList.java
+``` java
  *
  */
 public class GetHelpList extends JPanel {
@@ -318,3 +303,4 @@ public class GetHelpList extends JPanel {
     }
    }
  }
+```

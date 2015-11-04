@@ -1,5 +1,6 @@
 package main.storage;
 
+//@@author Hiep
 public class DirectoryHandler {
 	public static String fixDir(String dir) {
 		return dir.replace("\\", "/");

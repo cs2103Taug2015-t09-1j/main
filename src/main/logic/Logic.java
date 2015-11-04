@@ -13,6 +13,10 @@ import main.parser.Parser;
 import main.storage.Storage;
 import main.ui.MainGUI;
 
+/**
+ * @@author Dalton
+ *
+ */
 public class Logic extends Observable implements Observer {
 	private static Logic logic = null;
 	private static Storage storage = null;

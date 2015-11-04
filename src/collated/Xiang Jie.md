@@ -1,18 +1,6 @@
-package test;
-
-import static org.junit.Assert.*;
-
-import java.util.Calendar;
-import java.util.Date;
-
-import org.junit.Test;
-
-import main.model.ParsedObject;
-import main.model.EnumTypes.COMMAND_TYPE;
-import main.model.EnumTypes.TASK_TYPE;
-import main.parser.Parser;
-
-//@@author Xiang Jie
+# Xiang Jie
+###### test\MainParserTest.java
+``` java
 public class MainParserTest {
 	private String[] updateCmdList = {"update", "/u", "edit", "/e", "modify", "/m"};
 	private String[] deleteCmdList = {"delete", "del", "/d", "remove", "rm", "/r"};
@@ -134,3 +122,30 @@ public class MainParserTest {
 	}
 
 }
+```
+###### test\ModelTest.java
+``` java
+public class ModelTest {
+
+	@Test
+	public void testCloneTask() {
+		List<Task> tasks = Storage.getInstance().getAllTask(TASK_TYPE.EVENT);
+		Task event = tasks.get(0);
+		Task eventClone = event.clone();
+		Date d1 = ((Event)event).getFromDate(),
+			 d2 = ((Event)eventClone).getFromDate();
+		if (d1 == d2) {
+			System.out.println("equal");
+		} else {
+			System.out.println("not equal");
+		}
+	}
+
+	@Test
+	public void testModels() {
+		List<Task> tasks = Storage.getInstance().getAllTask(TASK_TYPE.EVENT);
+		Task event = tasks.get(0);
+		System.out.println(event.getType());
+	}
+}
+```

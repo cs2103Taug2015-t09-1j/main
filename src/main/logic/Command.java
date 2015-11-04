@@ -7,7 +7,7 @@ import main.model.EnumTypes;
 import main.model.ParsedObject;
 
 /**
- * @author Dalton
+ * @@author Dalton
  *
  */
 public abstract class Command {

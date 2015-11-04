@@ -22,18 +22,22 @@ import main.model.taskModels.Event;
 import main.model.taskModels.Task;
 import main.model.taskModels.Todo;
 
+/**
+ * @@author Dalton
+ *
+ */
 public class Parser {
 	private static Parser parser = null;
-	private final PrettyTimeParser ptParser = new PrettyTimeParser();
+	private static PrettyTimeParser ptParser;
 	private final Logger logger = Logger.getLogger(Parser.class.getName());
-	private String[] updateCmdList = {"update", "/u", "edit", "/e", "modify", "/m"};
-	private String[] deleteCmdList = {"delete", "del", "/d", "remove", "rm", "/r"};
-	private String[] doneCmdList = {"done", "complete"};
-	private String[] undoneCmdList = {"!done", "undone", "incomplete"};
-	private String[] undoCmdList = {"undo", "/un"};
-	private String[] redoCmdList = {"redo", "/re"};
-	private String[] exitCmdList = {"exit", "/e", "quit", "/q"};
-	private String[] displayCmdList = {"display", "show", "/sh", "view", "/v"};
+	private final String[] updateCmdList = {"update", "/u", "edit", "/e", "modify", "/m", "change"};
+	private final String[] deleteCmdList = {"delete", "del", "/d", "remove", "rm", "/r"};
+	private final String[] doneCmdList = {"done", "complete"};
+	private final String[] undoneCmdList = {"!done", "undone", "incomplete"};
+	private final String[] undoCmdList = {"undo", "/un"};
+	private final String[] redoCmdList = {"redo", "/re"};
+	private final String[] exitCmdList = {"exit", "/e", "quit", "/q"};
+	private final String[] displayCmdList = {"display", "show", "/sh", "view", "/v"};
 
 	private final String UPDATE_REGEX = "^\\d+\\s+\\d+\\s+(\\w*|\\d*|\\s*)+";
 	private final String DELETE_REGEX = "^\\d+\\s*(((to|-)\\s*\\d+\\s*)?|(\\d+\\s*)*)";
@@ -46,6 +50,7 @@ public class Parser {
 	public static Parser getInstance() {
 		if (parser == null) {
 			parser = new Parser();
+			ptParser = new PrettyTimeParser();
 		}
 		return parser;
 	}

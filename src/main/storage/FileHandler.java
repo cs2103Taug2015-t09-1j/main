@@ -6,6 +6,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
+//@@author Hiep
 public class FileHandler {
 	
 	public static void createNewFolderIfNotExisit(String dir) {

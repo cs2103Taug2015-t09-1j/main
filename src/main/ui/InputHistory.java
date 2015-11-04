@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import main.logic.Logic;
 
 /**
- * @author Dalton
+ * @@author Dalton
  *
  */
 public class InputHistory {

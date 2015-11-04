@@ -9,7 +9,7 @@ import main.model.EnumTypes;
 import main.model.EnumTypes.TASK_TYPE;
 
 /**
- * @author Dalton
+ * @@author Dalton
  *
  */
 public class Deadline extends Task {
@@ -20,7 +20,7 @@ public class Deadline extends Task {
 		super(taskDesc, isDone);
 		this.date = date;
 	}
-	
+
 	@Override
 	public Deadline clone() {
 		Deadline deadline = (Deadline)super.clone();
@@ -35,7 +35,7 @@ public class Deadline extends Task {
 	public void setDate(Date date) {
 		this.date = date;
 	}
-	
+
 	@Override
 	public TASK_TYPE getType() {
 		return type;

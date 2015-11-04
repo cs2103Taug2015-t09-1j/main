@@ -4,7 +4,7 @@
 package main.model;
 
 /**
- * @author Dalton
+ * @@author Dalton
  *
  */
 public class EnumTypes {
@@ -15,11 +15,11 @@ public class EnumTypes {
 	public static enum TASK_TYPE {
 		SINGLE_DATE_EVENT, DOUBLE_DATE_EVENT, EVENT, DEADLINE, TODO, ALL, INVALID
 	};
-	
+
 	public static enum PARAM_TYPE {
 		ID, CATEGORY, TIME
 	}
-	
+
 	public static enum CATEGORY {
 		COMPLETED, INCOMPLETED, EXPIRED, ALL
 	}

@@ -21,7 +21,7 @@ import javax.swing.border.LineBorder;
 import org.ocpsoft.prettytime.nlp.PrettyTimeParser;
 
 /**
- * @author Dalton
+ * @@author Dalton
  *
  */
 public class CustomDateCellEditor extends DefaultCellEditor {

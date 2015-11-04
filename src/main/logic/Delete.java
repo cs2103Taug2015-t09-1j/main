@@ -17,7 +17,7 @@ import main.model.taskModels.Todo;
 import main.storage.Storage;
 
 /**
- * @author Dalton
+ * @@author Dalton
  *
  */
 public class Delete extends Command {
@@ -44,17 +44,17 @@ public class Delete extends Command {
 			System.out.println(obj.getCommandType());
 			System.out.println(obj.getTaskType());
 		}
-		
+
 
 		List<Integer> taskIDs = new ArrayList<>();
 		switch (obj.getParamType()) {
-		case ID: 
-			taskIDs = obj.getObjects(); 
+		case ID:
+			taskIDs = obj.getObjects();
 			break;
 		case CATEGORY:
 			taskIDs = storage.getIdByCategory(obj.getObjects());
 			break;
-		default: 
+		default:
 		}
 		List<Task> deletedTasks = new ArrayList<>();
 		int cnt = 0;
@@ -87,6 +87,7 @@ public class Delete extends Command {
 		return false;
 	}
 
+	// @@author Hiep
 	public boolean undo(List<Task> tasks) {
 		for (Task task : tasks) {
 			storage.addTask(task);
@@ -94,6 +95,7 @@ public class Delete extends Command {
 		return true;
 	}
 
+	// @@author Hiep
 	public boolean redo(List<Task> tasks) {
 		for (Task task : tasks) {
 			storage.delete(task.getTaskID());
