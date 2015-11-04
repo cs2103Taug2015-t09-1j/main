@@ -41,10 +41,10 @@ public class Parser {
 	private final String[] exitCmdList = {"exit", "quit", "/q"};
 	private final String[] displayCmdList = {"display", "show", "/sh", "view", "/v"};
 
-	private final String UPDATE_REGEX = "^\\d+\\s+\\d+\\s+(\\w*|\\d*|\\s*)+";
-	private final String DELETE_REGEX = "^\\d+\\s*(((to|-)\\s*\\d+\\s*)?|(\\d+\\s*)*)";
-	private final String DISPLAY_REGEX = "^(\\w|\\d|\\s)+";
-	private final String DONE_UNDONE_REGEX= "^\\d+\\s*(((to|-)\\s*\\d+\\s*)?|(\\d+\\s*)*)";
+	private final String UPDATE_REGEX = "^((\\d+\\s+\\d+\\s+(\\w*|\\d*|\\s*)+)|(\\d+\\s\\d+\\s\\w+\\s\\w+\\s\\d+\\s\\d+:\\d+:\\d+\\s\\w+\\s\\d+))";
+	private final String DELETE_REGEX = "^(\\d+\\s*(((to|-)\\s*\\d+\\s*)?|(\\d+\\s*)*)|\\s*all\\s*)";
+	private final String DISPLAY_REGEX = "^!?(\\w|\\d|\\s)+";
+	private final String DONE_UNDONE_REGEX= "^!?\\d+\\s*(((to|-)\\s*\\d+\\s*)?|(\\d+\\s*)*)";
 	private final String UNDO_REDO_REGEX = "^\\d+\\s*$";
 
 	private Parser() {}
@@ -71,7 +71,8 @@ public class Parser {
 				return COMMAND_TYPE.DELETE;
 			}
 		} else if (isCommand(input, displayCmdList)) {
-			if (hasValidParameters(removeCommandWord(input, displayCmdList), DISPLAY_REGEX)) {
+			input = removeCommandWord(input, displayCmdList);
+			if (hasValidParameters(input, DISPLAY_REGEX) || input.trim().isEmpty()) {
 				return COMMAND_TYPE.DISPLAY;
 			}
 		} else if (isCommand(input, doneCmdList)) {
@@ -84,12 +85,12 @@ public class Parser {
 			}
 		} else if (isCommand(input, undoCmdList)) {
 			input = removeCommandWord(input, undoCmdList);
-			if (hasValidParameters(input, UNDO_REDO_REGEX) || input.isEmpty()) {
+			if (hasValidParameters(input, UNDO_REDO_REGEX) || input.trim().isEmpty()) {
 				return COMMAND_TYPE.UNDO;
 			}
 		} else if (isCommand(input, redoCmdList)) {
 			input = removeCommandWord(input, redoCmdList);
-			if (hasValidParameters(input, UNDO_REDO_REGEX) || input.isEmpty()) {
+			if (hasValidParameters(input, UNDO_REDO_REGEX) || input.trim().isEmpty()) {
 				return COMMAND_TYPE.REDO;
 			}
 		} else if (isCommand(input, exitCmdList)) {
@@ -347,7 +348,7 @@ public class Parser {
 			Pattern splitPattern = Pattern.compile("\\s");
 			String[] excessWords = splitPattern.split(date);
 			for (String word : excessWords) {
-				input = input.replaceAll(word, "");
+				input = input.replaceAll("\\b" + word + "\\b", "");
 			}
 			input = input.replaceAll("(?ui)\\s+((due on)|(due by)|due|by|before|until|till|to|from|on|at)\\s*((due on)|(due by)|due|by|before|till|to|from|on|at)*\\s*$", "");
 			input = input.replaceAll("^(?ui)\\s*((due on)|(due by)|due|by|before|until|till|to|from|on|at)\\s*((due on)|(due by)|due|by|before|till|to|from|on|at)", "");
@@ -392,7 +393,7 @@ public class Parser {
 		List<Date> parsedInput = parseDateGroups(input);
 		ArrayList<CATEGORY> categories = new ArrayList<CATEGORY>();
 		if (parsedInput == null) {
-			if (input.matches("(?ui)^\\s*all\\s*$")) {
+			if (input.matches("(?ui)^\\s*all\\s*$") || input.trim().isEmpty()) {
 				categories.add(CATEGORY.ALL);
 				obj = new ParsedObject(COMMAND_TYPE.DISPLAY, PARAM_TYPE.CATEGORY, categories);
 			} else if(input.matches("(?ui)^\\s*expired\\s*$")) {
@@ -474,10 +475,15 @@ public class Parser {
 	}
 
 	public ParsedObject getDeleteParsedObject(String input) {
-		String params = removeCommandWord(input, deleteCmdList);
+		input = removeCommandWord(input, deleteCmdList);
 		ArrayList<Integer> taskIDs = new ArrayList<Integer>();
-		ArrayList<String> taskIDList = getCommandParameters(params, COMMAND_TYPE.DELETE);
-		ParsedObject obj;
+		ArrayList<String> taskIDList = getCommandParameters(input, COMMAND_TYPE.DELETE);
+		ArrayList<CATEGORY> categories = new ArrayList<CATEGORY>();
+
+		if (input.matches("(?ui)^\\s*all\\s*$")) {
+			categories.add(CATEGORY.ALL);
+			return new ParsedObject(COMMAND_TYPE.DELETE, PARAM_TYPE.CATEGORY, categories);
+		}
 
 		if (input.contains("to") || input.contains("-")) {
 			int fromID;
@@ -493,8 +499,6 @@ public class Parser {
 			for (int i = fromID; i <= toID; i++) {
 				taskIDs.add(i);
 			}
-		} else if (input.matches("(?ui)^\\s*all\\s*$")) {
-			taskIDs.add(-1);
 		} else {
 			for (int i = 0; i < taskIDList.size(); i++) {
 				try {
@@ -502,11 +506,10 @@ public class Parser {
 				} catch (Exception e) {
 					// Not number exception
 				}
-
 			}
 		}
-		obj = new ParsedObject(COMMAND_TYPE.DELETE, PARAM_TYPE.ID, taskIDs);
-		return obj;
+
+		return new ParsedObject(COMMAND_TYPE.DELETE, PARAM_TYPE.ID, taskIDs);
 	}
 
 	public ParsedObject getChangeStatusParsedObject(String input, boolean newStatus) {
