@@ -392,8 +392,6 @@ public class Parser {
 		List<Date> parsedInput = parseDateGroups(input);
 		ArrayList<CATEGORY> categories = new ArrayList<CATEGORY>();
 		if (parsedInput == null) {
-			obj = new ParsedObject(COMMAND_TYPE.INVALID);
-
 			if (input.matches("(?ui)^\\s*all\\s*$")) {
 				categories.add(CATEGORY.ALL);
 				obj = new ParsedObject(COMMAND_TYPE.DISPLAY, PARAM_TYPE.CATEGORY, categories);
@@ -406,6 +404,8 @@ public class Parser {
 			} else if(input.matches("(?ui)^\\s*(incomplete|incomplete(?:d)?|uncomplete|uncomplete(?:d)?|(?:(not |! ))complete(?:d)?|undone|!done|not done)\\s*$")) {
 				categories.add(CATEGORY.INCOMPLETED);
 				obj = new ParsedObject(COMMAND_TYPE.DISPLAY, PARAM_TYPE.CATEGORY, categories);
+			} else {
+				obj = new ParsedObject(COMMAND_TYPE.INVALID);
 			}
 		} else {
 			ArrayList<Date> dates = new ArrayList<Date>(parsedInput);
