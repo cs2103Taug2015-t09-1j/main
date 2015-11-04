@@ -25,8 +25,8 @@ import org.ocpsoft.prettytime.nlp.PrettyTimeParser;
  *
  */
 public class CustomDateCellEditor extends DefaultCellEditor {
-	static SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
-	static PrettyTimeParser parser = new PrettyTimeParser();
+	private static SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
+	private static PrettyTimeParser parser = new PrettyTimeParser();
 
 	public CustomDateCellEditor() {
 		super(new JTextField());

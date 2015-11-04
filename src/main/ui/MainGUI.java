@@ -172,6 +172,7 @@ public class MainGUI extends Observable implements Observer {
 		setupTabbedPane();
 		setupTables();
 		setupTableSorters();
+		InputFeedbackHandler.getInstance().setupPointers(tpUserInput, taStatusMessage);
 	}
 
 	private void setupTableModels() {
@@ -339,47 +340,6 @@ public class MainGUI extends Observable implements Observer {
 		});*/
 	}
 
-	private void highlightText() {
-		String[] keywords = {"update", "delete", "display", "undo", "redo", "exit", "undone", "!done", "done"};
-		String[] days = {"mon", "tue", "wed", "thurs", "fri", "sat", "sun", "monday", "tueday", "wednesday", "thursday", "friday", "saturday", "sunday"};
-        String input = tpUserInput.getText();
-
-        SimpleAttributeSet defaultSet = new SimpleAttributeSet();
-        StyleConstants.setForeground(defaultSet, normalTextColour);
-        tpUserInput.getStyledDocument().setCharacterAttributes(0, input.length(), defaultSet, true);
-        SimpleAttributeSet customSet = new SimpleAttributeSet();
-        StyleConstants.setForeground(customSet, highlightedTextColour);
-        if (!tpUserInput.getText().isEmpty()) {
-        	taStatusMessage.setText(null);
-        }
-
-        for (String keyword : keywords) {
-            Pattern pattern = Pattern.compile("(?ui)^" + keyword);
-            Matcher matcher = pattern.matcher(input);
-            while (matcher.find()) {
-
-            	/*
-                System.out.print("Start index: " + matcher.start());
-                System.out.print(" End index: " + matcher.end());
-                System.out.println(" Found: " + matcher.group());
-                */
-
-                tpUserInput.getStyledDocument().setCharacterAttributes(matcher.start(), keyword.length(), customSet, true);
-            }
-        }
-
-        for (String day : days) {
-            Pattern pattern = Pattern.compile("(?ui)" + day + "\\s+(\\d+|(?:Jan(?:uary)?|Feb(?:ruary)?|"
-            									+ "Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|"
-            									+ "Sep(?:tember)?|Oct(?:ober)?|(Nov|Dec)(?:ember)?))");
-            Matcher matcher = pattern.matcher(input);
-            while (matcher.find()) {
-                tpUserInput.getStyledDocument().setCharacterAttributes(matcher.start(), day.length(), customSet, true);
-                taStatusMessage.setText("Special case detected. Please surround your task description with double quotes to prevent parsing errors. (e.g. \"lunch with john\" at 1pm)");
-            }
-        }
-    }
-
 	private void setupPanels() {
 		inputPanel = new JPanel();
 		inputPanel.setBounds(0, 475, INPUT_PANEL_WIDTH, INPUT_PANEL_HEIGHT);
@@ -433,24 +393,21 @@ public class MainGUI extends Observable implements Observer {
 			}
 
 			public void insertUpdate(DocumentEvent e) {
-				Runnable doHighlight = new Runnable() {
-			        @Override
-			        public void run() {
-			        	highlightText();
+				SwingUtilities.invokeLater(new Runnable() {
+				    public void run() {
+				    	InputFeedbackHandler.getInstance().highlightText();
 			        }
-			    };
-			    SwingUtilities.invokeLater(doHighlight);
+				});
 			}
 
 			public void removeUpdate(DocumentEvent e) {
-				Runnable doHighlight = new Runnable() {
-			        @Override
-			        public void run() {
-			        	highlightText();
+				SwingUtilities.invokeLater(new Runnable() {
+				    public void run() {
+				    	InputFeedbackHandler.getInstance().highlightText();
 			        }
-			    };
-			    SwingUtilities.invokeLater(doHighlight);
+				});
 			}
+
 		});
 
 		tfFilter = new JTextField();
@@ -719,7 +676,12 @@ public class MainGUI extends Observable implements Observer {
 
 	public void updateStatusMsg(String msg) {
 		//lblStatusMsg.setText("<html><body style='width:100px'>" + msg + "</body></html>");
-		taStatusMessage.setText(msg);
+		SwingUtilities.invokeLater(new Runnable() {
+		    public void run() {
+	        	taStatusMessage.setText(msg);
+	        }
+		});
+
 		//tpStatusMessage.setText(msg);
 	}
 

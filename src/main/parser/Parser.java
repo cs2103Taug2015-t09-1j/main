@@ -36,8 +36,8 @@ public class Parser {
 	private final String[] deleteCmdList = {"delete", "del", "/d", "remove", "/r"};
 	private final String[] doneCmdList = {"done", "complete"};
 	private final String[] undoneCmdList = {"!done", "undone", "incomplete"};
-	private final String[] undoCmdList = {"undo"};
-	private final String[] redoCmdList = {"redo"};
+	private final String[] undoCmdList = {"undo", "back"};
+	private final String[] redoCmdList = {"redo", "forward"};
 	private final String[] exitCmdList = {"exit", "quit", "/q"};
 	private final String[] displayCmdList = {"display", "show", "/sh", "view", "/v"};
 
@@ -146,6 +146,7 @@ public class Parser {
 								+ "(0[0-9]|1[0-9]|2[0-3])\\:?([0-5][0-9]))\\:?([0-5][0-9])?(am|pm|a.m.|p.m.|h|\\shours)?";
 		Pattern timePattern = Pattern.compile("(?ui)" + timeRegexPattern);
 		input = input.replaceAll("until", "till");
+		//input = input.replaceAll("(?ui)\\d+(?!(pm|am))", "");
 		List<DateGroup> dGroups = getDateGroups(input);
 		List<Date> dates = new ArrayList<Date>();
 		Calendar temp1 = Calendar.getInstance();
@@ -162,6 +163,12 @@ public class Parser {
 		Matcher matcher3;
 
 		if (dGroups != null) {
+			for (int i = 0; i < dGroups.size(); i++) {
+				if (dGroups.get(i).getText().matches("(?ui)\\d+(?!(pm|am))")) {
+					dGroups.remove(i);
+				}
+			}
+
 			switch (dGroups.size()) {
 				case 1:
 					// lunch with john at 1pm tomorrow
@@ -174,7 +181,7 @@ public class Parser {
 					} else {
 						if (firstGroupDates.size() == 1) {
 							temp1.setTime(firstGroupDates.get(0));
-							setDateTime(temp1, -1, -1, -1, 0, 0, 0);
+							setDateTime(temp1, -1, -1, -1, 23, 59, 0);
 							dates.add(temp1.getTime());
 						} else {
 							for (int i = 0; i < firstGroupDates.size(); i++) {
@@ -337,10 +344,16 @@ public class Parser {
 		if (matcher.find()) {
 			input = matcher.group().replace("\"", "");
 		} else {
+			input = input.replaceAll("until", "till");
 			List<DateGroup> dateGroup = ptParser.parseSyntax(input);
 			for (int i = 0; i < dateGroup.size(); i++) {
+				if (dateGroup.get(i).getText().matches("\\d+")) {
+					dateGroup.remove(i);
+				}
+			}
+			for (int i = 0; i < dateGroup.size(); i++) {
 				date = dateGroup.get(i).getText();
-				input = input.replaceAll("(?ui)\\s*((due on)|(due by)|due|by|before|until|till|to|from|on|at)\\s*" + date, "");
+				input = input.replaceAll("(?ui)\\s*((due on)|(due by)|due|by|before|till|to|from|on|at)\\s*" + date, "");
 				input = input.replaceAll("(?ui)\\s*" + date + "\\s*", " ");
 			}
 			//Pattern splitPattern = Pattern.compile("\\s+((due on)|(due by)|due|by|before|until|till|to|from|on|at)\\s+");
@@ -350,8 +363,8 @@ public class Parser {
 			for (String word : excessWords) {
 				input = input.replaceAll("\\b" + word + "\\b", "");
 			}
-			input = input.replaceAll("(?ui)\\s+((due on)|(due by)|due|by|before|until|till|to|from|on|at)\\s*((due on)|(due by)|due|by|before|till|to|from|on|at)*\\s*$", "");
-			input = input.replaceAll("^(?ui)\\s*((due on)|(due by)|due|by|before|until|till|to|from|on|at)\\s*((due on)|(due by)|due|by|before|till|to|from|on|at)", "");
+			input = input.replaceAll("(?ui)\\s+((due on)|(due by)|due|by|before|till|to|from|on|at)\\s*((due on)|(due by)|due|by|before|till|to|from|on|at)*\\s*$", "");
+			input = input.replaceAll("^(?ui)\\s*((due on)|(due by)|due|by|before|till|to|from|on|at)\\s*((due on)|(due by)|due|by|before|till|to|from|on|at)", "");
 		}
 		input = input.replaceAll("^\\s+|\\s+$", "");
 		return input;
@@ -596,5 +609,28 @@ public class Parser {
 			cal.set(Calendar.SECOND, seconds);
 		}
 		return cal;
+	}
+
+	public String[] getCommandKeywordList(String command) {
+		switch (command) {
+			case "update":
+				return updateCmdList;
+			case "delete":
+				return deleteCmdList;
+			case "done":
+				return doneCmdList;
+			case "undone":
+				return undoneCmdList;
+			case "undo":
+				return undoCmdList;
+			case "redo":
+				return redoCmdList;
+			case "exit":
+				return exitCmdList;
+			case "display":
+				return displayCmdList;
+			default:
+				return null;
+		}
 	}
 }
