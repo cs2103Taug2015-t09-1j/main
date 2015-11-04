@@ -21,7 +21,7 @@ public class EnumTypes {
 	};
 
 	public static enum CATEGORY {
-		COMPLETED, INCOMPLETED, EXPIRED, ALL
+		COMPLETED, INCOMPLETED, EXPIRED, NONEXPIRED, ALL
 	};
 
 }

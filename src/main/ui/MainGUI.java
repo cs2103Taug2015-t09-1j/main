@@ -340,7 +340,7 @@ public class MainGUI extends Observable implements Observer {
 	}
 
 	private void highlightText() {
-		String[] keywords = {"update", "delete", "display", "undo", "redo", "exit", "!done", "done"};
+		String[] keywords = {"update", "delete", "display", "undo", "redo", "exit", "undone", "!done", "done"};
 		String[] days = {"mon", "tue", "wed", "thurs", "fri", "sat", "sun", "monday", "tueday", "wednesday", "thursday", "friday", "saturday", "sunday"};
         String input = tpUserInput.getText();
 

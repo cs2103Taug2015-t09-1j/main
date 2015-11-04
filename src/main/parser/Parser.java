@@ -395,8 +395,11 @@ public class Parser {
 			if (input.matches("(?ui)^\\s*all\\s*$")) {
 				categories.add(CATEGORY.ALL);
 				obj = new ParsedObject(COMMAND_TYPE.DISPLAY, PARAM_TYPE.CATEGORY, categories);
-			} else if(input.matches("(?ui)^\\s*expire(?:d)?\\s*$")) {
+			} else if(input.matches("(?ui)^\\s*expired\\s*$")) {
 				categories.add(CATEGORY.EXPIRED);
+				obj = new ParsedObject(COMMAND_TYPE.DISPLAY, PARAM_TYPE.CATEGORY, categories);
+			} else if(input.matches("(?ui)^\\s*(!expired|not expired)\\s*$")) {
+				categories.add(CATEGORY.NONEXPIRED);
 				obj = new ParsedObject(COMMAND_TYPE.DISPLAY, PARAM_TYPE.CATEGORY, categories);
 			} else if(input.matches("(?ui)^\\s*(complete(?:d)?|done)\\s*$")) {
 				categories.add(CATEGORY.COMPLETED);
