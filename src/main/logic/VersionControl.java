@@ -42,24 +42,25 @@ public class VersionControl extends Command {
 			count = undo(numOfExec);
 			if (count > 0) {
 				message = "The previous " + count + " commands have been reversed.";
-				return true;
 			} else {
 				message = "There are no available tasks to undo.";
 				taskType = EnumTypes.TASK_TYPE.INVALID;
 				return false;
 			}
+			break;
 		case REDO:
 			count = redo(numOfExec);
 			if (count > 0) {
 				message = "The previous " + count + " commands have been reversed.";
-				return true;
 			} else {
 				message = "There are no available tasks to redo.";
 				taskType = EnumTypes.TASK_TYPE.INVALID;
 				return false;
 			}
+			break;
 		}
-
+			
+		Storage.getInstance().saveAllTask();
 		return true;
 	}
 
