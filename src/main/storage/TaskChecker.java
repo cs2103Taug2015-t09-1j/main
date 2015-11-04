@@ -41,7 +41,27 @@ public class TaskChecker {
 					}
 					break;
 				default:
+					return false;
 				}
+				break;
+			case NONEXPIRED:
+				switch (task.getType()) {
+				case TODO: 
+					break;
+				case EVENT:
+					if (((Event)task).getToDate().compareTo(curDate) < 0) {
+						return false;
+					}
+					break;
+				case DEADLINE:
+					if (((Deadline)task).getDate().compareTo(curDate) < 0) {
+						return false;
+					}
+					break;
+				default:
+					return false;
+				}
+				break;
 			default: 
 			}
 		}

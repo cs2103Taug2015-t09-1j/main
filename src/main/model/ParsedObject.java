@@ -15,7 +15,7 @@ public class ParsedObject {
 	private COMMAND_TYPE commandType;
 	private TASK_TYPE taskType;
 	private ArrayList objects;
-	private PARAM_TYPE paramType;
+	private PARAM_TYPE paramType = PARAM_TYPE.ID;
 
 	public ParsedObject() {}
 

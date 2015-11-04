@@ -51,6 +51,7 @@ public class Display extends Command {
 		List<Task> tasks = storage.getAllTask(TASK_TYPE.ALL);
 		List<Task> deadlines = new ArrayList<>();
 		List<Task> events = new ArrayList<>();
+		List<Task> todos = new ArrayList<>();
 
 		if (obj.getParamType().equals(PARAM_TYPE.CATEGORY)) {
 			List<Integer> ids = storage.getIdByCategory(obj.getObjects());
@@ -64,7 +65,11 @@ public class Display extends Command {
 					case DEADLINE:
 						deadlines.add(task);
 						break;
-					}
+					case TODO:
+						todos.add(task);
+						break;
+					} 
+						
 				}
 			}
 			message = "Tasks are displayed.";
@@ -143,11 +148,12 @@ public class Display extends Command {
 				message = "No matching tasks found.";
 				return null;
 			}
+			todos = storage.getAllTask(TASK_TYPE.TODO);
 		}
-
-
+		
 		result.add(deadlines);
 		result.add(events);
+		result.add(todos);
 
 		return result;
 	}
