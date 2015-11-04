@@ -161,11 +161,17 @@ public class Parser {
 					firstGroupDates = firstGroup.getDates();
 					matcher1 = timePattern.matcher(firstGroup.getText());
 					if (matcher1.find()) {
-						return firstGroup.getDates();
+						return firstGroupDates;
 					} else {
-						temp1.setTime(firstGroupDates.get(0));
-						setDateTime(temp1, -1, -1, -1, 0, 0, 0);
-						dates.add(temp1.getTime());
+						if (firstGroupDates.size() == 1) {
+							temp1.setTime(firstGroupDates.get(0));
+							setDateTime(temp1, -1, -1, -1, 0, 0, 0);
+							dates.add(temp1.getTime());
+						} else {
+							for (int i = 0; i < firstGroupDates.size(); i++) {
+								dates.add(firstGroupDates.get(i));
+							}
+						}
 					}
 					break;
 				case 2:
