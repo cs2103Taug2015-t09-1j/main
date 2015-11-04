@@ -45,46 +45,53 @@ public class Delete extends Command {
 			System.out.println(obj.getTaskType());
 		}
 
-
-		List<Integer> taskIDs = new ArrayList<>();
-		switch (obj.getParamType()) {
-		case ID:
-			taskIDs = obj.getObjects();
-			break;
-		case CATEGORY:
-			taskIDs = storage.getIdByCategory(obj.getObjects());
-			break;
-		default:
-		}
-		List<Task> deletedTasks = new ArrayList<>();
 		int cnt = 0;
-		for (int i = 0; i < taskIDs.size(); i++) {
-			Task t = storage.getTaskByID(taskIDs.get(i));
-			if (t != null) {
-				cnt++;
-				if (storage.delete(taskIDs.get(i))) {
-					deletedTasks.add(t);
-				}
+		List<Integer> taskIDs = new ArrayList<Integer>();
+		List<Task> deletedTasks = new ArrayList<Task>();
+		if (obj.getParamType() != null) {
+			switch (obj.getParamType()) {
+			case ID:
+				taskIDs = obj.getObjects();
+				break;
+			case CATEGORY:
+				taskIDs = storage.getIdByCategory(obj.getObjects());
+				cnt = taskIDs.size()-1;
+				break;
+			default:
+				message = "Invalid Task ID. Please try again.";
+				taskType = EnumTypes.TASK_TYPE.INVALID;
+				return false;
+			}
 
-				if (DEBUG) {
-					System.out.print(taskIDs.get(i));
-					System.out.print(" | ");
+			for (int i = 0; i < taskIDs.size(); i++) {
+				Task t = storage.getTaskByID(taskIDs.get(i));
+				if (t != null) {
+					cnt++;
+					if (storage.delete(taskIDs.get(i))) {
+						deletedTasks.add(t);
+					}
+
+					if (DEBUG) {
+						System.out.print(taskIDs.get(i));
+						System.out.print(" | ");
+					}
 				}
 			}
-		}
-		if (cnt > 0) {
+
+			if (DEBUG) {
+				System.out.println();
+			}
+
 			storage.saveAllTask();
 			message = String.format("%d %s been deleted.", cnt, cnt > 1 ? "tasks have" : "task has");
 			taskType = EnumTypes.TASK_TYPE.ALL;
 			vControl.addNewData(new VersionModel.DeleteModel(deletedTasks));
 			return true;
+		} else {
+			message = "Invalid Task ID. Please try again.";
+			taskType = EnumTypes.TASK_TYPE.INVALID;
+			return false;
 		}
-		if (DEBUG) {
-			System.out.println();
-		}
-		message = "Invalid Task ID. Please try again.";
-		taskType = EnumTypes.TASK_TYPE.INVALID;
-		return false;
 	}
 
 	// @@author Hiep
