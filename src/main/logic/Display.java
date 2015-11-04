@@ -53,7 +53,7 @@ public class Display extends Command {
 		List<Task> events = new ArrayList<>();
 		List<Task> todos = new ArrayList<>();
 
-		if (obj.getParamType().equals(PARAM_TYPE.CATEGORY)) {
+		if (obj.getParamType() != null) {
 			List<Integer> ids = storage.getIdByCategory(obj.getObjects());
 			for (int id : ids) {
 				Task task = storage.getTaskByID(id);
