@@ -315,7 +315,7 @@ public class MainGUI extends Observable implements Observer {
 			}
 		});
 
-		/*
+		
 		GetHelpList demo = new GetHelpList();
 		demo.setBounds(768, 0, 240, 600);
 		demo.setVisible(true);
@@ -327,7 +327,7 @@ public class MainGUI extends Observable implements Observer {
 			boolean isSimpleMode = false;
 			public void actionPerformed(ActionEvent e) {
 				if (isSimpleMode) {
-					tfUserInput.requestFocusInWindow();
+					tpUserInput.requestFocusInWindow();
 					frmTodokoro.setBounds(frmTodokoro.getX(), frmTodokoro.getY(), FRAME_WIDTH, FRAME_HEIGHT);
 				} else {
 					demo.requestListFocus();
@@ -337,7 +337,7 @@ public class MainGUI extends Observable implements Observer {
 				isSimpleMode = !isSimpleMode;
 				//GetHelpList.createAndShowGUI(frmTodokoro.getWidth(), 0);
 			}
-		});*/
+		});
 	}
 
 	private void setupPanels() {

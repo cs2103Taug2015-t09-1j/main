@@ -15,14 +15,13 @@ import javax.swing.JTextPane;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 
-import main.model.ObserverEvent;
 import main.parser.Parser;
 
 /**
  * @author Dalton
  *
  */
-public class InputFeedbackHandler extends Observable {
+public class InputFeedbackHandler {
 	private static InputFeedbackHandler feedbackHandler = null;
 	private JTextPane tpInput = null;
 	private JTextArea taMessage = null;
@@ -36,7 +35,6 @@ public class InputFeedbackHandler extends Observable {
 	public static InputFeedbackHandler getInstance() {
 		if (feedbackHandler == null) {
 			feedbackHandler = new InputFeedbackHandler();
-			getInstance().addObserver(MainGUI.getInstance());
 			parser = Parser.getInstance();
 		}
 		return feedbackHandler;
