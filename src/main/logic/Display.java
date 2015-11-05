@@ -11,6 +11,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import main.model.EnumTypes;
 import main.model.EnumTypes.PARAM_TYPE;
 import main.model.EnumTypes.TASK_TYPE;
 import main.storage.Storage;
@@ -53,7 +54,7 @@ public class Display extends Command {
 		List<Task> events = new ArrayList<>();
 		List<Task> todos = new ArrayList<>();
 
-		if (obj.getParamType() != null) {
+		if (obj.getParamType() != null && obj.getParamType() == EnumTypes.PARAM_TYPE.CATEGORY) {
 			List<Integer> ids = storage.getIdByCategory(obj.getObjects());
 			for (int id : ids) {
 				Task task = storage.getTaskByID(id);
@@ -68,8 +69,8 @@ public class Display extends Command {
 					case TODO:
 						todos.add(task);
 						break;
-					} 
-						
+					}
+
 				}
 			}
 			message = "Tasks are displayed.";
@@ -77,9 +78,10 @@ public class Display extends Command {
 			Date fromDate, toDate;
 			switch (obj.getCommandType()) {
 			case DISPLAY_ON:
-				for (Object dateObj : obj.getObjects()) {
-					Date checkDate = (Date) dateObj;
-					message = "Displaying all tasks on " + new SimpleDateFormat("EEE, dd MMM yyyy").format(checkDate) + ".";
+				message = "Displaying all tasks on ";
+				for (int i = 0; i < obj.getObjects().size(); i++) {
+					Date checkDate = (Date) obj.getObjects().get(i);
+					message += new SimpleDateFormat("EEE, dd MMM yyyy").format(checkDate) + ((i < obj.getObjects().size()-1) ? ", " : "");
 					for (Task task : tasks) {
 						switch (task.getType()) {
 						case EVENT:
@@ -98,6 +100,7 @@ public class Display extends Command {
 						}
 					}
 				}
+				message += ".";
 				break;
 			case DISPLAY_ON_BETWEEN:
 				fromDate = (Date) obj.getObjects().get(0);
@@ -150,7 +153,7 @@ public class Display extends Command {
 			}
 			todos = storage.getAllTask(TASK_TYPE.TODO);
 		}
-		
+
 		result.add(deadlines);
 		result.add(events);
 		result.add(todos);
@@ -159,7 +162,6 @@ public class Display extends Command {
 	}
 
 	private boolean isOnBetween(Date left, Date right, Date cur) {
-		Date currentDate = resetTime((Date)cur.clone(), true);
 		Date startDate = resetTime((Date)left.clone(), true);
 		Date endDate = resetTime((Date)right.clone(), false);
 

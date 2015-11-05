@@ -14,6 +14,7 @@ import org.ocpsoft.prettytime.nlp.PrettyTimeParser;
 import org.ocpsoft.prettytime.nlp.parse.DateGroup;
 import org.ocpsoft.prettytime.shade.edu.emory.mathcs.backport.java.util.Arrays;
 
+import main.model.EnumTypes;
 import main.model.EnumTypes.CATEGORY;
 import main.model.EnumTypes.COMMAND_TYPE;
 import main.model.EnumTypes.PARAM_TYPE;
@@ -43,9 +44,12 @@ public class Parser {
 
 	private final String UPDATE_REGEX = "^((\\d+\\s+\\d+\\s+(\\w*|\\d*|\\s*)+)|(\\d+\\s\\d+\\s\\w+\\s\\w+\\s\\d+\\s\\d+:\\d+:\\d+\\s\\w+\\s\\d+))";
 	private final String DELETE_REGEX = "^(\\d+\\s*(((to|-)\\s*\\d+\\s*)?|(\\d+\\s*)*)|\\s*all\\s*)";
-	private final String DISPLAY_REGEX = "^!?(\\w|\\d|\\s)+";
+	private final String DISPLAY_REGEX = "^(\\w|\\d|\\s|!|-|,|to|between)+";
 	private final String DONE_UNDONE_REGEX= "^!?\\d+\\s*(((to|-)\\s*\\d+\\s*)?|(\\d+\\s*)*)";
 	private final String UNDO_REDO_REGEX = "^\\d+\\s*$";
+
+	private final String timeRegexPattern = "(((\\d+\\s+(minutes|min|seconds|sec|hours))|[0-9](am|pm|a.m.|p.m.)?|1[0-2](am|pm|a.m.|p.m.)?)|"
+							+ "(0[0-9]|1[0-9]|2[0-3])\\:?([0-5][0-9]))\\:?([0-5][0-9])?(am|pm|a.m.|p.m.|h|\\shours)?";
 
 	private Parser() {}
 
@@ -142,10 +146,13 @@ public class Parser {
 	}
 
 	public List<Date> parseDateGroups(String input) {
-		String timeRegexPattern = "(((\\d+\\s+(minutes|min|seconds|sec|hours))|[0-9](am|pm|a.m.|p.m.)|1[0-2](am|pm|a.m.|p.m.))|"
-								+ "(0[0-9]|1[0-9]|2[0-3])\\:?([0-5][0-9]))\\:?([0-5][0-9])?(am|pm|a.m.|p.m.|h|\\shours)?";
 		Pattern timePattern = Pattern.compile("(?ui)" + timeRegexPattern);
+		Matcher matcher = Pattern.compile("(?ui)from\\s*" + timeRegexPattern).matcher(input);
+		if (matcher.find()) {
+			input = input.substring(0, matcher.start()) +  input.substring(matcher.start()+5, input.length());
+		}
 		input = input.replaceAll("until", "till");
+		//input = input.replaceAll("until", "till");
 		//input = input.replaceAll("(?ui)\\d+(?!(pm|am))", "");
 		List<DateGroup> dGroups = getDateGroups(input);
 		List<Date> dates = new ArrayList<Date>();
@@ -163,11 +170,11 @@ public class Parser {
 		Matcher matcher3;
 
 		if (dGroups != null) {
-			for (int i = 0; i < dGroups.size(); i++) {
+			/*for (int i = 0; i < dGroups.size(); i++) {
 				if (dGroups.get(i).getText().matches("(?ui)\\d+(?!(pm|am))")) {
 					dGroups.remove(i);
 				}
-			}
+			}*/
 
 			switch (dGroups.size()) {
 				case 1:
@@ -237,6 +244,7 @@ public class Parser {
 							temp3.setTime(secondGroupDates.get(0));
 						} else if (firstGroupDates.size() == 1 && secondGroupDates.size() == 2) {
 							// lunch tomorrow with john from 1 to 2pm
+							// from 1pm lunch with john to 2pm tomorrow
 							matcher1 = timePattern.matcher(secondGroup.getText());
 							matcher2 = timePattern.matcher(firstGroup.getText());
 							temp1.setTime(secondGroupDates.get(0));
@@ -257,6 +265,21 @@ public class Parser {
 							} else {
 								dates.add(temp1.getTime());
 							}
+						} else if (!matcher1.find() && matcher2.find()) {
+							setDateTime(temp1, temp3.get(Calendar.YEAR), temp3.get(Calendar.MONTH), temp3.get(Calendar.DATE), -1, -1, -1);
+							setDateTime(temp2, temp3.get(Calendar.YEAR), temp3.get(Calendar.MONTH), temp3.get(Calendar.DATE), -1, -1, -1);
+
+							if (temp1.compareTo(temp2) < 0) {
+								dates.add(temp1.getTime());
+								dates.add(temp2.getTime());
+							} else if (temp1.compareTo(temp2) > 0){
+								dates.add(temp2.getTime());
+								dates.add(temp1.getTime());
+							} else {
+								dates.add(temp1.getTime());
+							}
+						} else {
+							return null;
 						}
 					}
 					break;
@@ -344,13 +367,17 @@ public class Parser {
 		if (matcher.find()) {
 			input = matcher.group().replace("\"", "");
 		} else {
+			Matcher fromMatcher = Pattern.compile("(?ui)from\\s*" + timeRegexPattern).matcher(input);
+			if (fromMatcher.find()) {
+				input = input.substring(0, fromMatcher.start()) +  input.substring(fromMatcher.start()+5, input.length());
+			}
 			input = input.replaceAll("until", "till");
 			List<DateGroup> dateGroup = ptParser.parseSyntax(input);
-			for (int i = 0; i < dateGroup.size(); i++) {
-				if (dateGroup.get(i).getText().matches("\\d+")) {
+			/*for (int i = 0; i < dateGroup.size(); i++) {
+				if (dateGroup.get(i).getText().matches("\\d+(?!(pm|am))")) {
 					dateGroup.remove(i);
 				}
-			}
+			}*/
 			for (int i = 0; i < dateGroup.size(); i++) {
 				date = dateGroup.get(i).getText();
 				input = input.replaceAll("(?ui)\\s*((due on)|(due by)|due|by|before|till|to|from|on|at)\\s*" + date, "");
@@ -361,7 +388,7 @@ public class Parser {
 			Pattern splitPattern = Pattern.compile("\\s");
 			String[] excessWords = splitPattern.split(date);
 			for (String word : excessWords) {
-				input = input.replaceAll("\\b" + word + "\\b", "");
+				input = input.replaceAll("((due on)|(due by)|due|by|before|till|to|from|on|at)?\\s+" + word + "\\b", "");
 			}
 			input = input.replaceAll("(?ui)\\s+((due on)|(due by)|due|by|before|till|to|from|on|at)\\s*((due on)|(due by)|due|by|before|till|to|from|on|at)*\\s*$", "");
 			input = input.replaceAll("^(?ui)\\s*((due on)|(due by)|due|by|before|till|to|from|on|at)\\s*((due on)|(due by)|due|by|before|till|to|from|on|at)", "");
@@ -383,12 +410,14 @@ public class Parser {
 			}
 			paramArray = input.split(pattern);
 			break;
+		case DISPLAY:
+			paramArray = input.split("(,| and | to )");
+			break;
 		case UPDATE:
 			paramArray = input.split("\\s+", 3);
 			break;
 		default:
-			pattern = "\\s+";
-			paramArray = input.split(pattern);
+			paramArray = input.split("\\s+");
 		}
 
 		ArrayList<String> paramList = new ArrayList<String>(Arrays.asList(paramArray));
@@ -408,33 +437,95 @@ public class Parser {
 		if (parsedInput == null) {
 			if (input.matches("(?ui)^\\s*all\\s*$") || input.trim().isEmpty()) {
 				categories.add(CATEGORY.ALL);
-				obj = new ParsedObject(COMMAND_TYPE.DISPLAY, PARAM_TYPE.CATEGORY, categories);
-			} else if(input.matches("(?ui)^\\s*expired\\s*$")) {
+			} else if (input.matches("(?ui)^\\s*expire(?:d)?\\s*.*?")) {
 				categories.add(CATEGORY.EXPIRED);
-				obj = new ParsedObject(COMMAND_TYPE.DISPLAY, PARAM_TYPE.CATEGORY, categories);
-			} else if(input.matches("(?ui)^\\s*(!expired|non-expired|not expired|unexpired)\\s*$")) {
+				input = input.replaceFirst(("(?ui)^\\s*expire(?:d)?\\s*"), "");
+				if (!input.trim().isEmpty()) {
+					if (input.matches("(?ui)^(and|but)?\\s*(complete(?:d)?|done)\\s*$")) {
+						categories.add(CATEGORY.COMPLETED);
+					} else if(input.matches("(?ui)^(and|but)?\\s*(not |un|in|non-|!)complete(?:d)?|(not |un|!)done\\s*$")) {
+						categories.add(CATEGORY.INCOMPLETED);
+					} else {
+						return new ParsedObject(COMMAND_TYPE.INVALID);
+					}
+				}
+			} else if (input.matches("(?ui)^\\s*((!|non-|not |un)expire(?:d)?)\\s*.*?")) {
 				categories.add(CATEGORY.NONEXPIRED);
-				obj = new ParsedObject(COMMAND_TYPE.DISPLAY, PARAM_TYPE.CATEGORY, categories);
-			} else if(input.matches("(?ui)^\\s*(complete(?:d)?|done)\\s*$")) {
+				input = input.replaceFirst(("(?ui)^\\s*((!|non-|not |un)expire(?:d)?)\\s*"), "");
+				if (!input.trim().isEmpty()) {
+					if (input.matches("(?ui)^(and|but)?\\s*(complete(?:d)?|done)\\s*$")) {
+						categories.add(CATEGORY.COMPLETED);
+					} else if(input.matches("(?ui)(and|but)?^\\s*(not |un|in|non-|!)complete(?:d)?|(not |un|!)done\\s*$")) {
+						categories.add(CATEGORY.INCOMPLETED);
+					} else {
+						return new ParsedObject(COMMAND_TYPE.INVALID);
+					}
+				}
+			} else if (input.matches("(?ui)^\\s*(complete(?:d)?|done)\\s*.*?")) {
 				categories.add(CATEGORY.COMPLETED);
-				obj = new ParsedObject(COMMAND_TYPE.DISPLAY, PARAM_TYPE.CATEGORY, categories);
-			} else if(input.matches("(?ui)^\\s*(incomplete|incomplete(?:d)?|uncomplete|uncomplete(?:d)?|(?:(not |! ))complete(?:d)?|undone|!done|not done)\\s*$")) {
+				input = input.replaceFirst(("(?ui)^\\s*(complete(?:d)?|done)\\s*"), "");
+				if (!input.trim().isEmpty()) {
+					if (input.matches("(?ui)^(and|but)?\\s*expire(?:d)?\\s*$")) {
+						categories.add(CATEGORY.EXPIRED);
+					} else if(input.matches("(?ui)^(and|but)?\\s*(!|non-|not |un)expire(?:d)?\\s*$")) {
+						categories.add(CATEGORY.NONEXPIRED);
+					} else {
+						return new ParsedObject(COMMAND_TYPE.INVALID);
+					}
+				}
+			} else if (input.matches("(?ui)^\\s*(not |un|in|non-|!)complete(?:d)?|(not |un|!)done\\s*.*?")) {
 				categories.add(CATEGORY.INCOMPLETED);
-				obj = new ParsedObject(COMMAND_TYPE.DISPLAY, PARAM_TYPE.CATEGORY, categories);
+				input = input.replaceFirst(("(?ui)^\\s*(not |un|in|non-|!)complete(?:d)?|undone|!done|not done)\\s*"), "");
+				if (!input.trim().isEmpty()) {
+					if (input.matches("(?ui)^(and|but)?\\s*expire(?:d)?\\s*$")) {
+						categories.add(CATEGORY.EXPIRED);
+					} else if(input.matches("(?ui)^(and|but)?\\s*(not |un|non-|!)expire(?:d)?\\s*$")) {
+						categories.add(CATEGORY.NONEXPIRED);
+					} else {
+						return new ParsedObject(COMMAND_TYPE.INVALID);
+					}
+				}
 			} else {
-				obj = new ParsedObject(COMMAND_TYPE.INVALID);
+				return new ParsedObject(COMMAND_TYPE.INVALID);
 			}
+			obj = new ParsedObject(COMMAND_TYPE.DISPLAY, PARAM_TYPE.CATEGORY, categories);
 		} else {
-			ArrayList<Date> dates = new ArrayList<Date>(parsedInput);
-			switch (dates.size()) {
-				case 1:
-					obj = new ParsedObject(COMMAND_TYPE.DISPLAY_ON, PARAM_TYPE.DATE, dates);
-					break;
-				case 2:
-					obj = new ParsedObject(COMMAND_TYPE.DISPLAY_BETWEEN, PARAM_TYPE.DATE, dates);
-					break;
-				default:
-					obj = new ParsedObject(COMMAND_TYPE.INVALID);
+			//ArrayList<Date> dates = new ArrayList<Date>(parsedInput);
+			ArrayList<Date> dates = new ArrayList<Date>();
+			if (input.trim().isEmpty()) {
+				obj = new ParsedObject(COMMAND_TYPE.INVALID);
+			} else if (input.toLowerCase().contains(" to ")) {
+				COMMAND_TYPE cmdType;
+				if (input.startsWith("time")) {
+					input = input.toLowerCase().replace("time", "");
+					cmdType = COMMAND_TYPE.DISPLAY_BETWEEN;
+				} else {
+					cmdType = COMMAND_TYPE.DISPLAY_ON_BETWEEN;
+				}
+
+				ArrayList<String> dateStrings = getCommandParameters(input, EnumTypes.COMMAND_TYPE.DISPLAY);
+				for (int i = 0; i < dateStrings.size(); i++) {
+					List<DateGroup> dateGroups = getDateGroups(dateStrings.get(i));
+					if (dateGroups != null && dateGroups.size() > 0) {
+						if (dateGroups.get(0).getDates().size() == 1) {
+							dates.add(dateGroups.get(0).getDates().get(0));
+						}
+					}
+				}
+
+				obj = new ParsedObject(cmdType, PARAM_TYPE.DATE, dates);
+			} else {
+				ArrayList<String> dateStrings = getCommandParameters(input, EnumTypes.COMMAND_TYPE.DISPLAY);
+				dates.clear();
+				for (int i = 0; i < dateStrings.size(); i++) {
+					List<DateGroup> dateGroups = getDateGroups(dateStrings.get(i));
+					if (dateGroups != null && dateGroups.size() > 0) {
+						if (dateGroups.get(0).getDates().size() == 1) {
+							dates.add(dateGroups.get(0).getDates().get(0));
+						}
+					}
+				}
+				obj = new ParsedObject(COMMAND_TYPE.DISPLAY_ON, PARAM_TYPE.DATE, dates);
 			}
 		}
 
