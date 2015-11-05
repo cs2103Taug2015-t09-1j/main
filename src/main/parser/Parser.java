@@ -380,7 +380,7 @@ public class Parser {
 			}*/
 			for (int i = 0; i < dateGroup.size(); i++) {
 				date = dateGroup.get(i).getText();
-				input = input.replaceAll("(?ui)\\s*((due on)|(due by)|due|by|before|till|to|from|on|at)\\s*" + date, "");
+				input = input.replaceAll("(?ui)\\s+((due on)|(due by)|due|by|before|till|to|from|on|at)\\s+" + date, "");
 				input = input.replaceAll("(?ui)\\s*" + date + "\\s*", " ");
 			}
 			//Pattern splitPattern = Pattern.compile("\\s+((due on)|(due by)|due|by|before|until|till|to|from|on|at)\\s+");
@@ -388,10 +388,12 @@ public class Parser {
 			Pattern splitPattern = Pattern.compile("\\s");
 			String[] excessWords = splitPattern.split(date);
 			for (String word : excessWords) {
-				input = input.replaceAll("((due on)|(due by)|due|by|before|till|to|from|on|at)?\\s+" + word + "\\b", "");
+				input = input.replaceAll("\\s+((due on)|(due by)|due|by|before|till|to|from|on|at)?\\s+" + word + "\\b", "");
 			}
-			input = input.replaceAll("(?ui)\\s+((due on)|(due by)|due|by|before|till|to|from|on|at)\\s*((due on)|(due by)|due|by|before|till|to|from|on|at)*\\s*$", "");
-			input = input.replaceAll("^(?ui)\\s*((due on)|(due by)|due|by|before|till|to|from|on|at)\\s*((due on)|(due by)|due|by|before|till|to|from|on|at)", "");
+			//input = input.replaceAll("(?ui)\\s+((due on)|(due by)|due|by|before|till|to|from|on|at)\\s*((due on)|(due by)|due|by|before|till|to|from|on|at)*\\s*$", "");
+			input = input.replaceAll("(?ui)\\s+((due on)|(due by)|due|by|before|till|to|from|on|at)*\\s*$", "");
+			//input = input.replaceAll("^(?ui)\\s*((due on)|(due by)|due|by|before|till|to|from|on|at)\\s*((due on)|(due by)|due|by|before|till|to|from|on|at)", "");
+			input = input.replaceAll("(?ui)^\\s*((due on)|(due by)|due|by|before|till|to|from|on|at)\\s*", "");
 		}
 		input = input.replaceAll("^\\s+|\\s+$", "");
 		return input;
