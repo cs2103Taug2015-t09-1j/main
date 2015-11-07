@@ -24,18 +24,21 @@ public class EventsTableModel extends AbstractTableModel {
 	private final String[] columnNames = {"ID", "Start Date (2)", "End Date (3)", "Task Description (4)", "Done"};
 	private final Class<?>[] columnTypes = {Integer.class, Date.class, Date.class, String.class, Boolean.class};
 
-	private EventsTableModel(MainGUI ui) {
+	private EventsTableModel() {
 		super();
-		mainGUI = ui;
 		events = new ArrayList<Task>();
 	}
 
-	public static EventsTableModel getInstance(MainGUI ui) {
+	public static EventsTableModel getInstance() {
 		if (etm == null) {
-			assert ui != null;
-			etm = new EventsTableModel(ui);
+			etm = new EventsTableModel();
 		}
 		return etm;
+	}
+
+	public void setUIInstance(MainGUI ui) {
+		assert ui != null;
+		mainGUI = ui;
 	}
 
 	public void setTasks(List<Task> tasks) {
@@ -77,24 +80,32 @@ public class EventsTableModel extends AbstractTableModel {
 	public void setValueAt(Object value, int row, int col) {
 		Event evt = (Event)events.get(row);
 		String simulatedCommand = "update " + evt.getTaskID() + " " + (col + 1) + " ";
+		String updatedValue = "";
+		String originalValue = "";
 		switch (col) {
 			case 1:
-				simulatedCommand += (Date)value;
+				originalValue += evt.getFromDate();
+				updatedValue += value;
 				break;
 			case 2:
-				simulatedCommand += (Date)value;
+				originalValue += evt.getToDate();
+				updatedValue += value;
 				break;
 			case 3:
-				simulatedCommand += (String)value;
+				originalValue += evt.getTaskDesc();
+				updatedValue += value;
 				break;
 			case 4:
+				originalValue += value;
 				simulatedCommand = ((Boolean)value ?  "done" : "undone") + " " + evt.getTaskID();
 				break;
 			default:
 				// impossible case
 		}
 
-		mainGUI.sendUserInput(simulatedCommand);
+		if (!updatedValue.trim().equals(originalValue)) {
+			mainGUI.sendUserInput(simulatedCommand + updatedValue);
+		}
     }
 
 	public Object getValueAt(int row, int col) {

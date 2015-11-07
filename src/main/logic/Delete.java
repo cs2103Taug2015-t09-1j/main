@@ -5,6 +5,7 @@ package main.logic;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import main.model.EnumTypes;
@@ -14,6 +15,7 @@ import main.model.taskModels.Deadline;
 import main.model.taskModels.Event;
 import main.model.taskModels.Task;
 import main.model.taskModels.Todo;
+import main.storage.LogFileHandler;
 import main.storage.Storage;
 
 /**
@@ -21,13 +23,18 @@ import main.storage.Storage;
  *
  */
 public class Delete extends Command {
-	private static final Storage storage = Storage.getInstance();
-	private static final Logger logger = Logger.getLogger(Delete.class.getName());
-	private static final VersionControl vControl = VersionControl.getInstance();
-	private static final boolean DEBUG = true;
 	private static Delete delete = null;
+	private static Storage storage = null;
+	private static VersionControl vControl = null;
+	private static final Logger logger = Logger.getLogger(Delete.class.getName());
+	private static final boolean DEBUG = true;
 
-	private Delete() {}
+
+	private Delete() {
+		storage = Storage.getInstance();
+		vControl = VersionControl.getInstance();
+		LogFileHandler.getInstance().addLogFileHandler(logger);
+	}
 
 	public static Delete getInstance() {
 		if (delete == null) {
@@ -39,59 +46,64 @@ public class Delete extends Command {
 	@Override
 	public boolean execute(ParsedObject obj) {
 		assert obj != null;
+		assert obj.getObjects() instanceof ArrayList;
 
-		if (DEBUG) {
-			System.out.println(obj.getCommandType());
-			System.out.println(obj.getTaskType());
-		}
-
-		int cnt = 0;
 		List<Integer> taskIDs = new ArrayList<Integer>();
 		List<Task> deletedTasks = new ArrayList<Task>();
 		if (obj.getParamType() != null) {
 			switch (obj.getParamType()) {
-			case ID:
-				taskIDs = obj.getObjects();
-				break;
-			case CATEGORY:
-				taskIDs = storage.getIdByCategory(obj.getObjects());
-				cnt = taskIDs.size()-1;
-				break;
-			default:
-				message = "Invalid Task ID. Please try again.";
+				case ID:
+					taskIDs = obj.getObjects();
+					break;
+				case CATEGORY:
+					taskIDs = storage.getIdByCategory(obj.getObjects());
+					break;
+				default:
+					message = String.format("Invalid parameters for Delete command. Please try again.");
+					taskType = EnumTypes.TASK_TYPE.INVALID;
+
+					if (DEBUG) {
+						logger.log(Level.SEVERE, "Delete Command Failed." + obj);
+					}
+
+					return false;
+			}
+
+			deletedTasks = deleteTasks(taskIDs, deletedTasks);
+
+			if (deletedTasks.size() == 0) {
+				message = String.format("Invalid parameters for Delete command. Please try again.");
 				taskType = EnumTypes.TASK_TYPE.INVALID;
+
+				if (DEBUG) {
+					logger.log(Level.SEVERE, "Delete Command Failed." + obj);
+				}
 				return false;
 			}
 
-			for (int i = 0; i < taskIDs.size(); i++) {
-				Task t = storage.getTaskByID(taskIDs.get(i));
-				if (t != null) {
-					cnt++;
-					if (storage.delete(taskIDs.get(i))) {
-						deletedTasks.add(t);
-					}
-
-					if (DEBUG) {
-						System.out.print(taskIDs.get(i));
-						System.out.print(" | ");
-					}
-				}
-			}
-
 			if (DEBUG) {
-				System.out.println();
+				String debugMsg = "Tasks deleted successfully: {";
+				for (Task t : deletedTasks) {
+					debugMsg += t.getTaskID() + " ";
+				}
+				logger.log(Level.FINE, "Tasks deleted successfully: {" + debugMsg + "}");
 			}
 
 			storage.saveAllTask();
-			message = String.format("%d %s been deleted.", cnt, cnt > 1 ? "tasks have" : "task has");
-			taskType = EnumTypes.TASK_TYPE.ALL;
 			vControl.addNewData(new VersionModel.DeleteModel(deletedTasks));
+			taskType = EnumTypes.TASK_TYPE.ALL;
+			message = String.format("%d %s been successfully deleted.", deletedTasks.size(), deletedTasks.size() > 1 ? "tasks have" : "task has");
 			return true;
-		} else {
-			message = "Invalid Task ID. Please try again.";
-			taskType = EnumTypes.TASK_TYPE.INVALID;
-			return false;
 		}
+
+		message = String.format("Invalid parameters for Delete command. Please try again.");
+		taskType = EnumTypes.TASK_TYPE.INVALID;
+
+		if (DEBUG) {
+			logger.log(Level.SEVERE, "Delete Command Failed." + obj);
+		}
+
+		return false;
 	}
 
 	// @@author Hiep
@@ -108,5 +120,18 @@ public class Delete extends Command {
 			storage.delete(task.getTaskID());
 		}
 		return true;
+	}
+
+	// @@author Dalton
+	private List<Task> deleteTasks(List<Integer> taskIDs, List<Task> deletedTasks) {
+		for (int i = 0; i < taskIDs.size(); i++) {
+			Task task = storage.getTaskByID(taskIDs.get(i));
+			if (task != null) {
+				if (storage.delete(taskIDs.get(i))) {
+					deletedTasks.add(task);
+				}
+			}
+		}
+		return deletedTasks;
 	}
 }

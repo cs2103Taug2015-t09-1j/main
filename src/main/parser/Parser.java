@@ -24,6 +24,7 @@ import main.model.taskModels.Deadline;
 import main.model.taskModels.Event;
 import main.model.taskModels.Task;
 import main.model.taskModels.Todo;
+import main.storage.LogFileHandler;
 
 /**
  * @@author Dalton
@@ -31,32 +32,48 @@ import main.model.taskModels.Todo;
  */
 public class Parser {
 	private static Parser parser = null;
-	private static PrettyTimeParser ptParser;
-	private final Logger logger = Logger.getLogger(Parser.class.getName());
-	private final String[] updateCmdList = {"update", "/u", "edit", "/e", "modify", "/m", "change"};
-	private final String[] deleteCmdList = {"delete", "del", "/d", "remove", "/r"};
-	private final String[] doneCmdList = {"done", "complete"};
-	private final String[] undoneCmdList = {"!done", "undone", "incomplete"};
-	private final String[] undoCmdList = {"undo", "back"};
-	private final String[] redoCmdList = {"redo", "forward"};
-	private final String[] exitCmdList = {"exit", "quit", "/q"};
-	private final String[] displayCmdList = {"display", "show", "/sh", "view", "/v"};
+	private static PrettyTimeParser ptParser = null;
+	private static final Logger logger = Logger.getLogger(Parser.class.getName());
 
-	private final String UPDATE_REGEX = "^((\\d+\\s+\\d+\\s+(\\w*|\\d*|\\s*)+)|(\\d+\\s\\d+\\s\\w+\\s\\w+\\s\\d+\\s\\d+:\\d+:\\d+\\s\\w+\\s\\d+))";
-	private final String DELETE_REGEX = "^(\\d+\\s*(((to|-)\\s*\\d+\\s*)?|(\\d+\\s*)*)|\\s*all\\s*)";
+	private final String[] updateCmdArr = {"update", "/u", "edit", "/e", "modify", "/m", "change"};
+	private final String[] deleteCmdArr = {"delete", "del", "/d", "remove", "/r", "clear"};
+	private final String[] doneCmdArr = {"done", "complete"};
+	private final String[] undoneCmdArr = {"!done", "undone", "incomplete"};
+	private final String[] undoCmdArr = {"undo", "back"};
+	private final String[] redoCmdArr = {"redo", "forward"};
+	private final String[] exitCmdArr = {"exit", "quit", "/q"};
+	private final String[] displayCmdArr = {"display", "show", "/sh", "view", "/v"};
+
+	private final String ALL_REGEX = "\\s*all\\s*";
+	private final String EXPIRED_REGEX = "\\s*(and|but)?\\s*expire(?:d)?\\s*";
+	private final String NONEXPIRED_REGEX = "\\s*(and|but)?\\s*(not |un|non-|!)expire(?:d)?\\s*";
+	private final String COMPLETED_REGEX = "\\s*(and|but)?\\s*complete(?:d)?|done\\s*";
+	private final String UNCOMPLETED_REGEX = "\\s*(and|but)?\\s*(not |un|in|non-|!)complete(?:d)?|(not |un|!)done\\s*";
+
+	private final String[] categoriesRegex = {ALL_REGEX, EXPIRED_REGEX, NONEXPIRED_REGEX, COMPLETED_REGEX, UNCOMPLETED_REGEX};
+	private final CATEGORY[] categoriesArr = {CATEGORY.ALL, CATEGORY.EXPIRED, CATEGORY.NONEXPIRED, CATEGORY.COMPLETED, CATEGORY.UNCOMPLETED};
+
+	private final String UPDATE_REGEX = "^\\d+\\s+\\d+\\s+[-A-Za-z0-9~@#$^&*()+=_!`;'/><\\[\\]{}|\\\\,.?: ]*";
 	private final String DISPLAY_REGEX = "^(\\w|\\d|\\s|!|-|,|to|between)+";
-	private final String DONE_UNDONE_REGEX= "^!?\\d+\\s*(((to|-)\\s*\\d+\\s*)?|(\\d+\\s*)*)";
 	private final String UNDO_REDO_REGEX = "^\\d+\\s*$";
+	private final String DELETE_REGEX = "^(\\d+\\s*((((to|-)\\s*\\d+\\s*)?|(\\d+\\s*)*)))|"
+										+ "(" + ALL_REGEX + "|" + EXPIRED_REGEX + "|" + NONEXPIRED_REGEX + "|"
+										+ COMPLETED_REGEX + "|" + UNCOMPLETED_REGEX + ")+";
+	private final String DONE_UNDONE_REGEX = "^(\\d+\\s*((((to|-)\\s*\\d+\\s*)?|(\\d+\\s*)*)))|"
+											+ "(" + ALL_REGEX + "|" + EXPIRED_REGEX + "|" + NONEXPIRED_REGEX + "|"
+											+ COMPLETED_REGEX + "|" + UNCOMPLETED_REGEX + ")+";
 
 	private final String timeRegexPattern = "(((\\d+\\s+(minutes|min|seconds|sec|hours))|[0-9](am|pm|a.m.|p.m.)?|1[0-2](am|pm|a.m.|p.m.)?)|"
-							+ "(0[0-9]|1[0-9]|2[0-3])\\:?([0-5][0-9]))\\:?([0-5][0-9])?(am|pm|a.m.|p.m.|h|\\shours)?";
+											+ "(0[0-9]|1[0-9]|2[0-3])\\:?([0-5][0-9]))\\:?([0-5][0-9])?(am|pm|a.m.|p.m.|h|\\shours)?";
 
-	private Parser() {}
+	private Parser() {
+		ptParser = new PrettyTimeParser();
+		LogFileHandler.getInstance().addLogFileHandler(logger);
+	}
 
 	public static Parser getInstance() {
 		if (parser == null) {
 			parser = new Parser();
-			ptParser = new PrettyTimeParser();
 		}
 		return parser;
 	}
@@ -66,39 +83,39 @@ public class Parser {
 			return COMMAND_TYPE.INVALID;
 		}
 
-		if (isCommand(input, updateCmdList)) {
-			if (hasValidParameters(removeCommandWord(input, updateCmdList), UPDATE_REGEX)) {
+		if (isCommand(input, updateCmdArr)) {
+			if (hasValidParameters(removeCommandWord(input, updateCmdArr), UPDATE_REGEX)) {
 				return COMMAND_TYPE.UPDATE;
 			}
-		} else if (isCommand(input, deleteCmdList)) {
-			if (hasValidParameters(removeCommandWord(input, deleteCmdList), DELETE_REGEX)) {
+		} else if (isCommand(input, deleteCmdArr)) {
+			if (hasValidParameters(removeCommandWord(input, deleteCmdArr), DELETE_REGEX)) {
 				return COMMAND_TYPE.DELETE;
 			}
-		} else if (isCommand(input, displayCmdList)) {
-			input = removeCommandWord(input, displayCmdList);
+		} else if (isCommand(input, displayCmdArr)) {
+			input = removeCommandWord(input, displayCmdArr);
 			if (hasValidParameters(input, DISPLAY_REGEX) || input.trim().isEmpty()) {
 				return COMMAND_TYPE.DISPLAY;
 			}
-		} else if (isCommand(input, doneCmdList)) {
-			if (hasValidParameters(removeCommandWord(input, doneCmdList), DONE_UNDONE_REGEX)) {
+		} else if (isCommand(input, doneCmdArr)) {
+			if (hasValidParameters(removeCommandWord(input, doneCmdArr), DONE_UNDONE_REGEX)) {
 				return COMMAND_TYPE.DONE;
 			}
-		} else if (isCommand(input, undoneCmdList)) {
-			if (hasValidParameters(removeCommandWord(input, undoneCmdList), DONE_UNDONE_REGEX)) {
+		} else if (isCommand(input, undoneCmdArr)) {
+			if (hasValidParameters(removeCommandWord(input, undoneCmdArr), DONE_UNDONE_REGEX)) {
 				return COMMAND_TYPE.UNDONE;
 			}
-		} else if (isCommand(input, undoCmdList)) {
-			input = removeCommandWord(input, undoCmdList);
+		} else if (isCommand(input, undoCmdArr)) {
+			input = removeCommandWord(input, undoCmdArr);
 			if (hasValidParameters(input, UNDO_REDO_REGEX) || input.trim().isEmpty()) {
 				return COMMAND_TYPE.UNDO;
 			}
-		} else if (isCommand(input, redoCmdList)) {
-			input = removeCommandWord(input, redoCmdList);
+		} else if (isCommand(input, redoCmdArr)) {
+			input = removeCommandWord(input, redoCmdArr);
 			if (hasValidParameters(input, UNDO_REDO_REGEX) || input.trim().isEmpty()) {
 				return COMMAND_TYPE.REDO;
 			}
-		} else if (isCommand(input, exitCmdList)) {
-			if (removeCommandWord(input, exitCmdList).isEmpty()) {
+		} else if (isCommand(input, exitCmdArr)) {
+			if (removeCommandWord(input, exitCmdArr).isEmpty()) {
 				return COMMAND_TYPE.EXIT;
 			}
 		} else {
@@ -129,9 +146,8 @@ public class Parser {
 	}
 
 	private String removeCommandWord(String input, String[] commandList) {
-		String regexStr;
 		for(int i = 0; i < commandList.length; i++) {
-			regexStr = "(?ui)^" + commandList[i] + "\\s*";
+			String regexStr = "(?ui)^" + commandList[i] + "\\s*";
 			Pattern pattern = Pattern.compile("(?ui)^" + commandList[i] + "\\s*");
 			Matcher matcher = pattern.matcher(input);
 			if (matcher.find()) {
@@ -405,6 +421,8 @@ public class Parser {
 
 		switch (cmdType) {
 		case DELETE:
+		case DONE:
+		case UNDONE:
 			if (input.contains("to") || input.contains("-")) {
 				pattern = "\\-+|to";
 			} else {
@@ -433,66 +451,20 @@ public class Parser {
 
 	public ParsedObject getDisplayParsedObject(String input) {
 		ParsedObject obj;
-		input = removeCommandWord(input, displayCmdList);
+		input = removeCommandWord(input, displayCmdArr);
 		List<Date> parsedInput = parseDateGroups(input);
 		ArrayList<CATEGORY> categories = new ArrayList<CATEGORY>();
+
 		if (parsedInput == null) {
-			if (input.matches("(?ui)^\\s*all\\s*$") || input.trim().isEmpty()) {
-				categories.add(CATEGORY.ALL);
-			} else if (input.matches("(?ui)^\\s*expire(?:d)?\\s*.*?")) {
-				categories.add(CATEGORY.EXPIRED);
-				input = input.replaceFirst(("(?ui)^\\s*expire(?:d)?\\s*"), "");
-				if (!input.trim().isEmpty()) {
-					if (input.matches("(?ui)^(and|but)?\\s*(complete(?:d)?|done)\\s*$")) {
-						categories.add(CATEGORY.COMPLETED);
-					} else if(input.matches("(?ui)^(and|but)?\\s*(not |un|in|non-|!)complete(?:d)?|(not |un|!)done\\s*$")) {
-						categories.add(CATEGORY.INCOMPLETED);
-					} else {
-						return new ParsedObject(COMMAND_TYPE.INVALID);
-					}
-				}
-			} else if (input.matches("(?ui)^\\s*((!|non-|not |un)expire(?:d)?)\\s*.*?")) {
-				categories.add(CATEGORY.NONEXPIRED);
-				input = input.replaceFirst(("(?ui)^\\s*((!|non-|not |un)expire(?:d)?)\\s*"), "");
-				if (!input.trim().isEmpty()) {
-					if (input.matches("(?ui)^(and|but)?\\s*(complete(?:d)?|done)\\s*$")) {
-						categories.add(CATEGORY.COMPLETED);
-					} else if(input.matches("(?ui)(and|but)?^\\s*(not |un|in|non-|!)complete(?:d)?|(not |un|!)done\\s*$")) {
-						categories.add(CATEGORY.INCOMPLETED);
-					} else {
-						return new ParsedObject(COMMAND_TYPE.INVALID);
-					}
-				}
-			} else if (input.matches("(?ui)^\\s*(complete(?:d)?|done)\\s*.*?")) {
-				categories.add(CATEGORY.COMPLETED);
-				input = input.replaceFirst(("(?ui)^\\s*(complete(?:d)?|done)\\s*"), "");
-				if (!input.trim().isEmpty()) {
-					if (input.matches("(?ui)^(and|but)?\\s*expire(?:d)?\\s*$")) {
-						categories.add(CATEGORY.EXPIRED);
-					} else if(input.matches("(?ui)^(and|but)?\\s*(!|non-|not |un)expire(?:d)?\\s*$")) {
-						categories.add(CATEGORY.NONEXPIRED);
-					} else {
-						return new ParsedObject(COMMAND_TYPE.INVALID);
-					}
-				}
-			} else if (input.matches("(?ui)^\\s*(not |un|in|non-|!)complete(?:d)?|(not |un|!)done\\s*.*?")) {
-				categories.add(CATEGORY.INCOMPLETED);
-				input = input.replaceFirst(("(?ui)^\\s*(not |un|in|non-|!)complete(?:d)?|undone|!done|not done)\\s*"), "");
-				if (!input.trim().isEmpty()) {
-					if (input.matches("(?ui)^(and|but)?\\s*expire(?:d)?\\s*$")) {
-						categories.add(CATEGORY.EXPIRED);
-					} else if(input.matches("(?ui)^(and|but)?\\s*(not |un|non-|!)expire(?:d)?\\s*$")) {
-						categories.add(CATEGORY.NONEXPIRED);
-					} else {
-						return new ParsedObject(COMMAND_TYPE.INVALID);
-					}
-				}
+			ArrayList<String> categoriesRegexClone = new ArrayList<String>(Arrays.asList(categoriesRegex));
+			ArrayList<CATEGORY> categoriesArrClone = new ArrayList<CATEGORY>(Arrays.asList(categoriesArr));
+
+			if (areMatchedCategories(input, categories, categoriesRegexClone, categoriesArrClone)) {
+				obj = new ParsedObject(COMMAND_TYPE.DISPLAY, PARAM_TYPE.CATEGORY, categories);
 			} else {
-				return new ParsedObject(COMMAND_TYPE.INVALID);
+				obj = new ParsedObject(COMMAND_TYPE.INVALID);
 			}
-			obj = new ParsedObject(COMMAND_TYPE.DISPLAY, PARAM_TYPE.CATEGORY, categories);
 		} else {
-			//ArrayList<Date> dates = new ArrayList<Date>(parsedInput);
 			ArrayList<Date> dates = new ArrayList<Date>();
 			if (input.trim().isEmpty()) {
 				obj = new ParsedObject(COMMAND_TYPE.INVALID);
@@ -530,7 +502,6 @@ public class Parser {
 				obj = new ParsedObject(COMMAND_TYPE.DISPLAY_ON, PARAM_TYPE.DATE, dates);
 			}
 		}
-
 		return obj;
 	}
 
@@ -564,7 +535,7 @@ public class Parser {
 	}
 
 	public ParsedObject getUpdateParsedObject(String input) {
-		String params = removeCommandWord(input, updateCmdList);
+		String params = removeCommandWord(input, updateCmdArr);
 		ArrayList<String> paramsList = getCommandParameters(params, COMMAND_TYPE.UPDATE);
 		ParsedObject obj = new ParsedObject(COMMAND_TYPE.UPDATE, PARAM_TYPE.STRING, paramsList);
 		return obj;
@@ -574,112 +545,137 @@ public class Parser {
 		try {
 			return Integer.parseInt(intString);
 		} catch (NumberFormatException e) {
-			logger.log(Level.SEVERE, e.toString(), e);
-			//throw new NumberFormatException();
+			logger.log(Level.SEVERE, e.getMessage(), e);
 		}
 		return 0;
 	}
 
 	public ParsedObject getDeleteParsedObject(String input) {
-		input = removeCommandWord(input, deleteCmdList);
+		ParsedObject obj;
+		input = removeCommandWord(input, deleteCmdArr);
+		ArrayList<String> params = getCommandParameters(input, COMMAND_TYPE.DELETE);
 		ArrayList<Integer> taskIDs = new ArrayList<Integer>();
-		ArrayList<String> taskIDList = getCommandParameters(input, COMMAND_TYPE.DELETE);
 		ArrayList<CATEGORY> categories = new ArrayList<CATEGORY>();
 
-		if (input.matches("(?ui)^\\s*all\\s*$")) {
-			categories.add(CATEGORY.ALL);
-			return new ParsedObject(COMMAND_TYPE.DELETE, PARAM_TYPE.CATEGORY, categories);
-		}
-
-		if (input.contains("to") || input.contains("-")) {
-			int fromID;
-			int toID;
-			try {
-				fromID = parseInteger(taskIDList.get(0));
-				toID = parseInteger(taskIDList.get(1));
-			} catch (Exception e) {
-				fromID = 0;
-				toID = 0;
-			}
-
-			for (int i = fromID; i <= toID; i++) {
-				taskIDs.add(i);
-			}
+		if (isCategorisedByID(input, taskIDs, params)) {
+			obj = new ParsedObject(COMMAND_TYPE.DELETE, PARAM_TYPE.ID, taskIDs);
 		} else {
-			for (int i = 0; i < taskIDList.size(); i++) {
-				try {
-					taskIDs.add(parseInteger(taskIDList.get(i)));
-				} catch (Exception e) {
-					// Not number exception
-				}
+			ArrayList<String> categoriesRegexClone = new ArrayList<String>(Arrays.asList(categoriesRegex));
+			ArrayList<CATEGORY> categoriesArrClone = new ArrayList<CATEGORY>(Arrays.asList(categoriesArr));
+
+			if (areMatchedCategories(input, categories, categoriesRegexClone, categoriesArrClone)) {
+				obj = new ParsedObject(COMMAND_TYPE.DELETE, PARAM_TYPE.CATEGORY, categories);
+			} else {
+				obj = new ParsedObject(COMMAND_TYPE.INVALID);
 			}
 		}
 
-		return new ParsedObject(COMMAND_TYPE.DELETE, PARAM_TYPE.ID, taskIDs);
-	}
-
-	public ParsedObject getChangeStatusParsedObject(String input, boolean newStatus) {
-		String params;
-		if (newStatus) {
-			params = removeCommandWord(input, doneCmdList);
-		} else {
-			params = removeCommandWord(input, undoneCmdList);
-		}
-		ArrayList<Integer> taskIDs = new ArrayList<Integer>();
-		ArrayList<String> taskIDList = getCommandParameters(params, COMMAND_TYPE.DELETE);
-		ParsedObject obj;
-
-		if (input.contains("to") || input.contains("-")) {
-			int fromID;
-			int toID;
-			try {
-				fromID = parseInteger(taskIDList.get(0));
-				toID = parseInteger(taskIDList.get(1));
-			} catch (Exception e) {
-				fromID = 0;
-				toID = 0;
-			}
-
-			for (int i = fromID; i <= toID; i++) {
-				taskIDs.add(i);
-			}
-		} else {
-			for (int i = 0; i < taskIDList.size(); i++) {
-				try {
-					taskIDs.add(parseInteger(taskIDList.get(i)));
-				} catch (Exception e) {
-					// Not number exception
-				}
-
-			}
-		}
-		obj = new ParsedObject(newStatus ? COMMAND_TYPE.DONE : COMMAND_TYPE.UNDONE, PARAM_TYPE.ID, taskIDs);
 		return obj;
 	}
 
+	private boolean isCategorisedByID(String input, ArrayList<Integer> taskIDs, ArrayList<String> params) {
+		if (input.matches("\\d+\\s*(to|-)(\\s*|\\d+)*")) {
+			int startID = 0, endID = 0;
 
-	public ParsedObject getUndoParsedObject(String input) {
-		String params = removeCommandWord(input, undoCmdList);
-		ArrayList<Integer> numOfExec = new ArrayList<Integer>();
-		if (params.isEmpty()) {
-			numOfExec.add(1);
+			try {
+				startID = parseInteger(params.get(0));
+				endID = parseInteger(params.get(1));
+			} catch (Exception e) {
+				return false;
+			}
+
+			for (int i = startID; i <= endID; i++) {
+				taskIDs.add(i);
+			}
+
+			return true;
+		} else if (input.matches("(\\d+\\s*)*")) {
+			for (int i = 0; i < params.size(); i++) {
+				try {
+					taskIDs.add(parseInteger(params.get(i)));
+				} catch (Exception e) {
+					return false;
+				}
+			}
+			return true;
 		} else {
-			numOfExec.add(parseInteger(params));
+			return false;
 		}
-
-		return new ParsedObject(COMMAND_TYPE.UNDO, PARAM_TYPE.INTEGER, numOfExec);
 	}
 
-	public ParsedObject getRedoParsedObject(String input) {
-		String params = removeCommandWord(input, redoCmdList);
-		ArrayList<Integer> numOfExec = new ArrayList<Integer>();
-		if (params.isEmpty()) {
-			numOfExec.add(1);
-		} else {
-			numOfExec.add(parseInteger(params));
+	private boolean areMatchedCategories(String input, List<CATEGORY> categories, ArrayList<String> cateRegexList, ArrayList<CATEGORY> cateList) {
+		if (input.trim().isEmpty() || input.matches("(?ui)^" + ALL_REGEX + "$")) {
+			categories.add(cateList.get(0));
+			return true;
 		}
 
-		return new ParsedObject(COMMAND_TYPE.REDO, PARAM_TYPE.INTEGER, numOfExec);
+		for (int i = 1; i < cateRegexList.size(); i++) {
+			if (input.matches("(?ui)^" + cateRegexList.get(i) + ".*?")) {
+				categories.add(cateList.get(i));
+				input = input.replaceFirst(("(?ui)^" + cateRegexList.get(i)), "");
+				cateRegexList.remove(cateRegexList.get(i));
+				cateList.remove(cateList.get(i));
+				if (!input.trim().isEmpty()) {
+					areMatchedCategories(input, categories, cateRegexList, cateList);
+				}
+				break;
+			}
+		}
+
+		if (categories.size() == 0) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+
+	public ParsedObject getChangeStatusParsedObject(String input, boolean newStatus) {
+		ParsedObject obj;
+		String[] cmdList;
+
+		if (newStatus) {
+			cmdList = doneCmdArr;
+		} else {
+			cmdList = undoneCmdArr;
+		}
+
+		input = removeCommandWord(input, cmdList);
+		ArrayList<String> params = getCommandParameters(input, COMMAND_TYPE.DONE);
+		ArrayList<Integer> taskIDs = new ArrayList<Integer>();
+		ArrayList<CATEGORY> categories = new ArrayList<CATEGORY>();
+
+		if (isCategorisedByID(input, taskIDs, params)) {
+			obj = new ParsedObject(newStatus ? COMMAND_TYPE.DONE : COMMAND_TYPE.UNDONE, PARAM_TYPE.ID, taskIDs);
+		} else {
+			ArrayList<String> regexTemp = new ArrayList<String>(Arrays.asList(categoriesRegex));
+			ArrayList<CATEGORY> categoriesTemp = new ArrayList<CATEGORY>(Arrays.asList(categoriesArr));
+
+			if (areMatchedCategories(input, categories, regexTemp, categoriesTemp)) {
+				obj = new ParsedObject(COMMAND_TYPE.DELETE, PARAM_TYPE.CATEGORY, categories);
+			} else {
+				obj = new ParsedObject(COMMAND_TYPE.INVALID);
+			}
+		}
+
+		return obj;
+	}
+
+	public ParsedObject getUndoRedoParsedObject(String input, COMMAND_TYPE cmdType) {
+		String[] cmdList;
+		if (cmdType == COMMAND_TYPE.UNDO) {
+			cmdList = undoCmdArr;
+		} else {
+			cmdList = redoCmdArr;
+		}
+		input = removeCommandWord(input, cmdList);
+		ArrayList<Integer> numOfExec = new ArrayList<Integer>();
+		if (input.isEmpty()) {
+			numOfExec.add(1);
+		} else {
+			numOfExec.add(parseInteger(input));
+		}
+
+		return new ParsedObject(cmdType, PARAM_TYPE.INTEGER, numOfExec);
 	}
 
 	public Calendar setDateTime(Calendar cal, int year, int month, int date, int hours, int minutes, int seconds) {
@@ -707,21 +703,21 @@ public class Parser {
 	public String[] getCommandKeywordList(String command) {
 		switch (command) {
 			case "update":
-				return updateCmdList;
+				return updateCmdArr;
 			case "delete":
-				return deleteCmdList;
+				return deleteCmdArr;
 			case "done":
-				return doneCmdList;
+				return doneCmdArr;
 			case "undone":
-				return undoneCmdList;
+				return undoneCmdArr;
 			case "undo":
-				return undoCmdList;
+				return undoCmdArr;
 			case "redo":
-				return redoCmdList;
+				return redoCmdArr;
 			case "exit":
-				return exitCmdList;
+				return exitCmdArr;
 			case "display":
-				return displayCmdList;
+				return displayCmdArr;
 			default:
 				return null;
 		}

@@ -8,28 +8,29 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.Insets;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 import javax.swing.JTable;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.table.TableCellRenderer;
 
 /**
  * @@author Dalton
  *
  */
+@SuppressWarnings("serial")
 public class CustomCellRenderer extends JTextArea implements TableCellRenderer {
+	private static final Color NON_EXPIRED_FONT_COLOR = Color.decode("0x009900");
+	private static final Color EXPIRED_FONT_COLOR = Color.RED;
 
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+    	assert this != null;
     	this.setWrapStyleWord(true);
         this.setLineWrap(true);
         this.setMargin(new Insets(2,10,2,10));
-
-        if (System.getProperty("os.name").startsWith("Mac")) {
-        	this.setFont(new Font("Segoe UI Semibold", Font.PLAIN, 11));
-        } else {
-        	this.setFont(new Font("Segoe UI Semibold", Font.PLAIN, 13));
-        }
+        renderFontSizeRelativeToOS();
 
         if (isSelected) {
             setBackground(table.getSelectionBackground());
@@ -42,13 +43,7 @@ public class CustomCellRenderer extends JTextArea implements TableCellRenderer {
         if (value != null) {
 	        if (value instanceof Date) {
 	        	this.setText(formatDate((Date)value));
-        		long currentTime = System.currentTimeMillis();
-        		long dateTime = ((Date)value).getTime();
-        		if (dateTime < currentTime) {
-	        		this.setForeground(Color.RED);
-	        	} else {
-	        		this.setForeground(Color.decode("0x009900"));
-	        	}
+	        	setFontColour((Date)value);
 
         		if (table.getName().equals("Events")) {
         			int modelRow = table.getRowSorter().convertRowIndexToModel(row);
@@ -72,9 +67,29 @@ public class CustomCellRenderer extends JTextArea implements TableCellRenderer {
         return this;
     }
 
+    private void renderFontSizeRelativeToOS() {
+    	if (System.getProperty("os.name").startsWith("Mac")) {
+        	this.setFont(new Font("Segoe UI Semibold", Font.PLAIN, 11));
+        } else {
+        	this.setFont(new Font("Segoe UI Semibold", Font.PLAIN, 13));
+        }
+    }
+
     private String formatDate(Date d) {
     	SimpleDateFormat dateFmt = new SimpleDateFormat("EEE, dd MMM yyyy");
 		SimpleDateFormat dayFmt = new SimpleDateFormat("h:mm a");
 		return dateFmt.format(d) + "\n" + dayFmt.format(d);
+    }
+
+    private void setFontColour(Date d) {
+    	Calendar now = Calendar.getInstance();
+    	Calendar dateTime = Calendar.getInstance();
+    	dateTime.setTime(d);
+
+		if (now.compareTo(dateTime) > 0) {
+    		this.setForeground(EXPIRED_FONT_COLOR);
+    	} else {
+    		this.setForeground(NON_EXPIRED_FONT_COLOR);
+    	}
     }
 }

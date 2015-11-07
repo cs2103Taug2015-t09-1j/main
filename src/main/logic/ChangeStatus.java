@@ -14,18 +14,19 @@ import main.model.taskModels.Todo;
 import main.storage.Storage;
 
 /**
-* @@author Dalton
+* @@author Hiep
 *
 */
 public class ChangeStatus extends Command {
-	private static final Storage storage = Storage.getInstance();
+	private static ChangeStatus changeStatus = null;
+	private static Storage storage = null;
 	private static final VersionControl vControl = VersionControl.getInstance();
 	private static final boolean DEBUG = true;
-	private static ChangeStatus changeStatus = null;
 	private boolean newStatus = true;
 
 	private ChangeStatus(boolean newStatus) {
 		this.newStatus = newStatus;
+		storage = Storage.getInstance();
 	}
 
 	public static ChangeStatus getInstance(boolean newStatus) {
@@ -77,22 +78,19 @@ public class ChangeStatus extends Command {
 
 		if (cnt > 0) {
 			storage.saveAllTask();
-
 			message = String.format("%d %s been marked as %s ", cnt, cnt > 1 ? "tasks have" : "task has", newStatus ? "completed" : "incompleted");
 			taskType = EnumTypes.TASK_TYPE.ALL;
-
 			vControl.addNewData(new VersionModel.ChangeStatusModel(ids, oldStatuses, newStatus));
 
 			return true;
 		}
 
 
-		message = "<html> Invalid task ids. Please try again.</html>";
+		message = "Invalid Task IDs. Please try again.";
 		taskType = EnumTypes.TASK_TYPE.INVALID;
 		return false;
 	}
 
-	// @@author Hiep
 	public boolean undo(List<Integer> ids, List<Boolean> oldStatuses) {
 		for (int i = 0; i < ids.size(); i++) {
 			storage.changeStatus(ids.get(i), oldStatuses.get(i));
@@ -100,12 +98,10 @@ public class ChangeStatus extends Command {
 		return true;
 	}
 
-	// @@author Hiep
 	public boolean redo(List<Integer> ids, boolean newStatus) {
 		for (int i = 0; i < ids.size(); i++) {
 			storage.changeStatus(ids.get(i), newStatus);
 		}
 		return true;
 	}
-
 }

@@ -21,7 +21,7 @@ public class TaskChecker {
 					return false;
 				}
 				break;
-			case INCOMPLETED:
+			case UNCOMPLETED:
 				if (task.isDone()) {
 					return false;
 				}

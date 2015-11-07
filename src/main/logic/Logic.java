@@ -6,8 +6,8 @@ import java.util.Observer;
 import java.util.logging.Logger;
 
 import main.model.ObserverEvent;
-import main.model.ParsedObject;
 import main.model.taskModels.Task;
+import main.model.EnumTypes.COMMAND_TYPE;
 import main.model.EnumTypes.TASK_TYPE;
 import main.parser.Parser;
 import main.storage.Storage;
@@ -115,7 +115,7 @@ public class Logic extends Observable implements Observer {
 
 	private void processUndoCommand(String input) {
 		VersionControl vControl = VersionControl.getInstance();
-		if (vControl.execute(parser.getUndoParsedObject(input))) {
+		if (vControl.execute(parser.getUndoRedoParsedObject(input, COMMAND_TYPE.UNDO))) {
 			updateModelData(TASK_TYPE.DEADLINE, false);
 			updateModelData(TASK_TYPE.TODO, false);
 			updateModelData(TASK_TYPE.EVENT, false);
@@ -125,7 +125,7 @@ public class Logic extends Observable implements Observer {
 
 	private void processRedoCommand(String input) {
 		VersionControl vControl = VersionControl.getInstance();
-		if (vControl.execute(parser.getRedoParsedObject(input))) {
+		if (vControl.execute(parser.getUndoRedoParsedObject(input, COMMAND_TYPE.REDO))) {
 			updateModelData(TASK_TYPE.DEADLINE, false);
 			updateModelData(TASK_TYPE.TODO, false);
 			updateModelData(TASK_TYPE.EVENT, false);

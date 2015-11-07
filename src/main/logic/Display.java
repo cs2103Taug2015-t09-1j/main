@@ -23,10 +23,11 @@ import main.storage.Storage;
 public class Display extends Command {
 
 	private static Display display = null;
-	private static Storage storage = Storage.getInstance();
+	private static Storage storage = null;
 	private TASK_TYPE taskType;
 
 	private Display() {
+		storage = Storage.getInstance();
 	}
 
 	public static Display getInstance(TASK_TYPE type) {
@@ -47,7 +48,6 @@ public class Display extends Command {
 	}
 
 	public List<List<Task>> process(ParsedObject obj) {
-		//List<Task> result = new ArrayList<>();
 		List<List<Task>> result = new ArrayList<List<Task>>();
 		List<Task> tasks = storage.getAllTask(TASK_TYPE.ALL);
 		List<Task> deadlines = new ArrayList<>();
@@ -73,7 +73,7 @@ public class Display extends Command {
 
 				}
 			}
-			message = "Tasks are displayed.";
+			message = "All " + ids.size() + " tasks are displayed.";
 		} else {
 			Date fromDate, toDate;
 			switch (obj.getCommandType()) {
@@ -187,6 +187,9 @@ public class Display extends Command {
 		}
 	}
 
+	/*
+	 *  @@author Dalton
+	 */
 	private Date resetTime(Date d, boolean isStartOfDay) {
 		Calendar date = Calendar.getInstance();
 		date.setTime(d);

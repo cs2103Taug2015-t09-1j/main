@@ -72,10 +72,12 @@ public class CustomDateCellEditor extends DefaultCellEditor {
 
 	@Override
 	public boolean stopCellEditing() {
-		String value = ((JTextField)getComponent()).getText();
+		JTextField tf = ((JTextField)getComponent());
+		String value = tf.getText();
+
 		List<Date> dates = parser.parse(value);
 		if (dates.size() <= 0) {
-			((JComponent)getComponent()).setBorder(new LineBorder(Color.RED));
+			tf.setBorder(new LineBorder(Color.RED));
 			return false;
 		}
 

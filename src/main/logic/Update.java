@@ -10,8 +10,6 @@ import java.util.logging.Logger;
 import main.model.EnumTypes;
 import main.model.ParsedObject;
 import main.model.VersionModel;
-import main.model.EnumTypes.COMMAND_TYPE;
-import main.model.EnumTypes.TASK_TYPE.*;
 import main.model.taskModels.Deadline;
 import main.model.taskModels.Event;
 import main.model.taskModels.Task;
@@ -24,14 +22,18 @@ import main.storage.Storage;
  *
  */
 public class Update extends Command {
-	private static final Parser parser = Parser.getInstance();
-	private static final Storage storage = Storage.getInstance();
-	private static final VersionControl vControl = VersionControl.getInstance();
+	private static Parser parser = null;
+	private static Storage storage = null;
+	private static VersionControl vControl = null;
 	private static final Logger logger = Logger.getLogger(Update.class.getName());
 	private static final boolean DEBUG = true;
 	private static Update update = null;
 
-	private Update() {}
+	private Update() {
+		parser = Parser.getInstance();
+		storage = Storage.getInstance();
+		vControl = VersionControl.getInstance();
+	}
 
 	public static Update getInstance() {
 		if (update == null) {
@@ -43,22 +45,26 @@ public class Update extends Command {
 	@Override
 	public boolean execute(ParsedObject obj) {
 		assert obj != null;
+		assert obj.getObjects() instanceof ArrayList;
+
 		ArrayList<String> params = obj.getObjects();
-		Task t = storage.getTaskByID(parser.parseInteger(params.get(0)));
-		if (t != null) {
-			message = "Task ID " + t.getTaskID() + ": ";
-			switch (t.getType()) {
+		Task task = storage.getTaskByID(parser.parseInteger(params.get(0)));
+
+		if (task != null) {
+			message = "Task ID " + task.getTaskID() + ": ";
+			switch (task.getType()) {
 				case EVENT:
 					taskType = EnumTypes.TASK_TYPE.EVENT;
-					return updateEvent((Event) t, params);
+					return updateEvent((Event) task, params);
 				case TODO:
 					taskType = EnumTypes.TASK_TYPE.TODO;
-					return updateTodo((Todo) t, params);
+					return updateTodo((Todo) task, params);
 				case DEADLINE:
 					taskType = EnumTypes.TASK_TYPE.DEADLINE;
-					return updateDeadline((Deadline) t, params);
+					return updateDeadline((Deadline) task, params);
 			}
 		}
+
 		message = "Invalid column or value entered.";
 		taskType = EnumTypes.TASK_TYPE.INVALID;
 		return false;
@@ -66,11 +72,13 @@ public class Update extends Command {
 
 	private boolean updateEvent(Event evt, ArrayList<String> params) {
 		Task oldEvt = evt.clone();
+
 		switch (params.get(1)) {
 			case "2":
 				try {
 					Date fromDate = parser.parseDateGroups(params.get(2)).get(0);
-					message += "Previous Start Date \"" + parser.formatDate(evt.getFromDate(),  "EEE, d MMM yyyy") + "\" has been updated to \"" + parser.formatDate(fromDate,  "EEE, d MMM yyyy") + "\".";
+					message += "\"" + parser.formatDate(evt.getFromDate(), "EEE, d MMM yyyy h:mm a") + "\" has been updated to \""
+							+ parser.formatDate(fromDate,  "EEE, d MMM yyyy h:mm a") + "\".";
 					evt.setFromDate(fromDate);
 				} catch (Exception e) {
 					message += "Invalid column or value entered.";
@@ -81,7 +89,8 @@ public class Update extends Command {
 			case "3":
 				try {
 					Date toDate = parser.parseDateGroups(params.get(2)).get(0);
-					message += "Previous End Date \"" + parser.formatDate(evt.getToDate(),  "EEE, d MMM yyyy") + "\" has been updated to \"" + parser.formatDate(toDate,  "EEE, d MMM yyyy") + "\".";
+					message += "\"" + parser.formatDate(evt.getToDate(),  "EEE, d MMM yyyy h:mm a") + "\" has been updated to \""
+							+ parser.formatDate(toDate,  "EEE, d MMM yyyy h:mm a") + "\".";
 					evt.setToDate(toDate);
 				} catch (Exception e) {
 					message += "Invalid column or value entered.";
@@ -91,7 +100,7 @@ public class Update extends Command {
 				break;
 			case "4":
 				String taskDesc = params.get(2);
-				message += "Previous Task Description \"" + evt.getTaskDesc() + "\" has been updated to \"" + taskDesc + "\".";
+				message += "\"" + evt.getTaskDesc() + "\" has been updated to \"" + taskDesc + "\".";
 				evt.setTaskDesc(taskDesc);
 				break;
 			default:
@@ -99,6 +108,7 @@ public class Update extends Command {
 				taskType = EnumTypes.TASK_TYPE.INVALID;
 				return false;
 		}
+
 		storage.updateTask(evt);
 		storage.saveTaskType(EnumTypes.TASK_TYPE.EVENT);
 
@@ -108,7 +118,6 @@ public class Update extends Command {
 	}
 
 	private boolean updateTodo(Todo t, ArrayList<String> params) {
-
 		Task oldTodo = t.clone();
 
 		switch (params.get(1)) {
@@ -132,7 +141,6 @@ public class Update extends Command {
 	}
 
 	private boolean updateDeadline(Deadline d, ArrayList<String> params) {
-
 		Task oldDeadline = d.clone();
 
 		switch (params.get(1)) {
@@ -166,14 +174,17 @@ public class Update extends Command {
 		return true;
 	}
 
+	// @@author Hiep
 	private void addNewUpdateModel(Task oldTask, Task newTask) {
 		vControl.addNewData(new VersionModel.UpdateModel(oldTask, newTask));
 	}
 
+	// @@author Hiep
 	public static boolean undo(Task oldTask) {
 		return storage.updateTask(oldTask);
 	}
 
+	// @@author Hiep
 	public static boolean redo(Task newTask) {
 		return storage.updateTask(newTask);
 	}

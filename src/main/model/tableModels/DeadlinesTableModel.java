@@ -26,18 +26,21 @@ public class DeadlinesTableModel extends AbstractTableModel {
 	private final Class<?>[] columnTypes = { Integer.class, Date.class, String.class, Boolean.class };
 
 
-	private DeadlinesTableModel(MainGUI ui) {
+	private DeadlinesTableModel() {
 		super();
-		mainGUI = ui;
 		deadlines = new ArrayList<Task>();
 	}
 
-	public static DeadlinesTableModel getInstance(MainGUI ui) {
+	public static DeadlinesTableModel getInstance() {
 		if (dtm == null) {
-			assert ui != null;
-			dtm = new DeadlinesTableModel(ui);
+			dtm = new DeadlinesTableModel();
 		}
 		return dtm;
+	}
+
+	public void setUIInstance(MainGUI ui) {
+		assert ui != null;
+		mainGUI = ui;
 	}
 
 	public void setTasks(List<Task> tasks) {
@@ -75,36 +78,43 @@ public class DeadlinesTableModel extends AbstractTableModel {
     }
 
 	public void setValueAt(Object value, int row, int col) {
-		Deadline t = (Deadline)deadlines.get(row);
-		String simulatedCommand = "update " + t.getTaskID() + " " + (col + 1) + " ";
+		Deadline deadline = (Deadline)deadlines.get(row);
+		String simulatedCommand = "update " + deadline.getTaskID() + " " + (col + 1) + " ";
+		String updatedValue = "";
+		String originalValue = "";
 		switch (col) {
 			case 1:
-				simulatedCommand += (Date)value;
+				originalValue += deadline.getDate();
+				updatedValue += value;
 				break;
 			case 2:
-				simulatedCommand += (String)value;
+				originalValue += deadline.getTaskDesc();
+				updatedValue += value;
 				break;
 			case 3:
-				simulatedCommand = ((Boolean)value ?  "done" : "undone") + " " + t.getTaskID();
+				originalValue += value;
+				simulatedCommand = ((Boolean)value ?  "done" : "undone") + " " + deadline.getTaskID();
 				break;
 			default:
 				// impossible case
 		}
 
-		mainGUI.sendUserInput(simulatedCommand);
+		if (!updatedValue.trim().equals(originalValue)) {
+			mainGUI.sendUserInput(simulatedCommand + updatedValue);
+		}
     }
 
 	public Object getValueAt(int row, int col) {
-		Deadline t = (Deadline)deadlines.get(row);
+		Deadline deadline = (Deadline)deadlines.get(row);
 		switch (col) {
 			case 0:
-				return t.getTaskID();
+				return deadline.getTaskID();
 			case 1:
-				return t.getDate();
+				return deadline.getDate();
 			case 2:
-				return t.getTaskDesc();
+				return deadline.getTaskDesc();
 			case 3:
-				return t.isDone();
+				return deadline.isDone();
 			default:
 				// impossible case
 		}

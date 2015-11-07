@@ -24,18 +24,21 @@ public class TodosTableModel extends AbstractTableModel {
 	private final String[] columnNames = { "ID", "Task Description (2)", "Done" };
 	private final Class<?>[] columnTypes = { Integer.class, String.class, Boolean.class };
 
-	private TodosTableModel(MainGUI ui) {
+	private TodosTableModel() {
 		super();
-		mainGUI = ui;
 		todos = new ArrayList<Task>();
 	}
 
-	public static TodosTableModel getInstance(MainGUI ui) {
+	public static TodosTableModel getInstance() {
 		if (ttm == null) {
-			assert ui != null;
-			ttm = new TodosTableModel(ui);
+			ttm = new TodosTableModel();
 		}
 		return ttm;
+	}
+
+	public void setUIInstance(MainGUI ui) {
+		assert ui != null;
+		mainGUI = ui;
 	}
 
 	public void setTasks(List<Task> tasks) {
@@ -71,31 +74,37 @@ public class TodosTableModel extends AbstractTableModel {
     }
 
 	public void setValueAt(Object value, int row, int col) {
-		Todo t = (Todo)todos.get(row);
-		String simulatedCommand = "update " + t.getTaskID() + " " + (col + 1) + " ";
+		Todo todo = (Todo)todos.get(row);
+		String simulatedCommand = "update " + todo.getTaskID() + " " + (col + 1) + " ";
+		String updatedValue = "";
+		String originalValue = "";
 		switch (col) {
 			case 1:
-				simulatedCommand = simulatedCommand + (String)value;
+				originalValue += todo.getTaskDesc();
+				updatedValue += value;
 				break;
 			case 2:
-				simulatedCommand = ((Boolean)value ?  "done" : "undone") + " " + t.getTaskID();
+				originalValue += value;
+				simulatedCommand = ((Boolean)value ?  "done" : "undone") + " " + todo.getTaskID();
 				break;
 			default:
 				// impossible case
 		}
 
-		mainGUI.sendUserInput(simulatedCommand);
+		if (!updatedValue.trim().equals(originalValue)) {
+			mainGUI.sendUserInput(simulatedCommand + updatedValue);
+		}
     }
 
 	public Object getValueAt(int row, int col) {
-		Todo t = (Todo)todos.get(row);
+		Todo todo = (Todo)todos.get(row);
 		switch (col) {
 			case 0:
-				return t.getTaskID();
+				return todo.getTaskID();
 			case 1:
-				return t.getTaskDesc();
+				return todo.getTaskDesc();
 			case 2:
-				return t.isDone();
+				return todo.isDone();
 			default:
 				// impossible case
 		}

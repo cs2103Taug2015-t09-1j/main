@@ -26,10 +26,11 @@ public class InputFeedbackHandler {
 	private JTextPane tpInput = null;
 	private JTextArea taMessage = null;
 	private static Parser parser = null;
-	private static final Color normalTextColour = Color.BLACK;
-	private static final Color highlightedTextColour = Color.decode("#19D14A");
+	private static final Color NORMAL_FONT_COLOUR = Color.BLACK;
+	private static final Color HIGHLIGHTED_FONT_COLOUR = Color.decode("#19D14A");
 	private static final SimpleAttributeSet defaultSet = new SimpleAttributeSet();
 	private static final SimpleAttributeSet customSet = new SimpleAttributeSet();
+
 	private InputFeedbackHandler() {}
 
 	public static InputFeedbackHandler getInstance() {
@@ -61,10 +62,10 @@ public class InputFeedbackHandler {
 		String[] days = {"mon", "tue", "wed", "thurs", "fri", "sat", "sun", "monday", "tueday", "wednesday", "thursday", "friday", "saturday", "sunday"};
         String input = tpInput.getText();
 
-        StyleConstants.setForeground(defaultSet, normalTextColour);
+        StyleConstants.setForeground(defaultSet, NORMAL_FONT_COLOUR);
         tpInput.getStyledDocument().setCharacterAttributes(0, input.length(), defaultSet, true);
 
-        StyleConstants.setForeground(customSet, highlightedTextColour);
+        StyleConstants.setForeground(customSet, HIGHLIGHTED_FONT_COLOUR);
 
         if (!input.isEmpty()) {
         	taMessage.setText(null);
