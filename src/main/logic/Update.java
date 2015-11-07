@@ -22,12 +22,12 @@ import main.storage.Storage;
  *
  */
 public class Update extends Command {
+	private static Update update = null;
 	private static Parser parser = null;
 	private static Storage storage = null;
 	private static VersionControl vControl = null;
 	private static final Logger logger = Logger.getLogger(Update.class.getName());
 	private static final boolean DEBUG = true;
-	private static Update update = null;
 
 	private Update() {
 		parser = Parser.getInstance();

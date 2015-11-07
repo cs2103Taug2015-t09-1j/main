@@ -68,23 +68,15 @@ public class ChangeStatus extends Command {
 					ids.add(t.getTaskID());
 					oldStatuses.add(oldStatus);
 				}
-
-				if (DEBUG) {
-					System.out.print(taskIDs.get(i));
-					System.out.print(" | ");
-				}
 			}
 		}
-
 		if (cnt > 0) {
 			storage.saveAllTask();
 			message = String.format("%d %s been marked as %s ", cnt, cnt > 1 ? "tasks have" : "task has", newStatus ? "completed" : "incompleted");
 			taskType = EnumTypes.TASK_TYPE.ALL;
 			vControl.addNewData(new VersionModel.ChangeStatusModel(ids, oldStatuses, newStatus));
-
 			return true;
 		}
-
 
 		message = "Invalid Task IDs. Please try again.";
 		taskType = EnumTypes.TASK_TYPE.INVALID;

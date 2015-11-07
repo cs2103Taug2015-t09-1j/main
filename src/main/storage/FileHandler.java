@@ -53,6 +53,7 @@ public class FileHandler {
 		System.out.println(result.toString());
 		return result.toString();
 	}
+	
 	public static void writeToFile(String fileName, String data) {
 		FileWriter fw = null;
 		 

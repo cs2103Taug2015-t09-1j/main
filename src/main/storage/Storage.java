@@ -21,17 +21,20 @@ import main.model.taskModels.Todo;
 //@@author Hiep
 public class Storage {
 
+	// file name and folder name for storing data
 	private static String TODO_FILE = "todo.txt";
 	private static String EVENT_FILE = "event.txt";
 	private static String DEADLINE_FILE = "deadline.txt";
 	private static String DATA_FOLDER = "data";
 
+	// file name for storing 
 	private String configFile = "config.txt";
 	private String storeDir;
 	private String todoFile;
 	private String deadlineFile;
 	private String eventFile;
 
+	// Lists for storing tasks during the runtime
 	private List<Task> todos = new ArrayList<>();
 	private List<Task> events = new ArrayList<>();
 	private List<Task> deadlines = new ArrayList<>();
@@ -96,14 +99,6 @@ public class Storage {
 		initTasks();
 		initTaskId();
 	}
-
-	/*private int getMaxId(List<Task> tasks) {
-		int res = 0;
-		for (Task task : tasks) {
-			res = Math.max(task.getTaskID(), res);
-		}
-		return res;
-	}*/
 
 	public boolean addTask(Task task) {
 		task = task.clone();
@@ -175,6 +170,11 @@ public class Storage {
 		return null;
 	}
 
+	/**
+	 * 
+	 * @param categories
+	 * @return all task which satisfies all category in list categories
+	 */
 	public List<Integer> getIdByCategory(List<CATEGORY> categories) {
 		List<Integer> ids = new ArrayList<>();
 		for (Task todo: todos) if (TaskChecker.isSatisfied(categories, todo)) {
@@ -189,6 +189,11 @@ public class Storage {
 		return ids;
 	}
 
+	/**
+	 * 
+	 * @param id is index of task
+	 * @return task (same reference) with index id
+	 */
 	private Task getRealTaskById(int id) {
 		for (Task event:events) if (event.getTaskID() == id){
 			return event;
@@ -213,12 +218,20 @@ public class Storage {
 		return false;
 	}
 
+	/**
+	 * save all current data in memory to disk
+	 */
 	public void saveAllTask() {
 		FileHandler.writeToFile(todoFile, DataParser.serialize(todos, TODO));
 		FileHandler.writeToFile(eventFile, DataParser.serialize(events, EVENT));
 		FileHandler.writeToFile(deadlineFile, DataParser.serialize(deadlines, DEADLINE));
 	}
 
+	/**
+	 * 
+	 * @param type 
+	 * save current task of "type" in memory to disk 
+	 */
 	public void saveTaskType(TASK_TYPE type) {
 		switch (type) {
 		case TODO:
@@ -235,33 +248,12 @@ public class Storage {
 		}
 	}
 
-	/**
-	 * @return the storeDir
-	 */
 	public String getStoreDir() {
 		return storeDir;
 	}
-
-	/**
-	 * @param storeDir the storeDir to set
-	 */
+	
 	public void setStoreDir(String storeDir) {
 		initStoreDir(storeDir);
 		saveAllTask();
-	}
-
-	public void importData(String dataDir, boolean isReplace) {
-		List<Task> importedTodos = DataParser.deserialize(FileHandler.readFromFile(dataDir + "/" + TODO_FILE), TODO);
-		List<Task> importedEvents = DataParser.deserialize(FileHandler.readFromFile(dataDir + "/" + EVENT_FILE), EVENT);
-		List<Task> importedDeadlines = DataParser.deserialize(FileHandler.readFromFile(dataDir + "/" + DEADLINE_FILE), DEADLINE);
-		if (isReplace) {
-			todos = importedTodos;
-			events = importedEvents;
-			deadlines = importedDeadlines;
-		} else {
-			todos.addAll(importedTodos);
-			events.addAll(importedEvents);
-			deadlines.addAll(importedDeadlines);
-		}
 	}
 }

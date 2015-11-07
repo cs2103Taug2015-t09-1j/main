@@ -12,7 +12,6 @@ import java.util.Date;
 import java.util.List;
 
 import main.model.EnumTypes;
-import main.model.EnumTypes.PARAM_TYPE;
 import main.model.EnumTypes.TASK_TYPE;
 import main.storage.Storage;
 
@@ -55,103 +54,11 @@ public class Display extends Command {
 		List<Task> todos = new ArrayList<>();
 
 		if (obj.getParamType() != null && obj.getParamType() == EnumTypes.PARAM_TYPE.CATEGORY) {
-			List<Integer> ids = storage.getIdByCategory(obj.getObjects());
-			for (int id : ids) {
-				Task task = storage.getTaskByID(id);
-				if (task != null) {
-					switch (task.getType()) {
-					case EVENT:
-						events.add(task);
-						break;
-					case DEADLINE:
-						deadlines.add(task);
-						break;
-					case TODO:
-						todos.add(task);
-						break;
-					}
-
-				}
-			}
-			message = "All " + ids.size() + " tasks are displayed.";
+			displayByCategories(obj, todos, events, deadlines);
 		} else {
-			Date fromDate, toDate;
-			switch (obj.getCommandType()) {
-			case DISPLAY_ON:
-				message = "Displaying all tasks on ";
-				for (int i = 0; i < obj.getObjects().size(); i++) {
-					Date checkDate = (Date) obj.getObjects().get(i);
-					message += new SimpleDateFormat("EEE, dd MMM yyyy").format(checkDate) + ((i < obj.getObjects().size()-1) ? ", " : "");
-					for (Task task : tasks) {
-						switch (task.getType()) {
-						case EVENT:
-							if (isOn(checkDate, ((Event) task).getFromDate())
-									|| isOn(checkDate, ((Event) task).getToDate())) {
-								events.add(task);
-							}
-							break;
-						case DEADLINE:
-							if (isOn(checkDate, ((Deadline) task).getDate())) {
-								deadlines.add(task);
-							}
-							break;
-						default:
-							break;
-						}
-					}
-				}
-				message += ".";
-				break;
-			case DISPLAY_ON_BETWEEN:
-				fromDate = (Date) obj.getObjects().get(0);
-				toDate = (Date) obj.getObjects().get(1);
-				message = "Displaying all tasks between " + new SimpleDateFormat("EEE, dd MMM yyyy").format(fromDate) + " and " + new SimpleDateFormat("EEE, dd MMM yyyy").format(toDate) + ".";
-				for (Task task : tasks) {
-					switch (task.getType()) {
-					case EVENT:
-						if (isOnBetween(fromDate, toDate, ((Event) task).getFromDate()) || isBetween(fromDate, toDate, ((Event) task).getToDate())) {
-							events.add(task);
-						}
-						break;
-					case DEADLINE:
-						if (isOnBetween(fromDate, toDate, ((Deadline) task).getDate())) {
-							deadlines.add(task);
-						}
-						break;
-					default:
-						break;
-					}
-				}
-				break;
-			case DISPLAY_BETWEEN:
-				fromDate = (Date) obj.getObjects().get(0);
-				toDate = (Date) obj.getObjects().get(1);
-				message = "Displaying all tasks between " + new SimpleDateFormat("EEE, dd MMM yyyy, h:mm a").format(fromDate) + " and " + new SimpleDateFormat("EEE, dd MMM yyyy, h:mm a").format(toDate) + ".";
-				for (Task task : tasks) {
-					switch (task.getType()) {
-					case EVENT:
-						if (isBetween(fromDate, toDate, ((Event) task).getFromDate()) || isBetween(fromDate, toDate, ((Event) task).getToDate())) {
-							events.add(task);
-						}
-						break;
-					case DEADLINE:
-						if (isBetween(fromDate, toDate, ((Deadline) task).getDate())) {
-							deadlines.add(task);
-						}
-						break;
-					default:
-						break;
-					}
-				}
-				break;
-			case INVALID:
-				message = "Invalid parameters for display command.";
-				return null;
-			default:
-				message = "No matching tasks found.";
+			if (!displayByTime(obj, tasks, todos, events, deadlines)) {
 				return null;
 			}
-			todos = storage.getAllTask(TASK_TYPE.TODO);
 		}
 
 		result.add(deadlines);
@@ -159,6 +66,110 @@ public class Display extends Command {
 		result.add(todos);
 
 		return result;
+	}
+
+	public void displayByCategories(ParsedObject obj, List<Task> todos, List<Task> events, List<Task> deadlines) {
+		List<Integer> ids = storage.getIdByCategory(obj.getObjects());
+		for (int id : ids) {
+			Task task = storage.getTaskByID(id);
+			if (task != null) {
+				switch (task.getType()) {
+				case EVENT:
+					events.add(task);
+					break;
+				case DEADLINE:
+					deadlines.add(task);
+					break;
+				case TODO:
+					todos.add(task);
+					break;
+				}
+
+			}
+		}
+		message = "Tasks are displayed.";
+	}
+
+	public boolean displayByTime(ParsedObject obj, List<Task> tasks, List<Task> todos, List<Task> events, List<Task> deadlines) {
+		Date fromDate, toDate;
+		switch (obj.getCommandType()) {
+		case DISPLAY_ON:
+			message = "Displaying all tasks on ";
+			for (int i = 0; i < obj.getObjects().size(); i++) {
+				Date checkDate = (Date) obj.getObjects().get(i);
+				message += new SimpleDateFormat("EEE, dd MMM yyyy").format(checkDate) + ((i < obj.getObjects().size()-1) ? ", " : "");
+
+				for (Task task : tasks) {
+					switch (task.getType()) {
+					case EVENT:
+						if (isOn(checkDate, ((Event) task).getFromDate())
+								|| isOn(checkDate, ((Event) task).getToDate())) {
+							events.add(task);
+						}
+						break;
+					case DEADLINE:
+						if (isOn(checkDate, ((Deadline) task).getDate())) {
+							deadlines.add(task);
+						}
+						break;
+					default:
+						break;
+					}
+				}
+			}
+			message += ".";
+			break;
+		case DISPLAY_ON_BETWEEN:
+			fromDate = (Date) obj.getObjects().get(0);
+			toDate = (Date) obj.getObjects().get(1);
+			message = "Displaying all tasks between " + new SimpleDateFormat("EEE, dd MMM yyyy").format(fromDate) + " and " + new SimpleDateFormat("EEE, dd MMM yyyy").format(toDate) + ".";
+			for (Task task : tasks) {
+				switch (task.getType()) {
+				case EVENT:
+					if (isOnBetween(fromDate, toDate, ((Event) task).getFromDate()) || isBetween(fromDate, toDate, ((Event) task).getToDate())) {
+						events.add(task);
+					}
+					break;
+				case DEADLINE:
+					if (isOnBetween(fromDate, toDate, ((Deadline) task).getDate())) {
+						deadlines.add(task);
+					}
+					break;
+				default:
+					break;
+				}
+			}
+			break;
+		case DISPLAY_BETWEEN:
+			fromDate = (Date) obj.getObjects().get(0);
+			toDate = (Date) obj.getObjects().get(1);
+			message = "Displaying all tasks between " + new SimpleDateFormat("EEE, dd MMM yyyy, h:mm a").format(fromDate) + " and " + new SimpleDateFormat("EEE, dd MMM yyyy, h:mm a").format(toDate) + ".";
+			for (Task task : tasks) {
+				switch (task.getType()) {
+				case EVENT:
+					if (isBetween(fromDate, toDate, ((Event) task).getFromDate()) || isBetween(fromDate, toDate, ((Event) task).getToDate())) {
+						events.add(task);
+					}
+					break;
+				case DEADLINE:
+					if (isBetween(fromDate, toDate, ((Deadline) task).getDate())) {
+						deadlines.add(task);
+					}
+					break;
+				default:
+					break;
+				}
+			}
+			break;
+		case INVALID:
+			message = "Invalid parameters for display command.";
+			return false;
+		default:
+			message = "No matching tasks found.";
+			return false;
+		}
+		todos = storage.getAllTask(TASK_TYPE.TODO);
+		return true;
 	}
 
 	private boolean isOnBetween(Date left, Date right, Date cur) {

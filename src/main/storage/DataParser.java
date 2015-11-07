@@ -29,6 +29,10 @@ public class DataParser {
         return gson;
 	}
 	
+	/**
+	 *
+	 * @return Type of the task type "type"
+	 */
 	public static Type getListType(TASK_TYPE type) {
 		switch (type) {
 			case DEADLINE: return new TypeToken<List<Deadline>>() {}.getType();
@@ -37,7 +41,12 @@ public class DataParser {
 			default: return null;
 		}
 	}
-	
+	/**
+	 * 
+	 * @param tasks
+	 * @param type
+	 * @return convert list tasks of type "type" into String of Json format 
+	 */
 	public static String serialize(List<Task> tasks, TASK_TYPE type) {
 		Gson gson = getGson();
 		Type listType = getListType(type);
@@ -47,6 +56,12 @@ public class DataParser {
 		return gson.toJson(tasks, listType);
 	}
 	
+	/**
+	 * 
+	 * @param data
+	 * @param type
+	 * @return list of tasks from String "data" of Json format 
+	 */
 	public static List<Task> deserialize(String data, TASK_TYPE type) {
 		Gson gson = getGson();
 		Type listType = getListType(type);

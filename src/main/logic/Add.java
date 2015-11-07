@@ -1,19 +1,8 @@
 package main.logic;
 
-import java.io.BufferedOutputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.logging.FileHandler;
-import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import com.sun.corba.se.impl.util.Version;
 
 import main.model.EnumTypes;
 import main.model.ParsedObject;
@@ -72,6 +61,7 @@ public class Add extends Command {
 					if (DEBUG) {
 						logger.log(Level.FINE, "Event Added: {" + sEvt.getTaskID() + ", " + sEvt.getTaskDesc() + ", " + sEvt.getFromDate() + ", " + sEvt.getToDate() + "}");
 					}
+
 					return true;
 				case DOUBLE_DATE_EVENT:
 					Event dEvt = (Event)tasks.get(0);
@@ -92,6 +82,7 @@ public class Add extends Command {
 					if (DEBUG) {
 						logger.log(Level.FINE, "Todo Added: {" + tt.getTaskID() + ", " + tt.getTaskDesc() + "}");
 					}
+
 					return true;
 				case DEADLINE:
 					Deadline dt = (Deadline)tasks.get(0);
@@ -102,6 +93,7 @@ public class Add extends Command {
 					if (DEBUG) {
 						logger.log(Level.FINE, "Deadline Added: {" + dt.getTaskID() + ", " + dt.getTaskDesc() + ", " + dt.getDate() + "}");
 					}
+
 					return true;
 				default:
 					// default case handled outside
@@ -114,20 +106,20 @@ public class Add extends Command {
 			logger.log(Level.SEVERE, "Add Command Failed: " + obj);
 		}
 
+		taskType = EnumTypes.TASK_TYPE.INVALID;
+		message = "Add command has failed.";
+
 		return false;
 	}
 
-	// @@author Hiep
 	public boolean undo(Task task) {
 		return storage.delete(task.getTaskID());
 	}
 
-	// @@author Hiep
 	public boolean redo(Task task) {
 		return storage.addTask(task);
 	}
 
-	// @@author Hiep
 	private void addNewTask(Task task) {
 		storage.addTask(task);
 		storage.saveTaskType(taskType);

@@ -34,7 +34,7 @@ public class ChangeDirectory extends JFrame {
 	    if (dirChooser.showOpenDialog(frame) == JFileChooser.APPROVE_OPTION) {
 	    	storage.setStoreDir(dirChooser.getSelectedFile().getPath());
 	    }
-
+	    
 	    try {
 	    	this.dispose();
 	    } catch (Exception e) {

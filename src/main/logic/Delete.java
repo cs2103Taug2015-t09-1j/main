@@ -11,10 +11,7 @@ import java.util.logging.Logger;
 import main.model.EnumTypes;
 import main.model.ParsedObject;
 import main.model.VersionModel;
-import main.model.taskModels.Deadline;
-import main.model.taskModels.Event;
 import main.model.taskModels.Task;
-import main.model.taskModels.Todo;
 import main.storage.LogFileHandler;
 import main.storage.Storage;
 
@@ -28,7 +25,6 @@ public class Delete extends Command {
 	private static VersionControl vControl = null;
 	private static final Logger logger = Logger.getLogger(Delete.class.getName());
 	private static final boolean DEBUG = true;
-
 
 	private Delete() {
 		storage = Storage.getInstance();
@@ -81,14 +77,6 @@ public class Delete extends Command {
 				return false;
 			}
 
-			if (DEBUG) {
-				String debugMsg = "Tasks deleted successfully: {";
-				for (Task t : deletedTasks) {
-					debugMsg += t.getTaskID() + " ";
-				}
-				logger.log(Level.FINE, "Tasks deleted successfully: {" + debugMsg + "}");
-			}
-
 			storage.saveAllTask();
 			vControl.addNewData(new VersionModel.DeleteModel(deletedTasks));
 			taskType = EnumTypes.TASK_TYPE.ALL;
@@ -106,7 +94,6 @@ public class Delete extends Command {
 		return false;
 	}
 
-	// @@author Hiep
 	public boolean undo(List<Task> tasks) {
 		for (Task task : tasks) {
 			storage.addTask(task);
@@ -114,7 +101,6 @@ public class Delete extends Command {
 		return true;
 	}
 
-	// @@author Hiep
 	public boolean redo(List<Task> tasks) {
 		for (Task task : tasks) {
 			storage.delete(task.getTaskID());
