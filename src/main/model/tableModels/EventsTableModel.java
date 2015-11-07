@@ -1,6 +1,3 @@
-/**
- *
- */
 package main.model.tableModels;
 
 import java.util.ArrayList;
@@ -19,30 +16,31 @@ import main.ui.MainGUI;
  * @@author Dalton
  *
  */
+@SuppressWarnings("serial")
 public class EventsTableModel extends AbstractTableModel {
-	private static EventsTableModel etm = EventsTableModel.getInstance();
-	private final String[] columnNames = { "ID", "Start Date (2)", "End Date (3)", "Task Description (4)", "Done" };
-	private final Class<?>[] columnTypes = { Integer.class, Date.class, Date.class, String.class, Boolean.class };
-	private List<Task> events = new ArrayList<>();
-	private MainGUI mainGui;
+	private static EventsTableModel etm = null;
+	private static MainGUI mainGUI = null;
+	private List<Task> events = null;
+	private final String[] columnNames = {"ID", "Start Date (2)", "End Date (3)", "Task Description (4)", "Done"};
+	private final Class<?>[] columnTypes = {Integer.class, Date.class, Date.class, String.class, Boolean.class};
 
-	private EventsTableModel() {
+	private EventsTableModel(MainGUI ui) {
 		super();
+		mainGUI = ui;
+		events = new ArrayList<Task>();
 	}
 
-	public void setTasks(List<Task> tasks) {
-		this.events = tasks;
-	}
-
-	public static EventsTableModel getInstance() {
+	public static EventsTableModel getInstance(MainGUI ui) {
 		if (etm == null) {
-			etm = new EventsTableModel();
+			assert ui != null;
+			etm = new EventsTableModel(ui);
 		}
 		return etm;
 	}
 
-	public void setMainGui(MainGUI mainGui) {
-		this.mainGui = mainGui;
+	public void setTasks(List<Task> tasks) {
+		assert tasks != null;
+		events = tasks;
 	}
 
 	public int getColumnCount() {
@@ -78,29 +76,25 @@ public class EventsTableModel extends AbstractTableModel {
 
 	public void setValueAt(Object value, int row, int col) {
 		Event evt = (Event)events.get(row);
-		Boolean shouldProcess = false;
-		String fakeCommand = "update " + evt.getTaskID() + " " + (col + 1) + " ";
+		String simulatedCommand = "update " + evt.getTaskID() + " " + (col + 1) + " ";
 		switch (col) {
 			case 1:
-				shouldProcess = true;
-				fakeCommand = fakeCommand + (Date)value;
+				simulatedCommand += (Date)value;
 				break;
 			case 2:
-				shouldProcess = true;
-				fakeCommand = fakeCommand + (Date)value;
+				simulatedCommand += (Date)value;
 				break;
 			case 3:
-				shouldProcess = true;
-				fakeCommand = fakeCommand + (String)value;
+				simulatedCommand += (String)value;
 				break;
 			case 4:
-				shouldProcess = true;
-				fakeCommand = ((Boolean)value ?  "done" : "undone") + " " + evt.getTaskID();
+				simulatedCommand = ((Boolean)value ?  "done" : "undone") + " " + evt.getTaskID();
 				break;
+			default:
+				// impossible case
 		}
-		if (shouldProcess && mainGui != null) {
-			mainGui.fakeInputComeIn(fakeCommand);
-		}
+
+		mainGUI.sendUserInput(simulatedCommand);
     }
 
 	public Object getValueAt(int row, int col) {
@@ -111,13 +105,15 @@ public class EventsTableModel extends AbstractTableModel {
 			case 1:
 				return evt.getFromDate();
 			case 2:
-				//return (evt.getFromDate() == evt.getToDate()) ? null : evt.getToDate();
 				return evt.getToDate();
 			case 3:
 				return evt.getTaskDesc();
 			case 4:
 				return evt.isDone();
+			default:
+				// impossible case
 		}
+
 		return new String();
 	}
 }

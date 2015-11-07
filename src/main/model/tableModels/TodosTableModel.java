@@ -1,6 +1,3 @@
-/**
- *
- */
 package main.model.tableModels;
 
 import java.util.ArrayList;
@@ -19,30 +16,31 @@ import main.ui.MainGUI;
  * @@author Dalton
  *
  */
+@SuppressWarnings("serial")
 public class TodosTableModel extends AbstractTableModel {
-	private static TodosTableModel ttm = TodosTableModel.getInstance();
+	private static TodosTableModel ttm = null;
+	private static MainGUI mainGUI = null;
+	private List<Task> todos = null;
 	private final String[] columnNames = { "ID", "Task Description (2)", "Done" };
 	private final Class<?>[] columnTypes = { Integer.class, String.class, Boolean.class };
-	private List<Task> todos = new ArrayList<>();
-	private MainGUI mainGui;
 
-	private TodosTableModel() {
+	private TodosTableModel(MainGUI ui) {
 		super();
+		mainGUI = ui;
+		todos = new ArrayList<Task>();
 	}
 
-	public void setTasks(List<Task> tasks) {
-		this.todos = tasks;
-	}
-
-	public static TodosTableModel getInstance() {
+	public static TodosTableModel getInstance(MainGUI ui) {
 		if (ttm == null) {
-			ttm = new TodosTableModel();
+			assert ui != null;
+			ttm = new TodosTableModel(ui);
 		}
 		return ttm;
 	}
 
-	public void setMainGui(MainGUI mainGui) {
-		this.mainGui = mainGui;
+	public void setTasks(List<Task> tasks) {
+		assert tasks != null;
+		todos = tasks;
 	}
 
 	public int getColumnCount() {
@@ -53,7 +51,7 @@ public class TodosTableModel extends AbstractTableModel {
 		return columnNames[col];
 	}
 
-    public Class getColumnClass(int col) {
+    public Class<?> getColumnClass(int col) {
 		return columnTypes[col];
 	}
 
@@ -74,22 +72,19 @@ public class TodosTableModel extends AbstractTableModel {
 
 	public void setValueAt(Object value, int row, int col) {
 		Todo t = (Todo)todos.get(row);
-		Boolean shouldProcess = false;
-		String fakeCommand = "update " + t.getTaskID() + " " + (col + 1) + " ";
+		String simulatedCommand = "update " + t.getTaskID() + " " + (col + 1) + " ";
 		switch (col) {
 			case 1:
-				shouldProcess = true;
-				fakeCommand = fakeCommand + (String)value;
+				simulatedCommand = simulatedCommand + (String)value;
 				break;
 			case 2:
-				shouldProcess = true;
-				fakeCommand = ((Boolean)value ?  "done" : "undone") + " " + t.getTaskID();
+				simulatedCommand = ((Boolean)value ?  "done" : "undone") + " " + t.getTaskID();
 				break;
-		}
-		if (shouldProcess && mainGui != null) {
-			mainGui.fakeInputComeIn(fakeCommand);
+			default:
+				// impossible case
 		}
 
+		mainGUI.sendUserInput(simulatedCommand);
     }
 
 	public Object getValueAt(int row, int col) {
@@ -101,6 +96,8 @@ public class TodosTableModel extends AbstractTableModel {
 				return t.getTaskDesc();
 			case 2:
 				return t.isDone();
+			default:
+				// impossible case
 		}
 
 		return new String();
