@@ -10,6 +10,13 @@ import main.model.taskModels.Event;
 import main.model.taskModels.Task;
 
 public class TaskChecker {
+	
+	/**
+	 * 
+	 * @param categories
+	 * @param task
+	 * @return is task satisfied all the categories or not
+	 */
 	public static boolean isSatisfied(List<CATEGORY> categories, Task task) {
 		Date curDate = new Date();
 		for (CATEGORY category: categories) {
@@ -29,7 +36,7 @@ public class TaskChecker {
 			case EXPIRED:
 				switch (task.getType()) {
 				case TODO: 
-					break;
+					return false;
 				case EVENT:
 					if (((Event)task).getToDate().compareTo(curDate) >= 0) {
 						return false;

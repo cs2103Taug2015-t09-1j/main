@@ -29,8 +29,6 @@ public class Add extends Command {
 	private static final Parser parser = Parser.getInstance();
 	private static final Storage storage = Storage.getInstance();
 	private static final VersionControl vControl = VersionControl.getInstance();
-	private static final Logger logger = Logger.getLogger(Add.class.getName());
-	private static final boolean DEBUG = true;
 	private static Add add = null;
 
 	private Add() {}
@@ -45,10 +43,6 @@ public class Add extends Command {
 	@Override
 	public boolean execute(ParsedObject obj) {
 		assert obj != null;
-		if (DEBUG) {
-			System.out.println(obj.getCommandType());
-			System.out.println(obj.getTaskType());
-		}
 		ArrayList<Task> tasks = obj.getObjects();
 		if (!tasks.isEmpty()) {
 			switch (obj.getTaskType()) {
@@ -56,16 +50,10 @@ public class Add extends Command {
 					Event sEvt = (Event)tasks.get(0);
 					storage.addTask(sEvt);
 					storage.saveTaskType(EnumTypes.TASK_TYPE.EVENT);
-
 					addNewTask(sEvt);
-
 					taskType = EnumTypes.TASK_TYPE.EVENT;
 					message = "\"" + sEvt.getTaskDesc() + "\" has been successfully added as an Event on " + parser.formatDate(sEvt.getFromDate(), "EEE, d MMM yyyy") + " at " + parser.formatDate(sEvt.getFromDate(), "h:mm a") + ".";
 
-					if (DEBUG) {
-						logger.log(Level.FINE, sEvt.getTaskID() + ", " + sEvt.getTaskDesc() + ", " + sEvt.getFromDate() + ", " + sEvt.getToDate());
-						System.out.println(sEvt.getTaskID() + ", " + sEvt.getTaskDesc() + ", " + sEvt.getFromDate() + ", " + sEvt.getToDate());
-					}
 					return true;
 				case DOUBLE_DATE_EVENT:
 					Event dEvt = (Event)tasks.get(0);
@@ -77,25 +65,15 @@ public class Add extends Command {
 					taskType = EnumTypes.TASK_TYPE.EVENT;
 					message = "\"" + dEvt.getTaskDesc() + "\" has been successfully added as an Event from " + parser.formatDate(dEvt.getFromDate(), "EEE, d MMM yyyy h:mm a") + " to " + parser.formatDate(dEvt.getToDate(), "EEE, d MMM yyyy h:mm a") + ".";
 
-					if (DEBUG) {
-						logger.log(Level.FINE, dEvt.getTaskID() + ", " + dEvt.getTaskDesc() + ", " + dEvt.getFromDate() + ", " + dEvt.getToDate());
-						System.out.println(dEvt.getTaskID() + ", " + dEvt.getTaskDesc() + ", " + dEvt.getFromDate() + ", " + dEvt.getToDate());
-					}
 					return true;
 				case TODO:
 					Todo flt = (Todo)tasks.get(0);
 					storage.addTask(flt);
 					storage.saveTaskType(EnumTypes.TASK_TYPE.TODO);
-
 					addNewTask(flt);
 
 					taskType = EnumTypes.TASK_TYPE.TODO;
 					message = "\"" + flt.getTaskDesc() + "\" has been successfully added as a Todo task.";
-
-					if (DEBUG) {
-						logger.log(Level.FINE, flt.getTaskID() + ", " + flt.getTaskDesc());
-						System.out.println(flt.getTaskID() + ", " + flt.getTaskDesc());
-					}
 					return true;
 				case DEADLINE:
 					Deadline dt = (Deadline)tasks.get(0);
@@ -108,10 +86,6 @@ public class Add extends Command {
 					Date d = dt.getDate();
 					message = "\"" + dt.getTaskDesc() + "\" has been successfully added as a Deadline task that must be completed by " + parser.formatDate(d, "h:mm aa") + " on " + parser.formatDate(d, "EEE, d MMM yyyy") + ".";
 
-					if (DEBUG) {
-						logger.log(Level.FINE, dt.getTaskID() + ", " + dt.getTaskDesc() + ", " + dt.getDate());
-						System.out.println(dt.getTaskID() + ", " + dt.getTaskDesc() + ", " + dt.getDate());
-					}
 					return true;
 				default:
 					taskType = EnumTypes.TASK_TYPE.INVALID;
@@ -119,26 +93,20 @@ public class Add extends Command {
 					return false;
 			}
 		}
-		if (DEBUG) {
-			System.out.println();
-		}
-
+		
 		taskType = EnumTypes.TASK_TYPE.INVALID;
 		message = "Add command has failed.";
 		return false;
 	}
 
-	// @@author Hiep
 	public boolean undo(Task task) {
 		return storage.delete(task.getTaskID());
 	}
 
-	// @@author Hiep
 	public boolean redo(Task task) {
 		return storage.addTask(task);
 	}
-
-	// @@author Hiep
+	
 	private void addNewTask(Task task) {
 		vControl.addNewData(new VersionModel.AddModel(task));
 	}

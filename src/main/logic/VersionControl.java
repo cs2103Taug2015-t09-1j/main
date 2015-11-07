@@ -8,19 +8,21 @@ import main.model.ParsedObject;
 import main.model.VersionModel;
 import main.storage.Storage;
 
-//@@author Hiep
+/**
+ * 
+ * @author Hiep
+ * This class is used to manipulate undo/redo command
+ */
 public class VersionControl extends Command {
-
-	private int curPosition = -1;
+	
+	// store necessary data for each function for undo/redo function 
 	private List<VersionModel> vList = new ArrayList<>();
+	
+	// store current position in vList which user is inside
+	private int curPosition = -1;
 
 	private static VersionControl instance = null;
 
-	/*private static final Add add = Add.getInstance();
-	private static final Delete delete = Delete.getInstance();
-	private static final Update update = Update.getInstance();
-	private static final ChangeStatus changeStatus = ChangeStatus.getInstance();
-*/
 	private VersionControl() {
 	}
 

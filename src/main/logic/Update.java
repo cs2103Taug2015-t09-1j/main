@@ -27,8 +27,6 @@ public class Update extends Command {
 	private static final Parser parser = Parser.getInstance();
 	private static final Storage storage = Storage.getInstance();
 	private static final VersionControl vControl = VersionControl.getInstance();
-	private static final Logger logger = Logger.getLogger(Update.class.getName());
-	private static final boolean DEBUG = true;
 	private static Update update = null;
 
 	private Update() {}

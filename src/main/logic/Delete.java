@@ -22,9 +22,7 @@ import main.storage.Storage;
  */
 public class Delete extends Command {
 	private static final Storage storage = Storage.getInstance();
-	private static final Logger logger = Logger.getLogger(Delete.class.getName());
 	private static final VersionControl vControl = VersionControl.getInstance();
-	private static final boolean DEBUG = true;
 	private static Delete delete = null;
 
 	private Delete() {}
@@ -39,11 +37,6 @@ public class Delete extends Command {
 	@Override
 	public boolean execute(ParsedObject obj) {
 		assert obj != null;
-
-		if (DEBUG) {
-			System.out.println(obj.getCommandType());
-			System.out.println(obj.getTaskType());
-		}
 
 		int cnt = 0;
 		List<Integer> taskIDs = new ArrayList<Integer>();
@@ -70,18 +63,8 @@ public class Delete extends Command {
 					if (storage.delete(taskIDs.get(i))) {
 						deletedTasks.add(t);
 					}
-
-					if (DEBUG) {
-						System.out.print(taskIDs.get(i));
-						System.out.print(" | ");
-					}
 				}
 			}
-
-			if (DEBUG) {
-				System.out.println();
-			}
-
 			storage.saveAllTask();
 			message = String.format("%d %s been deleted.", cnt, cnt > 1 ? "tasks have" : "task has");
 			taskType = EnumTypes.TASK_TYPE.ALL;
@@ -94,7 +77,6 @@ public class Delete extends Command {
 		}
 	}
 
-	// @@author Hiep
 	public boolean undo(List<Task> tasks) {
 		for (Task task : tasks) {
 			storage.addTask(task);
@@ -102,7 +84,6 @@ public class Delete extends Command {
 		return true;
 	}
 
-	// @@author Hiep
 	public boolean redo(List<Task> tasks) {
 		for (Task task : tasks) {
 			storage.delete(task.getTaskID());
