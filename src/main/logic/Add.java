@@ -126,7 +126,6 @@ public class Add extends Command {
 		vControl.addNewData(new VersionModel.AddModel(task));
 	}
 
-	// @@author Dalton
 	private void setMessage(Task task, EnumTypes.TASK_TYPE specficType) {
 		switch (specficType) {
 			case SINGLE_DATE_EVENT:

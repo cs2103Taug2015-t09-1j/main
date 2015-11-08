@@ -3,6 +3,7 @@
  */
 package main.model.taskModels;
 
+import main.model.EnumTypes;
 import main.model.EnumTypes.TASK_TYPE;
 
 /**

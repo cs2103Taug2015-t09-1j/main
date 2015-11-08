@@ -1,5 +1,7 @@
 package main.model;
 
+import static main.model.EnumTypes.TASK_TYPE.*;
+
 import java.util.ArrayList;
 import java.util.List;
 

@@ -31,7 +31,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
@@ -59,6 +58,7 @@ import main.model.tableModels.DeadlinesTableModel;
 import main.model.tableModels.EventsTableModel;
 import main.model.tableModels.TodosTableModel;
 import main.model.taskModels.Task;
+import javax.swing.JTextArea;
 
 /**
  * @@author Dalton
@@ -81,6 +81,7 @@ public class MainGUI extends Observable implements Observer {
 
 	private static final Logger logger = Logger.getLogger(MainGUI.class.getName());
 	private static InputHistoryHandler history = null;
+	private static InputFeedbackHandler feedback = null;
 	private static EventsTableModel etm = null;
 	private static TodosTableModel ttm = null;
 	private static DeadlinesTableModel dtm = null;
@@ -104,17 +105,16 @@ public class MainGUI extends Observable implements Observer {
 	private static final int LABEL_FONT_SIZE = 15;
 	private static final int TABLE_ROW_HEIGHT = 50;
 
-	private static Color normalTextColour = Color.BLACK;
-	private static Color highlightedTextColour = Color.RED;
-
-	private static String[] themes = {"bernstein.BernsteinLookAndFeel", "noire.NoireLookAndFeel", "smart.SmartLookAndFeel", "mint.MintLookAndFeel", "mcwin.McWinLookAndFeel"};
+	private static final String[] themes = {"bernstein.BernsteinLookAndFeel", "noire.NoireLookAndFeel", "smart.SmartLookAndFeel", "mint.MintLookAndFeel", "mcwin.McWinLookAndFeel"};
 	private static int themeIndex = 0;
+	private static boolean isNormalMode = true;
+	private static boolean isHelpMode = false;
 
 	public static void main(String[] args) {
 		try {
 			UIManager.setLookAndFeel("com.jtattoo.plaf." + themes[themeIndex]);
 		} catch (Throwable e) {
-			logger.log(Level.SEVERE, "LookAndFeel: " + e.toString(), e);
+			logger.log(Level.SEVERE, e.getMessage(), e);
 		}
 
 		EventQueue.invokeLater(new Runnable() {
@@ -124,7 +124,7 @@ public class MainGUI extends Observable implements Observer {
 					mainGUI.sendInstanceToModels();
 					mainGUI.addObserver(Logic.getInstance());
 				} catch (Exception e) {
-					logger.log(Level.SEVERE, "EventQueue Invoke: " + e.toString(), e);
+					logger.log(Level.SEVERE, e.getMessage(), e);
 				}
 			}
 		});
@@ -141,12 +141,12 @@ public class MainGUI extends Observable implements Observer {
 		try {
 			initialise();
 		} catch (Exception e) {
-			logger.log(Level.SEVERE, "MainGui Constructor: " + e.toString(), e);
+			logger.log(Level.SEVERE, e.getMessage(), e);
 		}
 	}
 
 	/**
-	 * Initialize the contents of the frame.
+	 * Initialise the contents of the frame.
 	 */
 	private void initialise() throws Exception {
 		setupMainFrame();
@@ -168,7 +168,8 @@ public class MainGUI extends Observable implements Observer {
 	}
 
 	private void setupInputFeedbackPointers() {
-		InputFeedbackHandler.getInstance().setupPointers(tpUserInput, taStatusMessage);
+		feedback = InputFeedbackHandler.getInstance();
+		feedback.setupPointers(tpUserInput, taStatusMessage);
 	}
 
 	private void setupTableModels() {
@@ -205,48 +206,52 @@ public class MainGUI extends Observable implements Observer {
 		InputMap im = frmTodokoro.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
 		ActionMap am = frmTodokoro.getRootPane().getActionMap();
 
-
-		final GetHelpList demo = new GetHelpList();
+		GetHelpList demo = new GetHelpList();
 		demo.setBounds(768, 0, 240, 600);
 		demo.setVisible(true);
 		frmTodokoro.getContentPane().add(demo);
 		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0), "Help List");
 		am.put("Help List", new AbstractAction() {
-			boolean isSimpleMode = false;
-
 			public void actionPerformed(ActionEvent e) {
-				if (isSimpleMode) {
+				if (isHelpMode) {
 					tpUserInput.requestFocusInWindow();
 					frmTodokoro.setBounds(frmTodokoro.getX(), frmTodokoro.getY(), FRAME_WIDTH, FRAME_HEIGHT);
 				} else {
+					if (!isNormalMode) {
+						tabbedPane.setVisible(true);
+						lblFilter.setVisible(true);
+						tfFilter.setVisible(true);
+						frmTodokoro.setBounds(frmTodokoro.getX(), frmTodokoro.getY(), FRAME_WIDTH, FRAME_HEIGHT);
+						frmTodokoro.setOpacity(FRAME_OPACITY);
+						inputPanel.setBounds(0, 475, INPUT_PANEL_WIDTH, INPUT_PANEL_HEIGHT);
+						isNormalMode = true;
+					}
 					demo.requestListFocus();
 					frmTodokoro.setBounds(frmTodokoro.getX(), frmTodokoro.getY(), FRAME_HELP_LIST_WIDTH, FRAME_HELP_LIST_HEIGHT);
 				}
 
-				isSimpleMode = !isSimpleMode;
-				//GetHelpList.createAndShowGUI(frmTodokoro.getWidth(), 0);
+				isHelpMode = !isHelpMode;
 			}
 		});
 
 		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), "Simple Mode");
 		am.put("Simple Mode", new AbstractAction() {
-			boolean isNormalMode = false;
-
 			public void actionPerformed(ActionEvent e) {
 				if (isNormalMode) {
-					tabbedPane.setVisible(true);
-					lblFilter.setVisible(true);
-					tfFilter.setVisible(true);
-					frmTodokoro.setBounds(frmTodokoro.getX(), frmTodokoro.getY(), FRAME_WIDTH, FRAME_HEIGHT);
-					frmTodokoro.setOpacity(FRAME_OPACITY);
-					inputPanel.setBounds(0, 475, INPUT_PANEL_WIDTH, INPUT_PANEL_HEIGHT);
-				} else {
 					tabbedPane.setVisible(false);
 					lblFilter.setVisible(false);
 					tfFilter.setVisible(false);
 					frmTodokoro.setBounds(frmTodokoro.getX(), frmTodokoro.getY(), FRAME_SIMPLE_MODE_WIDTH, FRAME_SIMPLE_MODE_HEIGHT);
 					frmTodokoro.setOpacity(FRAME_SIMPLE_MODE_OPACITY);
 					inputPanel.setBounds(0, 0, INPUT_PANEL_WIDTH, INPUT_PANEL_HEIGHT);
+					isHelpMode = false;
+				} else {
+					tabbedPane.setVisible(true);
+					lblFilter.setVisible(true);
+					tfFilter.setVisible(true);
+					frmTodokoro.setBounds(frmTodokoro.getX(), frmTodokoro.getY(), FRAME_WIDTH, FRAME_HEIGHT);
+					frmTodokoro.setOpacity(FRAME_OPACITY);
+					inputPanel.setBounds(0, 475, INPUT_PANEL_WIDTH, INPUT_PANEL_HEIGHT);
 				}
 
 				isNormalMode = !isNormalMode;
@@ -270,27 +275,14 @@ public class MainGUI extends Observable implements Observer {
 				}
 				try {
 					UIManager.setLookAndFeel("com.jtattoo.plaf." + themes[themeIndex]);
-					switch (themeIndex) {
-						case 1:
-							normalTextColour = Color.WHITE;
-							highlightedTextColour = Color.ORANGE;
-							break;
-						default:
-							normalTextColour = Color.BLACK;
-							highlightedTextColour = Color.RED;
-					}
 				} catch (ClassNotFoundException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
+					logger.log(Level.SEVERE, e.getActionCommand(), e);
 				} catch (InstantiationException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
+					logger.log(Level.SEVERE, e.getActionCommand(), e);
 				} catch (IllegalAccessException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
+					logger.log(Level.SEVERE, e.getActionCommand(), e);
 				} catch (UnsupportedLookAndFeelException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
+					logger.log(Level.SEVERE, e.getActionCommand(), e);
 				}
 				SwingUtilities.updateComponentTreeUI(frmTodokoro);
 				eventsTable.setRowHeight(TABLE_ROW_HEIGHT);
@@ -446,7 +438,8 @@ public class MainGUI extends Observable implements Observer {
 	private void setupFilterLabel() {
 		lblFilter = new JLabel("Filter:");
 		lblFilter.setHorizontalAlignment(SwingConstants.RIGHT);
-		lblFilter.setFont(new Font("Segoe UI", Font.BOLD, 14));
+		//lblFilter.setFont(new Font("Segoe UI", Font.BOLD, 14));
+		lblFilter.setFont(new Font("Dialog UI", Font.BOLD, 14));
 		lblFilter.setBounds(530, 16, 60, 16);
 		frmTodokoro.getContentPane().add(lblFilter);
 	}
@@ -460,8 +453,10 @@ public class MainGUI extends Observable implements Observer {
 		taStatusMessage.setEditable(false);
 		taStatusMessage.setFocusable(false);
 		taStatusMessage.setBackground(UIManager.getColor("Label.background"));
-		taStatusMessage.setFont(new Font("Segoe UI", Font.BOLD, 14));
-		taStatusMessage.setBorder(new TitledBorder(getCompoundBorder(0, 5, 0, 5), "Status Message", 0, 0, new Font("Segoe UI", Font.BOLD, 14)));
+		//taStatusMessage.setFont(new Font("Segoe UI", Font.BOLD, 14));
+		taStatusMessage.setFont(new Font("Dialog UI", Font.BOLD, 14));
+		//taStatusMessage.setBorder(new TitledBorder(getCompoundBorder(0, 5, 0, 5), "Status Message", 0, 0, new Font("Segoe UI", Font.BOLD, 14)));
+		taStatusMessage.setBorder(new TitledBorder(getCompoundBorder(0, 5, 0, 5), "Status Message", 0, 0, new Font("Dialog UI", Font.BOLD, 14)));
 		inputPanel.add(taStatusMessage);
 	}
 
@@ -643,7 +638,7 @@ public class MainGUI extends Observable implements Observer {
 		table.setFillsViewportHeight(true);
 	}
 
-	public void updateStatusMsg(final String msg) {
+	public void updateStatusMsg(String msg) {
 		SwingUtilities.invokeLater(new Runnable() {
 		    public void run() {
 	        	taStatusMessage.setText(msg);
@@ -655,7 +650,7 @@ public class MainGUI extends Observable implements Observer {
 		setChanged();
 		notifyObservers(new ObserverEvent(ObserverEvent.CHANGE_USER_INPUT_CODE, new ObserverEvent.EInput(command)));
 	}
-	
+
 	@Override
 	public void update(Observable observable, Object event) {
 

@@ -6,6 +6,7 @@ import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
 
+import javafx.beans.Observable;
 import main.model.EnumTypes.TASK_TYPE;
 import main.model.taskModels.Deadline;
 import main.model.taskModels.Task;

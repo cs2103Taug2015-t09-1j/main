@@ -180,12 +180,12 @@ public class Update extends Command {
 	}
 
 	// @@author Hiep
-	public boolean undo(Task oldTask) {
+	public static boolean undo(Task oldTask) {
 		return storage.updateTask(oldTask);
 	}
 
 	// @@author Hiep
-	public boolean redo(Task newTask) {
+	public static boolean redo(Task newTask) {
 		return storage.updateTask(newTask);
 	}
 }

@@ -10,8 +10,11 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.DefaultCellEditor;
+import javax.swing.JComponent;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
@@ -24,6 +27,7 @@ import org.ocpsoft.prettytime.nlp.PrettyTimeParser;
  *
  */
 public class CustomDateCellEditor extends DefaultCellEditor {
+	private static final Logger logger = Logger.getLogger(CustomDateCellEditor.class.getName());
 	private static SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
 	private static PrettyTimeParser parser = new PrettyTimeParser();
 
@@ -40,15 +44,14 @@ public class CustomDateCellEditor extends DefaultCellEditor {
 		try {
 			d = sdf.parse(date);
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.log(Level.SEVERE, e.getMessage(), e);
 		}
 		return d;
 	}
 
 	@Override
 	public Component getTableCellEditorComponent(final JTable table, final Object value, final boolean isSelected, final int row, final int column) {
-		final JTextField tf = ((JTextField)getComponent());
+		JTextField tf = (JTextField)getComponent();
 		tf.setFont(new Font("Segoe UI Semibold", Font.PLAIN, 12));
 		tf.setBorder(new LineBorder(Color.BLACK));
 
@@ -71,7 +74,7 @@ public class CustomDateCellEditor extends DefaultCellEditor {
 
 	@Override
 	public boolean stopCellEditing() {
-		JTextField tf = ((JTextField)getComponent());
+		JTextField tf = (JTextField)getComponent();
 		String value = tf.getText();
 
 		List<Date> dates = parser.parse(value);

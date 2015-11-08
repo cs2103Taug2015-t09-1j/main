@@ -4,6 +4,7 @@
 package main.model.taskModels;
 import java.util.Date;
 
+import main.model.EnumTypes;
 import main.model.EnumTypes.TASK_TYPE;
 
 /**

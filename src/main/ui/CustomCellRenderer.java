@@ -10,10 +10,14 @@ import java.awt.Insets;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.logging.Logger;
 
 import javax.swing.JTable;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.table.TableCellRenderer;
+
+import main.logic.Add;
 
 /**
  * @@author Dalton
@@ -21,6 +25,7 @@ import javax.swing.table.TableCellRenderer;
  */
 @SuppressWarnings("serial")
 public class CustomCellRenderer extends JTextArea implements TableCellRenderer {
+	private static final Logger logger = Logger.getLogger(CustomCellRenderer.class.getName());
 	private static final Color NON_EXPIRED_FONT_COLOR = Color.decode("0x009900");
 	private static final Color EXPIRED_FONT_COLOR = Color.RED;
 
@@ -70,7 +75,7 @@ public class CustomCellRenderer extends JTextArea implements TableCellRenderer {
     	if (System.getProperty("os.name").startsWith("Mac")) {
         	this.setFont(new Font("Segoe UI Semibold", Font.PLAIN, 11));
         } else {
-        	this.setFont(new Font("Segoe UI Semibold", Font.PLAIN, 13));
+        	this.setFont(new Font("Dialog UI", Font.BOLD, 13));
         }
     }
 

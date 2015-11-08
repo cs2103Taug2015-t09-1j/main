@@ -63,8 +63,8 @@ public class Parser {
 											+ "(" + ALL_REGEX + "|" + EXPIRED_REGEX + "|" + NONEXPIRED_REGEX + "|"
 											+ COMPLETED_REGEX + "|" + UNCOMPLETED_REGEX + ")+";
 
-	private final String timeRegexPattern = "(((\\d+\\s+(minutes|min|seconds|sec|hours))|[0-9](am|pm|a.m.|p.m.)?|1[0-2](am|pm|a.m.|p.m.)?)|"
-											+ "(0[0-9]|1[0-9]|2[0-3])\\:?([0-5][0-9]))\\:?([0-5][0-9])?(am|pm|a.m.|p.m.|h|\\shours)?";
+	private final String TIME_REGEX = "(((\\d+\\s+(minutes|min|seconds|sec|hrs|h|hours))|[0-9](am|pm|a.m.|p.m.)?|1[0-2](am|pm|a.m.|p.m.)?)|"
+											+ "(0[0-9]|1[0-9]|2[0-3])\\:?([0-5][0-9]))\\:?([0-5][0-9])?(am|pm|a.m.|p.m.|h|hrs|hours)?";
 
 	private Parser() {
 		ptParser = new PrettyTimeParser();
@@ -147,11 +147,10 @@ public class Parser {
 
 	private String removeCommandWord(String input, String[] commandList) {
 		for(int i = 0; i < commandList.length; i++) {
-			String regexStr = "(?ui)^" + commandList[i] + "\\s*";
 			Pattern pattern = Pattern.compile("(?ui)^" + commandList[i] + "\\s*");
 			Matcher matcher = pattern.matcher(input);
 			if (matcher.find()) {
-				return input.replaceAll(regexStr, "");
+				return input.replaceAll("(?ui)^" + commandList[i] + "\\s*", "");
 			}
 		}
 		return null;
@@ -161,210 +160,84 @@ public class Parser {
 		return new SimpleDateFormat(format).format(d);
 	}
 
+	private void singleDateGroup(List<Date> dates) {
+		List<Date> parsedDates = new ArrayList<Date>();
+		Calendar tempCal = Calendar.getInstance();
+
+		// lunch with john at 1pm tomorrow
+		// lunch in 5 minutes with john
+		// at 1pm tomorrow lunch with john
+		// lunch at 1pm tomorrow with john
+		if (dates.size() == 1) {
+			tempCal.setTime(dates.get(0));
+
+			if (tempCal.compareTo(Calendar.getInstance()) == 0) {
+				setDateTime(tempCal, -1, -1, -1, 23, 59, 0);
+			}
+
+			parsedDates.add(tempCal.getTime());
+		} else {
+			// lunch at 1pm with john tomorrow
+			for (int i = 0; i < dates.size(); i++) {
+				parsedDates.add(dates.get(i));
+			}
+		}
+	}
+
+	public static boolean containsHanScript(String s) {
+	    return s.codePoints().anyMatch(
+	            codepoint ->
+	            Character.UnicodeScript.of(codepoint) == Character.UnicodeScript.HAN);
+	}
+
 	public List<Date> parseDateGroups(String input) {
-		Pattern timePattern = Pattern.compile("(?ui)" + timeRegexPattern);
-		Matcher matcher = Pattern.compile("(?ui)from\\s*" + timeRegexPattern).matcher(input);
+		String[] taskDescWords;
+		boolean isChinese = false;
+		if(ChiToEngUnicodeConverter.isChineseString(input)) {
+			input = ChiToEngUnicodeConverter.convertChineseToEnglishUnicode(input);
+			taskDescWords = getTaskDesc(input).split("\\s+");
+			for (String word : taskDescWords) {
+				input = input.replaceAll("\\s*" + word + "\\s*", " ");
+			}
+			isChinese = true;
+		} else {
+			taskDescWords = getTaskDesc(input).split("\\s+");
+			for (String word : taskDescWords) {
+				input = input.replaceAll("\\s*" + word + "\\s+(?![0-9])", " ");
+			}
+		}
+
+		Matcher matcher = Pattern.compile("(?ui)from\\s*" + TIME_REGEX).matcher(input);
 		if (matcher.find()) {
 			input = input.substring(0, matcher.start()) +  input.substring(matcher.start()+5, input.length());
 		}
 		input = input.replaceAll("until", "till");
-		//input = input.replaceAll("until", "till");
-		//input = input.replaceAll("(?ui)\\d+(?!(pm|am))", "");
+		System.out.println(input);
 		List<DateGroup> dGroups = getDateGroups(input);
 		List<Date> dates = new ArrayList<Date>();
 		Calendar temp1 = Calendar.getInstance();
-		Calendar temp2 = Calendar.getInstance();
-		Calendar temp3 = Calendar.getInstance();
 		DateGroup firstGroup;
-		DateGroup secondGroup;
-		DateGroup thirdGroup;
 		List<Date> firstGroupDates;
-		List<Date> secondGroupDates;
-		List<Date> thirdGroupDates;
-		Matcher matcher1;
-		Matcher matcher2;
-		Matcher matcher3;
 
 		if (dGroups != null) {
-			/*for (int i = 0; i < dGroups.size(); i++) {
-				if (dGroups.get(i).getText().matches("(?ui)\\d+(?!(pm|am))")) {
-					dGroups.remove(i);
+			firstGroup = dGroups.get(0);
+			firstGroupDates = firstGroup.getDates();
+			if (firstGroupDates.size() == 1) {
+				temp1.setTime(firstGroupDates.get(0));
+
+				if (temp1.compareTo(Calendar.getInstance()) == 0) {
+					setDateTime(temp1, -1, -1, -1, 23, 59, 0);
 				}
-			}*/
 
-			switch (dGroups.size()) {
-				case 1:
-					// lunch with john at 1pm tomorrow
-					// lunch in 5 minutes with john
-					firstGroup = dGroups.get(0);
-					firstGroupDates = firstGroup.getDates();
-					matcher1 = timePattern.matcher(firstGroup.getText());
-					if (matcher1.find()) {
-						return firstGroupDates;
-					} else {
-						if (firstGroupDates.size() == 1) {
-							temp1.setTime(firstGroupDates.get(0));
-							setDateTime(temp1, -1, -1, -1, 23, 59, 0);
-							dates.add(temp1.getTime());
-						} else {
-							for (int i = 0; i < firstGroupDates.size(); i++) {
-								dates.add(firstGroupDates.get(i));
-							}
-						}
-					}
-					break;
-				case 2:
-					// at 1pm lunch with john tomorrow
-					// tomorrow lunch with john at 1pm
-					// lunch from 1pm with john to 2pm tomorrow
-					// lunch from 1pm tomorrow with john to 2pm
-					// lunch from 1pm tomorrow with john to 2pm tomorrow
-					// sleep from 1pm to 2pm tomorrow
-					firstGroup = dGroups.get(0);
-					secondGroup = dGroups.get(1);
-					firstGroupDates = firstGroup.getDates();
-					secondGroupDates = secondGroup.getDates();
-
-					matcher1 = timePattern.matcher(firstGroup.getText());
-					matcher2 = timePattern.matcher(secondGroup.getText());
-
-					if (firstGroupDates.size() == 1 && secondGroupDates.size() == 1) {
-						temp1.setTime(firstGroupDates.get(0));
-						temp2.setTime(secondGroupDates.get(0));
-						if (matcher1.find() && !matcher2.find()) {
-							setDateTime(temp1, temp2.get(Calendar.YEAR), temp2.get(Calendar.MONTH), temp2.get(Calendar.DATE), -1, -1, -1);
-							dates.add(temp1.getTime());
-						} else if (!matcher1.find() && matcher2.find()) {
-							setDateTime(temp2, temp1.get(Calendar.YEAR), temp1.get(Calendar.MONTH), temp1.get(Calendar.DATE), -1, -1, -1);
-							dates.add(temp2.getTime());
-						} else {
-							if (temp1.compareTo(temp2) < 0) {
-								dates.add(temp1.getTime());
-								dates.add(temp2.getTime());
-							} else if (temp1.compareTo(temp2) > 0){
-								if (temp1.get(Calendar.HOUR_OF_DAY) < temp2.get(Calendar.HOUR_OF_DAY)) {
-									setDateTime(temp2, temp1.get(Calendar.YEAR), temp1.get(Calendar.MONTH), temp1.get(Calendar.DATE), -1, -1, -1);
-								}
-								dates.add(temp1.getTime());
-								dates.add(temp2.getTime());
-							} else {
-								dates.add(temp1.getTime());
-							}
-						}
-					} else {
-						// lunch from 1 to 2pm with john tomorrow
-						// from 1 to 2pm lunch tomorrow with john
-						if (firstGroupDates.size() == 2 && secondGroupDates.size() == 1) {
-							temp1.setTime(firstGroupDates.get(0));
-							temp2.setTime(firstGroupDates.get(1));
-							temp3.setTime(secondGroupDates.get(0));
-						} else if (firstGroupDates.size() == 1 && secondGroupDates.size() == 2) {
-							// lunch tomorrow with john from 1 to 2pm
-							// from 1pm lunch with john to 2pm tomorrow
-							matcher1 = timePattern.matcher(secondGroup.getText());
-							matcher2 = timePattern.matcher(firstGroup.getText());
-							temp1.setTime(secondGroupDates.get(0));
-							temp2.setTime(secondGroupDates.get(1));
-							temp3.setTime(firstGroupDates.get(0));
-						}
-
-						if (matcher1.find() && !matcher2.find()) {
-							setDateTime(temp1, temp3.get(Calendar.YEAR), temp3.get(Calendar.MONTH), temp3.get(Calendar.DATE), -1, -1, -1);
-							setDateTime(temp2, temp3.get(Calendar.YEAR), temp3.get(Calendar.MONTH), temp3.get(Calendar.DATE), -1, -1, -1);
-
-							if (temp1.compareTo(temp2) < 0) {
-								dates.add(temp1.getTime());
-								dates.add(temp2.getTime());
-							} else if (temp1.compareTo(temp2) > 0){
-								dates.add(temp2.getTime());
-								dates.add(temp1.getTime());
-							} else {
-								dates.add(temp1.getTime());
-							}
-						} else if (!matcher1.find() && matcher2.find()) {
-							setDateTime(temp1, temp3.get(Calendar.YEAR), temp3.get(Calendar.MONTH), temp3.get(Calendar.DATE), -1, -1, -1);
-							setDateTime(temp2, temp3.get(Calendar.YEAR), temp3.get(Calendar.MONTH), temp3.get(Calendar.DATE), -1, -1, -1);
-
-							if (temp1.compareTo(temp2) < 0) {
-								dates.add(temp1.getTime());
-								dates.add(temp2.getTime());
-							} else if (temp1.compareTo(temp2) > 0){
-								dates.add(temp2.getTime());
-								dates.add(temp1.getTime());
-							} else {
-								dates.add(temp1.getTime());
-							}
-						} else {
-							return null;
-						}
-					}
-					break;
-				case 3:
-					// next saturday lunch from 1pm with john to 2pm
-					// 1pm lunch to 2pm with john next saturday
-					// 11-11 sleep from 1pm at home to 2pm
-					firstGroup = dGroups.get(0);
-					secondGroup = dGroups.get(1);
-					thirdGroup = dGroups.get(2);
-					firstGroupDates = firstGroup.getDates();
-					secondGroupDates = secondGroup.getDates();
-					thirdGroupDates = thirdGroup.getDates();
-
-					matcher1 = timePattern.matcher(firstGroup.getText());
-					matcher2 = timePattern.matcher(secondGroup.getText());
-					matcher3 = timePattern.matcher(thirdGroup.getText());
-					temp1.setTime(firstGroupDates.get(0));
-					temp2.setTime(secondGroupDates.get(0));
-					temp3.setTime(thirdGroupDates.get(0));
-
-					if (matcher1.find() && matcher2.find() && !matcher3.find()) {
-						setDateTime(temp1, temp3.get(Calendar.YEAR), temp3.get(Calendar.MONTH), temp3.get(Calendar.DATE), -1, -1, -1);
-						setDateTime(temp2, temp3.get(Calendar.YEAR), temp3.get(Calendar.MONTH), temp3.get(Calendar.DATE), -1, -1, -1);
-
-						if (temp1.compareTo(temp2) < 0) {
-							dates.add(temp1.getTime());
-							dates.add(temp2.getTime());
-						} else if (temp1.compareTo(temp2) > 0){
-							dates.add(temp2.getTime());
-							dates.add(temp1.getTime());
-						} else {
-							dates.add(temp1.getTime());
-						}
-					} else if (matcher1.find() && !matcher2.find() && matcher3.find()) {
-						setDateTime(temp1, temp2.get(Calendar.YEAR), temp2.get(Calendar.MONTH), temp2.get(Calendar.DATE), -1, -1, -1);
-						setDateTime(temp3, temp2.get(Calendar.YEAR), temp2.get(Calendar.MONTH), temp2.get(Calendar.DATE), -1, -1, -1);
-
-						if (temp1.compareTo(temp3) < 0) {
-							dates.add(temp1.getTime());
-							dates.add(temp3.getTime());
-						} else if (temp1.compareTo(temp3) > 0){
-							dates.add(temp3.getTime());
-							dates.add(temp1.getTime());
-						} else {
-							dates.add(temp1.getTime());
-						}
-					} else {
-						setDateTime(temp2, temp1.get(Calendar.YEAR), temp1.get(Calendar.MONTH), temp1.get(Calendar.DATE), -1, -1, -1);
-						setDateTime(temp3, temp1.get(Calendar.YEAR), temp1.get(Calendar.MONTH), temp1.get(Calendar.DATE), -1, -1, -1);
-
-						if (temp2.compareTo(temp3) < 0) {
-							dates.add(temp2.getTime());
-							dates.add(temp3.getTime());
-						} else if (temp2.compareTo(temp3) > 0){
-							dates.add(temp3.getTime());
-							dates.add(temp2.getTime());
-						} else {
-							dates.add(temp2.getTime());
-						}
-					}
-					break;
-				default:
-					return null;
+				dates.add(temp1.getTime());
+			} else {
+				for (int i = 0; i < firstGroupDates.size(); i++) {
+					dates.add(firstGroupDates.get(i));
+				}
 			}
-			return dates;
-		} else {
-			return null;
 		}
+
+		return dates;
 	}
 
 	public List<DateGroup> getDateGroups(String input) {
@@ -376,41 +249,47 @@ public class Parser {
 		}
 	}
 
+	private ArrayList<String> getDateGroupsWords(List<DateGroup> dateGroup) {
+		ArrayList<String> words = new ArrayList<String>();
+		for (int i = 0; i < dateGroup.size(); i++) {
+			Pattern splitPattern = Pattern.compile("\\s");
+			List<String> temp = Arrays.asList(splitPattern.split(dateGroup.get(i).getText()));
+
+			for (int j = 0; j < temp.size(); j++) {
+				if (!temp.get(j).matches("due|by|before|till|to|from|on|at")) {
+					words.add(temp.get(j));
+				}
+			}
+		}
+
+		return words;
+	}
+
 	private String getTaskDesc(String input) {
 		Pattern pattern = Pattern.compile("\"([^\"]*)\"");
 		Matcher matcher = pattern.matcher(input);
-		String date = "";
 		if (matcher.find()) {
 			input = matcher.group().replace("\"", "");
 		} else {
-			Matcher fromMatcher = Pattern.compile("(?ui)from\\s*" + timeRegexPattern).matcher(input);
-			if (fromMatcher.find()) {
-				input = input.substring(0, fromMatcher.start()) +  input.substring(fromMatcher.start()+5, input.length());
-			}
 			input = input.replaceAll("until", "till");
+			input = ChiToEngUnicodeConverter.convertChineseToEnglishUnicode(input);
 			List<DateGroup> dateGroup = ptParser.parseSyntax(input);
-			/*for (int i = 0; i < dateGroup.size(); i++) {
-				if (dateGroup.get(i).getText().matches("\\d+(?!(pm|am))")) {
-					dateGroup.remove(i);
-				}
-			}*/
+
 			for (int i = 0; i < dateGroup.size(); i++) {
-				date = dateGroup.get(i).getText();
-				input = input.replaceAll("(?ui)\\s+((due on)|(due by)|due|by|before|till|to|from|on|at)\\s+" + date, "");
-				input = input.replaceAll("(?ui)\\s*" + date + "\\s*", " ");
+				input = input.replaceAll("(?ui)(\\s*(due on)|(due by)|due|by|before|till|to|from|on|at)?\\s+" + dateGroup.get(i).getText(), " ");
+				input = input.replaceAll("(?ui)\\s*" + dateGroup.get(i).getText() + "\\s*", " ");
 			}
-			//Pattern splitPattern = Pattern.compile("\\s+((due on)|(due by)|due|by|before|until|till|to|from|on|at)\\s+");
-			//String[] excessWords = splitPattern.split(date);
-			Pattern splitPattern = Pattern.compile("\\s");
-			String[] excessWords = splitPattern.split(date);
-			for (String word : excessWords) {
-				input = input.replaceAll("\\s+((due on)|(due by)|due|by|before|till|to|from|on|at)?\\s+" + word + "\\b", "");
+
+			ArrayList<String> words = getDateGroupsWords(dateGroup);
+
+			for (String word : words) {
+				input.replaceAll("\\s+" + word + "\\s+", " ");
 			}
-			//input = input.replaceAll("(?ui)\\s+((due on)|(due by)|due|by|before|till|to|from|on|at)\\s*((due on)|(due by)|due|by|before|till|to|from|on|at)*\\s*$", "");
+
 			input = input.replaceAll("(?ui)\\s+((due on)|(due by)|due|by|before|till|to|from|on|at)*\\s*$", "");
-			//input = input.replaceAll("^(?ui)\\s*((due on)|(due by)|due|by|before|till|to|from|on|at)\\s*((due on)|(due by)|due|by|before|till|to|from|on|at)", "");
-			input = input.replaceAll("(?ui)^\\s*((due on)|(due by)|due|by|before|till|to|from|on|at)\\s*", "");
+			input = input.replaceAll("(?ui)^\\s*((due on)|(due by)|due|by|before|till|to|from|on|at)*\\s+", "");
 		}
+		input = input.replaceAll("\\s+", " ");
 		input = input.replaceAll("^\\s+|\\s+$", "");
 		return input;
 	}
@@ -455,7 +334,7 @@ public class Parser {
 		List<Date> parsedInput = parseDateGroups(input);
 		ArrayList<CATEGORY> categories = new ArrayList<CATEGORY>();
 
-		if (parsedInput == null) {
+		if (parsedInput.size() != 0) {
 			ArrayList<String> categoriesRegexClone = new ArrayList<String>(Arrays.asList(categoriesRegex));
 			ArrayList<CATEGORY> categoriesArrClone = new ArrayList<CATEGORY>(Arrays.asList(categoriesArr));
 
@@ -509,28 +388,29 @@ public class Parser {
 		List<Date> parsedInput = parseDateGroups(input);
 		ArrayList<Task> tasks = new ArrayList<Task>();
 		ParsedObject obj;
-		if (parsedInput != null) {
-			switch (parsedInput.size()) {
-				case 1:
-					if (input.contains("by") || input.contains("due") || input.contains("before")) {
-						tasks.add(new Deadline(parsedInput.get(0), getTaskDesc(input), false));
-						obj = new ParsedObject(COMMAND_TYPE.ADD, PARAM_TYPE.TASK, TASK_TYPE.DEADLINE, tasks);
-					} else {
-						tasks.add(new Event(parsedInput.get(0), parsedInput.get(0), getTaskDesc(input), false));
-						obj = new ParsedObject(COMMAND_TYPE.ADD, PARAM_TYPE.TASK, TASK_TYPE.SINGLE_DATE_EVENT, tasks);
-					}
-					break;
-				case 2:
-					tasks.add(new Event(parsedInput.get(0), parsedInput.get(1), getTaskDesc(input), false));
-					obj = new ParsedObject(COMMAND_TYPE.ADD, PARAM_TYPE.TASK, TASK_TYPE.DOUBLE_DATE_EVENT, tasks);
-					break;
-				default:
-					obj = new ParsedObject(COMMAND_TYPE.INVALID);
-			}
-		} else {
-			tasks.add(new Todo(input.trim(), false));
-			obj = new ParsedObject(COMMAND_TYPE.ADD, PARAM_TYPE.TASK, TASK_TYPE.TODO, tasks);
+
+		switch (parsedInput.size()) {
+			case 0:
+				tasks.add(new Todo(input.trim(), false));
+				obj = new ParsedObject(COMMAND_TYPE.ADD, PARAM_TYPE.TASK, TASK_TYPE.TODO, tasks);
+				break;
+			case 1:
+				if (input.contains("by") || input.contains("due") || input.contains("before")) {
+					tasks.add(new Deadline(parsedInput.get(0), getTaskDesc(input), false));
+					obj = new ParsedObject(COMMAND_TYPE.ADD, PARAM_TYPE.TASK, TASK_TYPE.DEADLINE, tasks);
+				} else {
+					tasks.add(new Event(parsedInput.get(0), parsedInput.get(0), getTaskDesc(input), false));
+					obj = new ParsedObject(COMMAND_TYPE.ADD, PARAM_TYPE.TASK, TASK_TYPE.SINGLE_DATE_EVENT, tasks);
+				}
+				break;
+			case 2:
+				tasks.add(new Event(parsedInput.get(0), parsedInput.get(1), getTaskDesc(input), false));
+				obj = new ParsedObject(COMMAND_TYPE.ADD, PARAM_TYPE.TASK, TASK_TYPE.DOUBLE_DATE_EVENT, tasks);
+				break;
+			default:
+				obj = new ParsedObject(COMMAND_TYPE.INVALID);
 		}
+
 		return obj;
 	}
 
