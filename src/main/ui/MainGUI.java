@@ -80,8 +80,8 @@ public class MainGUI extends Observable implements Observer {
 	private JTextArea taStatusMessage;
 
 	private static final Logger logger = Logger.getLogger(MainGUI.class.getName());
-	private static InputHistoryHandler history = null;
-	private static InputFeedbackHandler feedback = null;
+	private static InputHistoryListener history = null;
+	private static InputFeedbackListener feedback = null;
 	private static EventsTableModel etm = null;
 	private static TodosTableModel ttm = null;
 	private static DeadlinesTableModel dtm = null;
@@ -94,9 +94,9 @@ public class MainGUI extends Observable implements Observer {
 	private static final int INPUT_PANEL_HEIGHT = 137;
 	private static final int INPUT_PANEL_WIDTH = 762;
 
-	private static final int FRAME_SIMPLE_MODE_WIDTH = 768;
-	private static final int FRAME_SIMPLE_MODE_HEIGHT = 167;
-	private static final float FRAME_SIMPLE_MODE_OPACITY = 0.9f;
+	private static final int FRAME_MINI_MODE_WIDTH = 768;
+	private static final int FRAME_MINI_MODE_HEIGHT = 167;
+	private static final float FRAME_MINI_MODE_OPACITY = 0.9f;
 
 	private static final int FRAME_HELP_LIST_WIDTH = 1024;
 	private static final int FRAME_HELP_LIST_HEIGHT = 640;
@@ -105,10 +105,12 @@ public class MainGUI extends Observable implements Observer {
 	private static final int LABEL_FONT_SIZE = 15;
 	private static final int TABLE_ROW_HEIGHT = 50;
 
+	private static final int SCROLLPANE_SCROLL_VALUE = -448;
+
 	private static final String[] themes = {"bernstein.BernsteinLookAndFeel", "noire.NoireLookAndFeel", "smart.SmartLookAndFeel", "mint.MintLookAndFeel", "mcwin.McWinLookAndFeel"};
 	private static int themeIndex = 0;
-	private static boolean isNormalMode = true;
-	private static boolean isHelpMode = false;
+	private static boolean isMiniMode = true;
+	private static boolean isDisplayingHelpList = false;
 
 	public static void main(String[] args) {
 		try {
@@ -164,11 +166,11 @@ public class MainGUI extends Observable implements Observer {
 	}
 
 	private void setupInputHistoryHandler() {
-		history = InputHistoryHandler.getInstance();
+		history = InputHistoryListener.getInstance();
 	}
 
 	private void setupInputFeedbackPointers() {
-		feedback = InputFeedbackHandler.getInstance();
+		feedback = InputFeedbackListener.getInstance();
 		feedback.setupPointers(tpUserInput, taStatusMessage);
 	}
 
@@ -202,6 +204,7 @@ public class MainGUI extends Observable implements Observer {
 		frmTodokoro.setVisible(true);
 	}
 
+	@SuppressWarnings("serial")
 	private void setupKeyBinds() {
 		InputMap im = frmTodokoro.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
 		ActionMap am = frmTodokoro.getRootPane().getActionMap();
@@ -213,48 +216,14 @@ public class MainGUI extends Observable implements Observer {
 		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0), "Help List");
 		am.put("Help List", new AbstractAction() {
 			public void actionPerformed(ActionEvent e) {
-				if (isHelpMode) {
-					tpUserInput.requestFocusInWindow();
-					frmTodokoro.setBounds(frmTodokoro.getX(), frmTodokoro.getY(), FRAME_WIDTH, FRAME_HEIGHT);
-				} else {
-					if (!isNormalMode) {
-						tabbedPane.setVisible(true);
-						lblFilter.setVisible(true);
-						tfFilter.setVisible(true);
-						frmTodokoro.setBounds(frmTodokoro.getX(), frmTodokoro.getY(), FRAME_WIDTH, FRAME_HEIGHT);
-						frmTodokoro.setOpacity(FRAME_OPACITY);
-						inputPanel.setBounds(0, 475, INPUT_PANEL_WIDTH, INPUT_PANEL_HEIGHT);
-						isNormalMode = true;
-					}
-					demo.requestListFocus();
-					frmTodokoro.setBounds(frmTodokoro.getX(), frmTodokoro.getY(), FRAME_HELP_LIST_WIDTH, FRAME_HELP_LIST_HEIGHT);
-				}
 
-				isHelpMode = !isHelpMode;
 			}
 		});
 
-		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), "Simple Mode");
-		am.put("Simple Mode", new AbstractAction() {
+		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), "Mini Mode");
+		am.put("Mini Mode", new AbstractAction() {
 			public void actionPerformed(ActionEvent e) {
-				if (isNormalMode) {
-					tabbedPane.setVisible(false);
-					lblFilter.setVisible(false);
-					tfFilter.setVisible(false);
-					frmTodokoro.setBounds(frmTodokoro.getX(), frmTodokoro.getY(), FRAME_SIMPLE_MODE_WIDTH, FRAME_SIMPLE_MODE_HEIGHT);
-					frmTodokoro.setOpacity(FRAME_SIMPLE_MODE_OPACITY);
-					inputPanel.setBounds(0, 0, INPUT_PANEL_WIDTH, INPUT_PANEL_HEIGHT);
-					isHelpMode = false;
-				} else {
-					tabbedPane.setVisible(true);
-					lblFilter.setVisible(true);
-					tfFilter.setVisible(true);
-					frmTodokoro.setBounds(frmTodokoro.getX(), frmTodokoro.getY(), FRAME_WIDTH, FRAME_HEIGHT);
-					frmTodokoro.setOpacity(FRAME_OPACITY);
-					inputPanel.setBounds(0, 475, INPUT_PANEL_WIDTH, INPUT_PANEL_HEIGHT);
-				}
-
-				isNormalMode = !isNormalMode;
+				toggleMiniMode();
 			}
 		});
 
@@ -265,74 +234,31 @@ public class MainGUI extends Observable implements Observer {
 			}
 		});
 
+		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0), "Cycle Tabs");
+		am.put("Cycle Tabs", new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {
+				cycleTabs();
+			}
+		});
+
 		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_QUOTE, InputEvent.CTRL_DOWN_MASK), "Cycle Themes");
 		am.put("Cycle Themes", new AbstractAction() {
 			public void actionPerformed(ActionEvent e) {
-				if (themeIndex == themes.length-1) {
-					themeIndex = 0;
-				} else {
-					themeIndex++;
-				}
-				try {
-					UIManager.setLookAndFeel("com.jtattoo.plaf." + themes[themeIndex]);
-				} catch (ClassNotFoundException e1) {
-					logger.log(Level.SEVERE, e.getActionCommand(), e);
-				} catch (InstantiationException e1) {
-					logger.log(Level.SEVERE, e.getActionCommand(), e);
-				} catch (IllegalAccessException e1) {
-					logger.log(Level.SEVERE, e.getActionCommand(), e);
-				} catch (UnsupportedLookAndFeelException e1) {
-					logger.log(Level.SEVERE, e.getActionCommand(), e);
-				}
-				SwingUtilities.updateComponentTreeUI(frmTodokoro);
-				eventsTable.setRowHeight(TABLE_ROW_HEIGHT);
-				todosTable.setRowHeight(TABLE_ROW_HEIGHT);
-				deadlinesTable.setRowHeight(TABLE_ROW_HEIGHT);
+				cycleThemes();
 			}
 		});
 
-		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.CTRL_DOWN_MASK), "Cycle Tabs");
-		am.put("Cycle Tabs", new AbstractAction() {
+		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_F1, InputEvent.CTRL_DOWN_MASK), "Scroll Up");
+		am.put("Scroll Up", new AbstractAction() {
 			public void actionPerformed(ActionEvent e) {
-				if (tabbedPane.getSelectedIndex() == 2) {
-					tabbedPane.setSelectedIndex(0);
-				} else {
-					tabbedPane.setSelectedIndex(tabbedPane.getSelectedIndex()+1);
-				}
+				scrollTable("UP");
 			}
 		});
 
-		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_F1, InputEvent.CTRL_DOWN_MASK), "Scroll Down Tables");
-		am.put("Scroll Down Tables", new AbstractAction() {
+		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, InputEvent.CTRL_DOWN_MASK), "Scroll Down");
+		am.put("Scroll Down", new AbstractAction() {
 			public void actionPerformed(ActionEvent e) {
-				switch (tabbedPane.getSelectedIndex()) {
-				case 0:
-					eventsScrollPane.getVerticalScrollBar().setValue(eventsScrollPane.getVerticalScrollBar().getValue()+eventsScrollPane.getHeight()-24);
-					break;
-				case 1:
-					todosScrollPane.getVerticalScrollBar().setValue(todosScrollPane.getVerticalScrollBar().getValue()+eventsScrollPane.getHeight()-24);
-					break;
-				case 2:
-					deadlineTasksScrollPane.getVerticalScrollBar().setValue(deadlineTasksScrollPane.getVerticalScrollBar().getValue()+eventsScrollPane.getHeight()-24);
-					break;
-				}
-			}
-		});
-
-		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, InputEvent.CTRL_DOWN_MASK), "Scroll Up Tables");
-		am.put("Scroll Up Tables", new AbstractAction() {
-			public void actionPerformed(ActionEvent e) {
-				switch (tabbedPane.getSelectedIndex()) {
-				case 0:
-					eventsScrollPane.getVerticalScrollBar().setValue(eventsScrollPane.getVerticalScrollBar().getValue()-eventsScrollPane.getHeight()-24);
-					break;
-				case 1:
-					todosScrollPane.getVerticalScrollBar().setValue(todosScrollPane.getVerticalScrollBar().getValue()-eventsScrollPane.getHeight()-24);
-					break;
-				case 2:
-					deadlineTasksScrollPane.getVerticalScrollBar().setValue(deadlineTasksScrollPane.getVerticalScrollBar().getValue()-eventsScrollPane.getHeight()-24);
-					break;
-				}
+				scrollTable("DOWN");
 			}
 		});
 
@@ -340,13 +266,13 @@ public class MainGUI extends Observable implements Observer {
 		tpUserInput.getActionMap().put("Send Command", new AbstractAction() {
 			public void actionPerformed(ActionEvent e) {
 				sendUserInput(tpUserInput.getText().trim());
-				history.addInputHistory(tpUserInput.getText());
+				history.saveInputHistory(tpUserInput.getText().trim());
 				tpUserInput.setText(null);
 			}
 		});
 
-		tpUserInput.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), "Previous Input");
-		tpUserInput.getActionMap().put("Previous Input", new AbstractAction() {
+		tpUserInput.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), "Load Previous Input");
+		tpUserInput.getActionMap().put("Load Previous Input", new AbstractAction() {
 			public void actionPerformed(ActionEvent e) {
 				String prevInput = history.getPreviousInput();
 				if (prevInput != null) {
@@ -355,8 +281,8 @@ public class MainGUI extends Observable implements Observer {
 			}
 		});
 
-		tpUserInput.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), "Next Input");
-		tpUserInput.getActionMap().put("Next Input", new AbstractAction() {
+		tpUserInput.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), "Load Next Input");
+		tpUserInput.getActionMap().put("Load Next Input", new AbstractAction() {
 			public void actionPerformed(ActionEvent e) {
 				String nextInput = history.getNextInput();
 				if (nextInput != null) {
@@ -364,6 +290,113 @@ public class MainGUI extends Observable implements Observer {
 				}
 			}
 		});
+	}
+
+	private void toggleHelpList() {
+
+		if (isDisplayingHelpList) {
+			tpUserInput.requestFocusInWindow();
+			frmTodokoro.setBounds(frmTodokoro.getX(), frmTodokoro.getY(), FRAME_WIDTH, FRAME_HEIGHT);
+		} else {
+			if (!isMiniMode) {
+				tabbedPane.setVisible(true);
+				lblFilter.setVisible(true);
+				tfFilter.setVisible(true);
+				frmTodokoro.setBounds(frmTodokoro.getX(), frmTodokoro.getY(), FRAME_WIDTH, FRAME_HEIGHT);
+				frmTodokoro.setOpacity(FRAME_OPACITY);
+				inputPanel.setBounds(0, 475, INPUT_PANEL_WIDTH, INPUT_PANEL_HEIGHT);
+				isMiniMode = true;
+			}
+			//demo.requestListFocus();
+			frmTodokoro.setBounds(frmTodokoro.getX(), frmTodokoro.getY(), FRAME_HELP_LIST_WIDTH, FRAME_HELP_LIST_HEIGHT);
+		}
+
+		isDisplayingHelpList = !isDisplayingHelpList;
+	}
+
+	private void toggleMiniMode() {
+		if (isMiniMode) {
+			tabbedPane.setVisible(true);
+			lblFilter.setVisible(true);
+			tfFilter.setVisible(true);
+			frmTodokoro.setBounds(frmTodokoro.getX(), frmTodokoro.getY(), FRAME_WIDTH, FRAME_HEIGHT);
+			frmTodokoro.setOpacity(FRAME_OPACITY);
+			inputPanel.setBounds(0, 475, INPUT_PANEL_WIDTH, INPUT_PANEL_HEIGHT);
+		} else {
+			tabbedPane.setVisible(false);
+			lblFilter.setVisible(false);
+			tfFilter.setVisible(false);
+			frmTodokoro.setBounds(frmTodokoro.getX(), frmTodokoro.getY(), FRAME_MINI_MODE_WIDTH, FRAME_MINI_MODE_HEIGHT);
+			frmTodokoro.setOpacity(FRAME_MINI_MODE_OPACITY);
+			inputPanel.setBounds(0, 0, INPUT_PANEL_WIDTH, INPUT_PANEL_HEIGHT);
+			isDisplayingHelpList = false;
+		}
+
+		isMiniMode = !isMiniMode;
+	}
+
+	private void cycleTabs() {
+		if (tabbedPane.getSelectedIndex() == 2) {
+			tabbedPane.setSelectedIndex(0);
+		} else {
+			tabbedPane.setSelectedIndex(tabbedPane.getSelectedIndex()+1);
+		}
+	}
+
+	private void cycleThemes() {
+		themeIndex++;
+		themeIndex = themeIndex%themes.length;
+
+		try {
+			UIManager.setLookAndFeel("com.jtattoo.plaf." + themes[themeIndex]);
+		} catch (ClassNotFoundException e) {
+			logger.log(Level.SEVERE, e.getMessage(), e);
+		} catch (InstantiationException e) {
+			logger.log(Level.SEVERE, e.getMessage(), e);
+		} catch (IllegalAccessException e) {
+			logger.log(Level.SEVERE, e.getMessage(), e);
+		} catch (UnsupportedLookAndFeelException e) {
+			logger.log(Level.SEVERE, e.getMessage(), e);
+		}
+
+		SwingUtilities.updateComponentTreeUI(frmTodokoro);
+
+		// Reset row height of tables after updating components
+		eventsTable.setRowHeight(TABLE_ROW_HEIGHT);
+		todosTable.setRowHeight(TABLE_ROW_HEIGHT);
+		deadlinesTable.setRowHeight(TABLE_ROW_HEIGHT);
+	}
+
+	private void scrollTable(String direction) {
+		if (direction.equals("UP")) {
+			switch (tabbedPane.getSelectedIndex()) {
+				case 0:
+					eventsScrollPane.getVerticalScrollBar().setValue(eventsScrollPane.getVerticalScrollBar().getValue()+eventsScrollPane.getHeight()-24);
+					break;
+				case 1:
+					todosScrollPane.getVerticalScrollBar().setValue(todosScrollPane.getVerticalScrollBar().getValue()+todosScrollPane.getHeight()-24);
+					break;
+				case 2:
+					deadlineTasksScrollPane.getVerticalScrollBar().setValue(deadlineTasksScrollPane.getVerticalScrollBar().getValue()+deadlineTasksScrollPane.getHeight()-24);
+					break;
+				default:
+					// impossible case
+			}
+		} else if (direction.equals("DOWN")) {
+			switch (tabbedPane.getSelectedIndex()) {
+				case 0:
+					eventsScrollPane.getVerticalScrollBar().setValue(eventsScrollPane.getVerticalScrollBar().getValue()-eventsScrollPane.getHeight()-24);
+					break;
+				case 1:
+					todosScrollPane.getVerticalScrollBar().setValue(todosScrollPane.getVerticalScrollBar().getValue()-todosScrollPane.getHeight()-24);
+					break;
+				case 2:
+					deadlineTasksScrollPane.getVerticalScrollBar().setValue(deadlineTasksScrollPane.getVerticalScrollBar().getValue()-deadlineTasksScrollPane.getHeight()-24);
+					break;
+				default:
+					// impossible case
+			}
+		}
 	}
 
 	private void setupPanels() {
@@ -388,7 +421,7 @@ public class MainGUI extends Observable implements Observer {
 			public void insertUpdate(DocumentEvent e) {
 				SwingUtilities.invokeLater(new Runnable() {
 				    public void run() {
-				    	InputFeedbackHandler.getInstance().highlightText();
+				    	InputFeedbackListener.getInstance().highlightText();
 			        }
 				});
 			}
@@ -396,7 +429,7 @@ public class MainGUI extends Observable implements Observer {
 			public void removeUpdate(DocumentEvent e) {
 				SwingUtilities.invokeLater(new Runnable() {
 				    public void run() {
-				    	InputFeedbackHandler.getInstance().highlightText();
+				    	InputFeedbackListener.getInstance().highlightText();
 			        }
 				});
 			}

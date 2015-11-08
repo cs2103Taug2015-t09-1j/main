@@ -18,7 +18,7 @@ import main.model.taskModels.Task;
 import main.model.taskModels.Todo;
 
 public class AddTest {
-	
+
 	@Test
 	public void main() {
 		testExecute();
@@ -36,13 +36,13 @@ public class AddTest {
 		ParsedObject deadline = new ParsedObject(null, null, EnumTypes.TASK_TYPE.DEADLINE, obj);
 		Add add = Add.getInstance();
 		assertTrue(add.execute(deadline));
-		
+
 		Event task1 = new Event(date, date, "lol", false);
 		obj.clear();
 		obj.add(task1);
 		ParsedObject singleEvent = new ParsedObject(null, null, EnumTypes.TASK_TYPE.SINGLE_DATE_EVENT, obj);
 		assertTrue(add.execute(singleEvent));
-		
+
 		Calendar cal1 = Calendar.getInstance();
 		cal1.set(2015, Calendar.DECEMBER, 20);
 		Date date1 = cal.getTime();
@@ -51,16 +51,16 @@ public class AddTest {
 		obj.add(task2);
 		ParsedObject doubleEvent = new ParsedObject(null, null, EnumTypes.TASK_TYPE.DOUBLE_DATE_EVENT, obj);
 		assertTrue(add.execute(doubleEvent));
-		
+
 		Todo task3 = new Todo("lawl", false);
 		obj.clear();
 		obj.add(task3);
 		ParsedObject todo = new ParsedObject(null, null, EnumTypes.TASK_TYPE.TODO, obj);
 		assertTrue(add.execute(todo));
-		
+
 		ParsedObject invalid = new ParsedObject(null, null, EnumTypes.TASK_TYPE.INVALID, obj);
 		assertFalse(add.execute(invalid));
-		
+
 	}
 
 	public void testUndo() {

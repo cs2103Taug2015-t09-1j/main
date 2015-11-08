@@ -11,23 +11,23 @@ import main.logic.Logic;
  * @@author Dalton
  *
  */
-public class InputHistoryHandler {
-	private static InputHistoryHandler inputHistory = null;
+public class InputHistoryListener {
+	private static InputHistoryListener inputHistory = null;
+	private static ArrayList<String> history = null;
 	private static int pointer;
-	private static ArrayList<String> history;
 
-	private InputHistoryHandler() {}
+	private InputHistoryListener() { }
 
-	public static InputHistoryHandler getInstance() {
+	public static InputHistoryListener getInstance() {
 		if (inputHistory == null) {
-			inputHistory = new InputHistoryHandler();
+			inputHistory = new InputHistoryListener();
 			history = new ArrayList<String>();
 			pointer = 0;
 		}
 		return inputHistory;
 	}
 
-	public void addInputHistory(String input) {
+	public void saveInputHistory(String input) {
 		if (!input.trim().isEmpty()) {
 			history.add(input);
 			pointer = history.size();

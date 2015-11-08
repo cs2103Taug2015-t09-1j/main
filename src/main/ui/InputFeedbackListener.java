@@ -22,14 +22,14 @@ import main.parser.Parser;
  * @author Dalton
  *
  */
-public class InputFeedbackHandler {
+public class InputFeedbackListener {
 	private JTextPane tpInput = null;
 	private JTextArea taMessage = null;
 	private static Parser parser = null;
-	private static InputFeedbackHandler feedbackHandler = null;
+	private static InputFeedbackListener feedbackHandler = null;
 	private static Pattern pattern = null;
 	private static Matcher matcher = null;
-	private static final Logger logger = Logger.getLogger(InputFeedbackHandler.class.getName());
+	private static final Logger logger = Logger.getLogger(InputFeedbackListener.class.getName());
 
 	private static final Color NORMAL_FONT_COLOUR = Color.BLACK;
 	private static final Color KEYWORD_FONT_COLOUR = Color.decode("#19D14A");
@@ -70,16 +70,16 @@ public class InputFeedbackHandler {
 	private static final String DAY_MESSAGE = "Days in the Task Description may be parsed as dates. "
 											+ "Surround your Task Description with double quotes if you do not want it to be parsed. (e.g. \"Lunch with Wednesday\" from 12 to 1pm)";
 
-	private InputFeedbackHandler() {
+	private InputFeedbackListener() {
 		parser = Parser.getInstance();
 		StyleConstants.setForeground(defaultSet, NORMAL_FONT_COLOUR);
 		StyleConstants.setForeground(keywordSet, KEYWORD_FONT_COLOUR);
 		StyleConstants.setForeground(warningSet, WARNING_FONT_COLOUR);
 	}
 
-	public static InputFeedbackHandler getInstance() {
+	public static InputFeedbackListener getInstance() {
 		if (feedbackHandler == null) {
-			feedbackHandler = new InputFeedbackHandler();
+			feedbackHandler = new InputFeedbackListener();
 		}
 		return feedbackHandler;
 	}
