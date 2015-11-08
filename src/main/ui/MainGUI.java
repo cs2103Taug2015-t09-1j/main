@@ -80,6 +80,7 @@ public class MainGUI extends Observable implements Observer {
 	private JTextArea taStatusMessage;
 
 	private static final Logger logger = Logger.getLogger(MainGUI.class.getName());
+	private static HelpList helpList = null;
 	private static InputHistoryListener history = null;
 	private static InputFeedbackListener feedback = null;
 	private static EventsTableModel etm = null;
@@ -98,18 +99,19 @@ public class MainGUI extends Observable implements Observer {
 	private static final int FRAME_MINI_MODE_HEIGHT = 167;
 	private static final float FRAME_MINI_MODE_OPACITY = 0.9f;
 
-	private static final int FRAME_HELP_LIST_WIDTH = 1024;
+	private static final int FRAME_HELP_LIST_WIDTH = 1044;
 	private static final int FRAME_HELP_LIST_HEIGHT = 640;
+
+	private static final int HELP_LIST_WIDTH = 270;
+	private static final int HELP_LIST_HEIGHT = 600;
 
 	private static final int TABLE_FONT_SIZE = 14;
 	private static final int LABEL_FONT_SIZE = 15;
 	private static final int TABLE_ROW_HEIGHT = 50;
 
-	private static final int SCROLLPANE_SCROLL_VALUE = -448;
-
 	private static final String[] themes = {"bernstein.BernsteinLookAndFeel", "noire.NoireLookAndFeel", "smart.SmartLookAndFeel", "mint.MintLookAndFeel", "mcwin.McWinLookAndFeel"};
 	private static int themeIndex = 0;
-	private static boolean isMiniMode = true;
+	private static boolean isMiniMode = false;
 	private static boolean isDisplayingHelpList = false;
 
 	public static void main(String[] args) {
@@ -163,6 +165,14 @@ public class MainGUI extends Observable implements Observer {
 		setupInputHistoryHandler();
 		setupInputFeedbackPointers();
 		setupKeyBinds();
+		setupHelpList();
+	}
+
+	private void setupHelpList() {
+		helpList = new HelpList();
+		helpList.setBounds(FRAME_WIDTH-10, 0, HELP_LIST_WIDTH, HELP_LIST_HEIGHT);
+		helpList.setVisible(true);
+		frmTodokoro.getContentPane().add(helpList);
 	}
 
 	private void setupInputHistoryHandler() {
@@ -209,19 +219,15 @@ public class MainGUI extends Observable implements Observer {
 		InputMap im = frmTodokoro.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
 		ActionMap am = frmTodokoro.getRootPane().getActionMap();
 
-		GetHelpList demo = new GetHelpList();
-		demo.setBounds(768, 0, 240, 600);
-		demo.setVisible(true);
-		frmTodokoro.getContentPane().add(demo);
-		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0), "Help List");
-		am.put("Help List", new AbstractAction() {
+		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0), "Toggle Help List");
+		am.put("Toggle Help List", new AbstractAction() {
 			public void actionPerformed(ActionEvent e) {
-
+				toggleHelpList();
 			}
 		});
 
-		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), "Mini Mode");
-		am.put("Mini Mode", new AbstractAction() {
+		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), "Toggle Mini Mode");
+		am.put("Toggle Mini Mode", new AbstractAction() {
 			public void actionPerformed(ActionEvent e) {
 				toggleMiniMode();
 			}
@@ -230,7 +236,7 @@ public class MainGUI extends Observable implements Observer {
 		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0), "Change Directory");
 		am.put("Change Directory", new AbstractAction() {
 			public void actionPerformed(ActionEvent e) {
-				ChangeDirectory cd = new ChangeDirectory(frmTodokoro);
+				new ChangeDirectory(frmTodokoro);
 			}
 		});
 
@@ -274,40 +280,40 @@ public class MainGUI extends Observable implements Observer {
 		tpUserInput.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), "Load Previous Input");
 		tpUserInput.getActionMap().put("Load Previous Input", new AbstractAction() {
 			public void actionPerformed(ActionEvent e) {
-				String prevInput = history.getPreviousInput();
-				if (prevInput != null) {
-					tpUserInput.setText(prevInput);
-				}
+				loadInput("PREVIOUS");
 			}
 		});
 
 		tpUserInput.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), "Load Next Input");
 		tpUserInput.getActionMap().put("Load Next Input", new AbstractAction() {
 			public void actionPerformed(ActionEvent e) {
-				String nextInput = history.getNextInput();
-				if (nextInput != null) {
-					tpUserInput.setText(nextInput);
-				}
+				loadInput("NEXT");
 			}
 		});
 	}
 
-	private void toggleHelpList() {
+	private void loadInput(String position) {
+		String input = null;
+		if (position.equals("NEXT")) {
+			input = history.getNextInput();
+		} else if (position.equals("PREVIOUS")) {
+			input = history.getPreviousInput();
+		}
 
+		if (input != null) {
+			tpUserInput.setText(input);
+		}
+	}
+
+	private void toggleHelpList() {
 		if (isDisplayingHelpList) {
 			tpUserInput.requestFocusInWindow();
 			frmTodokoro.setBounds(frmTodokoro.getX(), frmTodokoro.getY(), FRAME_WIDTH, FRAME_HEIGHT);
 		} else {
-			if (!isMiniMode) {
-				tabbedPane.setVisible(true);
-				lblFilter.setVisible(true);
-				tfFilter.setVisible(true);
-				frmTodokoro.setBounds(frmTodokoro.getX(), frmTodokoro.getY(), FRAME_WIDTH, FRAME_HEIGHT);
-				frmTodokoro.setOpacity(FRAME_OPACITY);
-				inputPanel.setBounds(0, 475, INPUT_PANEL_WIDTH, INPUT_PANEL_HEIGHT);
-				isMiniMode = true;
+			if (isMiniMode) {
+				toggleMiniMode();
 			}
-			//demo.requestListFocus();
+			helpList.getHelpListFocus();
 			frmTodokoro.setBounds(frmTodokoro.getX(), frmTodokoro.getY(), FRAME_HELP_LIST_WIDTH, FRAME_HELP_LIST_HEIGHT);
 		}
 
