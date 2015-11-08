@@ -31,7 +31,7 @@ public class CustomStringCellEditor extends DefaultCellEditor {
 
 	@Override
 	public Component getTableCellEditorComponent(final JTable table, final Object value, final boolean isSelected, final int row, final int column) {
-		JTextField tf = ((JTextField)getComponent());
+		final JTextField tf = ((JTextField)getComponent());
 		tf.setFont(new Font(CELL_FONT, CELL_FONT_TYPE, CELL_FONT_SIZE));
 		tf.setBorder(new LineBorder(BORDER_COLOUR));
 		tf.setText(value.toString());

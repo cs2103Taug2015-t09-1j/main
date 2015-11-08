@@ -1,10 +1,5 @@
 package main.logic;
 
-import main.model.ParsedObject;
-import main.model.taskModels.Deadline;
-import main.model.taskModels.Event;
-import main.model.taskModels.Task;
-
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -13,6 +8,10 @@ import java.util.List;
 
 import main.model.EnumTypes;
 import main.model.EnumTypes.TASK_TYPE;
+import main.model.ParsedObject;
+import main.model.taskModels.Deadline;
+import main.model.taskModels.Event;
+import main.model.taskModels.Task;
 import main.storage.Storage;
 
 /**
@@ -49,26 +48,20 @@ public class Display extends Command {
 	public List<List<Task>> process(ParsedObject obj) {
 		List<List<Task>> result = new ArrayList<List<Task>>();
 		List<Task> tasks = storage.getAllTask(TASK_TYPE.ALL);
-		List<Task> deadlines = new ArrayList<>();
-		List<Task> events = new ArrayList<>();
-		List<Task> todos = new ArrayList<>();
-
+	
 		if (obj.getParamType() != null && obj.getParamType() == EnumTypes.PARAM_TYPE.CATEGORY) {
-			displayByCategories(obj, todos, events, deadlines);
+			result = displayByCategories(obj);
 		} else {
-			if (!displayByTime(obj, tasks, todos, events, deadlines)) {
-				return null;
-			}
+			result = displayByTime(obj, tasks);
 		}
-
-		result.add(deadlines);
-		result.add(events);
-		result.add(todos);
-
+		
 		return result;
 	}
 
-	public void displayByCategories(ParsedObject obj, List<Task> todos, List<Task> events, List<Task> deadlines) {
+	public List<List<Task>> displayByCategories(ParsedObject obj) {
+		List<Task> todos = new ArrayList<>();
+		List<Task> deadlines = new ArrayList<>();
+		List<Task> events = new ArrayList<>();
 		List<Integer> ids = storage.getIdByCategory(obj.getObjects());
 		for (int id : ids) {
 			Task task = storage.getTaskByID(id);
@@ -88,9 +81,13 @@ public class Display extends Command {
 			}
 		}
 		message = "Tasks are displayed.";
+		return packLists(deadlines, events, todos);
 	}
 
-	public boolean displayByTime(ParsedObject obj, List<Task> tasks, List<Task> todos, List<Task> events, List<Task> deadlines) {
+	public List<List<Task>> displayByTime(ParsedObject obj, List<Task> tasks) {
+		List<Task> todos = new ArrayList<>();
+		List<Task> deadlines = new ArrayList<>();
+		List<Task> events = new ArrayList<>();
 		Date fromDate, toDate;
 		switch (obj.getCommandType()) {
 		case DISPLAY_ON:
@@ -163,15 +160,23 @@ public class Display extends Command {
 			break;
 		case INVALID:
 			message = "Invalid parameters for display command.";
-			return false;
+			return null;
 		default:
 			message = "No matching tasks found.";
-			return false;
+			return null;
 		}
 		todos = storage.getAllTask(TASK_TYPE.TODO);
-		return true;
+		return packLists(deadlines, events, todos);
 	}
 
+	private List<List<Task>> packLists(List<Task> deadlines, List<Task> events, List<Task> todos) {
+		List<List<Task>> result = new ArrayList<>();
+		result.add(deadlines);
+		result.add(events);
+		result.add(todos);
+		return result;
+	}
+	
 	private boolean isOnBetween(Date left, Date right, Date cur) {
 		Date startDate = resetTime((Date)left.clone(), true);
 		Date endDate = resetTime((Date)right.clone(), false);

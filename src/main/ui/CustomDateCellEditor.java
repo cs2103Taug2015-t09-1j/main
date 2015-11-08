@@ -12,7 +12,6 @@ import java.util.Date;
 import java.util.List;
 
 import javax.swing.DefaultCellEditor;
-import javax.swing.JComponent;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
@@ -49,7 +48,7 @@ public class CustomDateCellEditor extends DefaultCellEditor {
 
 	@Override
 	public Component getTableCellEditorComponent(final JTable table, final Object value, final boolean isSelected, final int row, final int column) {
-		JTextField tf = ((JTextField)getComponent());
+		final JTextField tf = ((JTextField)getComponent());
 		tf.setFont(new Font("Segoe UI Semibold", Font.PLAIN, 12));
 		tf.setBorder(new LineBorder(Color.BLACK));
 

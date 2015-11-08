@@ -5,7 +5,6 @@ package main.model.taskModels;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import main.model.EnumTypes;
 import main.model.EnumTypes.TASK_TYPE;
 
 /**

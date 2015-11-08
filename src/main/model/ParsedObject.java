@@ -5,7 +5,9 @@ package main.model;
 
 import java.util.ArrayList;
 
-import main.model.EnumTypes.*;
+import main.model.EnumTypes.COMMAND_TYPE;
+import main.model.EnumTypes.PARAM_TYPE;
+import main.model.EnumTypes.TASK_TYPE;
 
 /**
  * @@author Dalton

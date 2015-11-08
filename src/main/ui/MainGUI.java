@@ -12,29 +12,17 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.BufferedOutputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.logging.FileHandler;
-import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -43,6 +31,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
@@ -61,10 +50,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableRowSorter;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyleContext;
 
 import main.logic.ChangeDirectory;
 import main.logic.Logic;
@@ -74,7 +59,6 @@ import main.model.tableModels.DeadlinesTableModel;
 import main.model.tableModels.EventsTableModel;
 import main.model.tableModels.TodosTableModel;
 import main.model.taskModels.Task;
-import javax.swing.JTextArea;
 
 /**
  * @@author Dalton
@@ -222,7 +206,7 @@ public class MainGUI extends Observable implements Observer {
 		ActionMap am = frmTodokoro.getRootPane().getActionMap();
 
 
-		GetHelpList demo = new GetHelpList();
+		final GetHelpList demo = new GetHelpList();
 		demo.setBounds(768, 0, 240, 600);
 		demo.setVisible(true);
 		frmTodokoro.getContentPane().add(demo);
@@ -659,7 +643,7 @@ public class MainGUI extends Observable implements Observer {
 		table.setFillsViewportHeight(true);
 	}
 
-	public void updateStatusMsg(String msg) {
+	public void updateStatusMsg(final String msg) {
 		SwingUtilities.invokeLater(new Runnable() {
 		    public void run() {
 	        	taStatusMessage.setText(msg);
@@ -671,7 +655,7 @@ public class MainGUI extends Observable implements Observer {
 		setChanged();
 		notifyObservers(new ObserverEvent(ObserverEvent.CHANGE_USER_INPUT_CODE, new ObserverEvent.EInput(command)));
 	}
-
+	
 	@Override
 	public void update(Observable observable, Object event) {
 

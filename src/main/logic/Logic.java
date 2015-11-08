@@ -5,10 +5,10 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.logging.Logger;
 
-import main.model.ObserverEvent;
-import main.model.taskModels.Task;
 import main.model.EnumTypes.COMMAND_TYPE;
 import main.model.EnumTypes.TASK_TYPE;
+import main.model.ObserverEvent;
+import main.model.taskModels.Task;
 import main.parser.Parser;
 import main.storage.Storage;
 import main.ui.MainGUI;

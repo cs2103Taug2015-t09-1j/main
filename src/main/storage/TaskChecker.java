@@ -4,7 +4,6 @@ import java.util.Date;
 import java.util.List;
 
 import main.model.EnumTypes.CATEGORY;
-import main.model.EnumTypes.TASK_TYPE;
 import main.model.taskModels.Deadline;
 import main.model.taskModels.Event;
 import main.model.taskModels.Task;
