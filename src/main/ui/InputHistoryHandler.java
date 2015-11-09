@@ -8,8 +8,10 @@ import java.util.ArrayList;
 import main.logic.Logic;
 
 /**
- * @@author Dalton
+ * The Class InputHistoryHandler. 
+ * Stores and handles the history of user inputs.
  *
+ * @@author Dalton
  */
 public class InputHistoryHandler {
 	private static InputHistoryHandler inputHistory = null;
@@ -18,6 +20,11 @@ public class InputHistoryHandler {
 
 	private InputHistoryHandler() { }
 
+	/**
+	 * Gets the single instance of InputHistoryHandler.
+	 *
+	 * @return 	single instance of InputHistoryHandler
+	 */
 	public static InputHistoryHandler getInstance() {
 		if (inputHistory == null) {
 			inputHistory = new InputHistoryHandler();
@@ -27,6 +34,11 @@ public class InputHistoryHandler {
 		return inputHistory;
 	}
 
+	/**
+	 * Saves the current input and shifts the pointer to prepare for the next input.
+	 *
+	 * @param input		the current input of the user
+	 */
 	public void saveInputHistory(String input) {
 		if (!input.trim().isEmpty()) {
 			history.add(input);
@@ -34,6 +46,12 @@ public class InputHistoryHandler {
 		}
 	}
 
+	/**
+	 * Shifts the pointer backward by 1 index if possible and return the current value which
+	 * contains the previous user input.
+	 *
+	 * @return 	the previous input of the user
+	 */
 	public String getPreviousInput() {
 		if (history.size() > 0 && pointer > 0) {
 			pointer -= 1;
@@ -42,6 +60,12 @@ public class InputHistoryHandler {
 		return null;
 	}
 
+	/**
+	 * Shifts the pointer forward by 1 index if possible and return the current value which
+	 * contains the next user input.
+	 *
+	 * @return 	the next input of the user
+	 */
 	public String getNextInput() {
 		if (history.size() > 0 && pointer < history.size()-1) {
 			pointer += 1;

@@ -13,10 +13,10 @@ import main.model.EnumTypes.TASK_TYPE;
  *
  */
 public abstract class Task implements Cloneable {
-	
+
 	// nextId is used to create auto increment index for new task
 	private static AtomicInteger nextId = new AtomicInteger();
-	
+
 	private int taskID;
 	private String taskDesc;
 	private boolean isDone;
@@ -64,7 +64,7 @@ public abstract class Task implements Cloneable {
 	public TASK_TYPE getType() {
 		return null;
 	}
-	
+
 	public static void setNextId(int initState) {
 		nextId = new AtomicInteger(initState);
 	}

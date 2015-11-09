@@ -14,8 +14,10 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.LineBorder;
 
 /**
- * @author Dalton
+ * The Class CustomStringCellEditor.
+ * Controls the rendering of the cell editors containing String datatype of the JTables
  *
+ * @@author Dalton
  */
 @SuppressWarnings("serial")
 public class CustomStringCellEditor extends DefaultCellEditor {
@@ -25,6 +27,9 @@ public class CustomStringCellEditor extends DefaultCellEditor {
 	private final Color BORDER_COLOUR = Color.BLACK;
 	private final Color BACKGROUND_COLOUR = Color.YELLOW;
 
+	/**
+	 * Instantiates a new custom string cell editor.
+	 */
 	public CustomStringCellEditor() {
 		super(new JTextField());
 	}
@@ -52,6 +57,7 @@ public class CustomStringCellEditor extends DefaultCellEditor {
 		JTextField tf = (JTextField)getComponent();
 		String value = tf.getText();
 
+		// Sets the colour of the border to RED if value is empty
 		if (value.trim().isEmpty()) {
 			tf.setBorder(new LineBorder(Color.RED));
 			return false;

@@ -22,17 +22,28 @@ import javax.swing.border.LineBorder;
 
 import org.ocpsoft.prettytime.nlp.PrettyTimeParser;
 
+import main.storage.LogFileHandler;
+
 /**
- * @@author Dalton
+ * The Class CustomDateCellEditor.
+ * Controls the rendering of the cell editors containing Date datatype of the JTables
  *
+ * @@author Dalton
  */
 public class CustomDateCellEditor extends DefaultCellEditor {
 	private static final Logger logger = Logger.getLogger(CustomDateCellEditor.class.getName());
 	private static SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
 	private static PrettyTimeParser parser = new PrettyTimeParser();
+	private final String CELL_FONT = "Segoe UI Semibold";
+	private final int CELL_FONT_TYPE = Font.PLAIN;
+	private final int CELL_FONT_SIZE = 12;
 
+	/**
+	 * Instantiates a new custom date cell editor and sets up the logger.
+	 */
 	public CustomDateCellEditor() {
 		super(new JTextField());
+		LogFileHandler.getInstance().addLogFileHandler(logger);
 	}
 
 	@Override
@@ -52,13 +63,13 @@ public class CustomDateCellEditor extends DefaultCellEditor {
 	@Override
 	public Component getTableCellEditorComponent(final JTable table, final Object value, final boolean isSelected, final int row, final int column) {
 		JTextField tf = (JTextField)getComponent();
-		tf.setFont(new Font("Segoe UI Semibold", Font.PLAIN, 12));
+		tf.setFont(new Font(CELL_FONT, CELL_FONT_TYPE, CELL_FONT_SIZE));
 		tf.setBorder(new LineBorder(Color.BLACK));
 
 		try {
 			tf.setText(sdf.format(value));
 		} catch (Exception e) {
-			tf.setText("");
+			logger.log(Level.SEVERE, e.getMessage(), e);
 		}
 
 		SwingUtilities.invokeLater(new Runnable() {
@@ -75,9 +86,9 @@ public class CustomDateCellEditor extends DefaultCellEditor {
 	@Override
 	public boolean stopCellEditing() {
 		JTextField tf = (JTextField)getComponent();
-		String value = tf.getText();
+		List<Date> dates = parser.parse(tf.getText());
 
-		List<Date> dates = parser.parse(value);
+		// Sets the colour of the border to RED if value is not a date
 		if (dates.size() <= 0) {
 			tf.setBorder(new LineBorder(Color.RED));
 			return false;

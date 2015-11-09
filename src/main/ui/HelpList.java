@@ -1,3 +1,6 @@
+/*
+ * 
+ */
 package main.ui;
 
 
@@ -36,6 +39,12 @@ import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
 import javax.swing.ScrollPaneConstants;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class HelpList.
+ *
+ * @@author Dalton
+ */
 public class HelpList extends JPanel {
 
 	//JPanel contentPane;
@@ -142,7 +151,12 @@ public class HelpList extends JPanel {
 		return new CompoundBorder(rounded, empty);
 	}
 
-	   class SharedListSelectionHandler implements ListSelectionListener {
+	   /**
+	 * The Class SharedListSelectionHandler.
+	 *
+	 * @@author Dalton
+	 */
+   	class SharedListSelectionHandler implements ListSelectionListener {
 	       public void valueChanged(ListSelectionEvent e) {
 	    	    ListSelectionModel lsm = (ListSelectionModel)e.getSource();
 

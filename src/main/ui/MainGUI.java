@@ -58,11 +58,16 @@ import main.model.tableModels.DeadlinesTableModel;
 import main.model.tableModels.EventsTableModel;
 import main.model.tableModels.TodosTableModel;
 import main.model.taskModels.Task;
+import main.storage.LogFileHandler;
+
 import javax.swing.JTextArea;
 
 /**
- * @@author Dalton
+ * The Class MainGUI.
+ * Displays the main GUI of the application that interacts with the user
+ * and handles the additional graphical/hotkey functions.
  *
+ * @@author Dalton
  */
 public class MainGUI extends Observable implements Observer {
 
@@ -75,7 +80,7 @@ public class MainGUI extends Observable implements Observer {
 	private JLabel lblFilter;
 	private JTable eventsTable, todosTable, deadlinesTable;
 	private JTabbedPane tabbedPane;
-	private JScrollPane eventsScrollPane, todosScrollPane, deadlineTasksScrollPane;
+	private JScrollPane eventsScrollPane, todosScrollPane, deadlinesScrollPane;
 	private TableRowSorter<?> eventsSorter, todosSorter, deadlinesSorter;
 	private JTextArea taStatusMessage;
 
@@ -134,6 +139,11 @@ public class MainGUI extends Observable implements Observer {
 	private static boolean isMiniMode = false;
 	private static boolean isDisplayingHelpList = false;
 
+	/**
+	 * The main method.
+	 *
+	 * @param args	the arguments
+	 */
 	public static void main(String[] args) {
 		try {
 			UIManager.setLookAndFeel("com.jtattoo.plaf." + themes[themeIndex]);
@@ -154,6 +164,11 @@ public class MainGUI extends Observable implements Observer {
 		});
 	}
 
+	/**
+	 * Gets the single instance of MainGUI.
+	 *
+	 * @return single instance of MainGUI
+	 */
 	public static MainGUI getInstance() {
 		if (mainGUI == null) {
 			return new MainGUI();
@@ -161,61 +176,44 @@ public class MainGUI extends Observable implements Observer {
 		return mainGUI;
 	}
 
+	/**
+	 * Instantiates a new main GUI and sets up the logger.
+	 */
 	private MainGUI() {
 		try {
 			initialise();
+			LogFileHandler.getInstance().addLogFileHandler(logger);
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, e.getMessage(), e);
 		}
 	}
 
 	/**
-	 * Initialise the contents of the frame.
+	 * Initialise the main components of the GUI.
 	 */
-	private void initialise() throws Exception {
-		setupMainFrame();
-		setupPanels();
-		setupTextPanes();
-		setupTabbedPane();
-		setupTableModels();
-		setupTables();
-		setupTableSorters();
-		setupFilterLabel();
-		setupStatusMessageTextArea();
-		setupInputHistoryHandler();
-		setupInputFeedbackPointers();
-		setupKeyBinds();
-		setupHelpList();
+	private void initialise() {
+		try {
+			setupMainFrame();
+			setupPanels();
+			setupTextPanes();
+			setupTabbedPane();
+			setupTableModels();
+			setupTables();
+			setupTableSorters();
+			setupFilterLabel();
+			setupStatusMessageTextArea();
+			setupInputHistoryHandler();
+			setupInputFeedbackReferences();
+			setupHelpList();
+			setupKeyBinds();
+		} catch (Exception e) {
+			logger.log(Level.SEVERE, e.getMessage(), e);
+		}
 	}
 
-	private void setupHelpList() {
-		helpList = new HelpList();
-		helpList.setBounds(FRAME_WIDTH-10, 0, HELP_LIST_MODE_WIDTH, HELP_LIST_MODE_HEIGHT);
-		helpList.setVisible(true);
-		frmTodokoro.getContentPane().add(helpList);
-	}
-
-	private void setupInputHistoryHandler() {
-		history = InputHistoryHandler.getInstance();
-	}
-
-	private void setupInputFeedbackPointers() {
-		feedback = InputFeedbackListener.getInstance();
-		feedback.setupPointers(tpUserInput, taStatusMessage);
-	}
-
-	private void setupTableModels() {
-		etm = EventsTableModel.getInstance();
-		ttm = TodosTableModel.getInstance();
-		dtm = DeadlinesTableModel.getInstance();
-	}
-
-	private void sendInstanceToModels() {
-		dtm.setUIInstance(mainGUI);
-		etm.setUIInstance(mainGUI);
-		ttm.setUIInstance(mainGUI);
-	}
-
+	/**
+	 * Setup main frame.
+	 */
 	private void setupMainFrame() {
 		frmTodokoro = new JFrame();
 		frmTodokoro.setAlwaysOnTop(true);
@@ -226,6 +224,7 @@ public class MainGUI extends Observable implements Observer {
 		frmTodokoro.getContentPane().setLayout(null);
 		frmTodokoro.setVisible(true);
 
+		// Set focus to user input textpane on windowOpened event
 		frmTodokoro.addWindowListener(new WindowAdapter() {
 			public void windowOpened(WindowEvent e) {
 				tpUserInput.requestFocusInWindow();
@@ -233,6 +232,177 @@ public class MainGUI extends Observable implements Observer {
 		});
 	}
 
+	/**
+	 * Setup panels.
+	 */
+	private void setupPanels() {
+		inputPanel = new JPanel();
+		inputPanel.setBounds(MINI_MODE_X_LOC, MINI_MODE_Y_LOC, MINI_MODE_WIDTH, MINI_MODE_HEIGHT);
+		inputPanel.setLayout(null);
+		frmTodokoro.getContentPane().add(inputPanel);
+	}
+
+	/**
+	 * Setup text panes.
+	 */
+	private void setupTextPanes() {
+		tpUserInput = new JTextPane();
+		inputPanel.add(tpUserInput);
+		tpUserInput.setFont(generateFont(INPUT_TEXTPANE_FONT, INPUT_TEXTPANE_FONT_STYLE, INPUT_TEXTPANE_FONT_SIZE));
+		tpUserInput.setBounds(INPUT_TEXTPANE_X_LOC, INPUT_TEXTPANE_Y_LOC, INPUT_TEXTPANE_WIDTH, INPUT_TEXTPANE_HEIGHT);
+		tpUserInput.setBorder(createCompoundBorder(4, 4, 0, 4));
+		tpUserInput.setFocusAccelerator('e');
+		tpUserInput.getDocument().addDocumentListener(feedback);
+
+		tfFilter = new JTextField();
+		tfFilter.setBounds(594, 12, 156, 26);
+		frmTodokoro.getContentPane().add(tfFilter);
+		tfFilter.setColumns(10);
+		tfFilter.setBorder(createCompoundBorder(0, 4, 0, 4));
+		tfFilter.setFocusAccelerator('f');
+		tfFilter.getDocument().addDocumentListener(new DocumentListener() {
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				SwingUtilities.invokeLater(new Runnable() {
+				    public void run() {
+				    	filterTables();
+				    }
+			    });
+			}
+
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						filterTables();
+					}
+				});
+			}
+
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						filterTables();
+					}
+				});
+			}
+		});
+	}
+
+	/**
+	 * Setup tabbed pane.
+	 */
+	private void setupTabbedPane() {
+		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		tabbedPane.setBorder(null);
+		tabbedPane.setBounds(12, 8, 738, 465);
+		eventsScrollPane = new JScrollPane();
+		todosScrollPane = new JScrollPane();
+		deadlinesScrollPane = new JScrollPane();
+		eventsScrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(0, 0));
+		todosScrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(0, 0));
+		deadlinesScrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(0, 0));
+		tabbedPane.addTab("<html><body leftmargin=15 topmargin=8 marginwidth=15 marginheight=5><b>Events (1)</b></body></html>", null, eventsScrollPane, null);
+		tabbedPane.addTab("<html><body leftmargin=15 topmargin=8 marginwidth=15 marginheight=5><b>Todos (2)</b></body></html>", null, todosScrollPane, null);
+		tabbedPane.addTab("<html><body leftmargin=15 topmargin=8 marginwidth=15 marginheight=5><b>Deadlines (3)</b></body></html>", null, deadlinesScrollPane, null);
+		tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
+		tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
+		tabbedPane.setMnemonicAt(2, KeyEvent.VK_3);
+		frmTodokoro.getContentPane().add(tabbedPane);
+	}
+
+	/**
+	 * Setup table models.
+	 */
+	private void setupTableModels() {
+		etm = EventsTableModel.getInstance();
+		ttm = TodosTableModel.getInstance();
+		dtm = DeadlinesTableModel.getInstance();
+	}
+
+	/**
+	 * Setup tables.
+	 */
+	private void setupTables() {
+		setupDeadlinesTable();
+		setupTodosTable();
+		setupEventsTable();
+	}
+
+	/**
+	 * Setup table sorters.
+	 */
+	private void setupTableSorters() {
+		eventsSorter = new TableRowSorter<EventsTableModel>(etm);
+		eventsTable.setRowSorter(eventsSorter);
+		eventsSorter.toggleSortOrder(1);
+
+		todosSorter = new TableRowSorter<TodosTableModel>(ttm);
+		todosTable.setRowSorter(todosSorter);
+		todosSorter.toggleSortOrder(2);
+
+		deadlinesSorter = new TableRowSorter<DeadlinesTableModel>(dtm);
+		deadlinesTable.setRowSorter(deadlinesSorter);
+		deadlinesSorter.toggleSortOrder(1);
+	}
+
+	/**
+	 * Setup filter label.
+	 */
+	private void setupFilterLabel() {
+		lblFilter = new JLabel("Filter:");
+		lblFilter.setHorizontalAlignment(SwingConstants.RIGHT);
+		lblFilter.setFont(generateFont(FILTER_LABEL_FONT, FILTER_LABEL_FONT_STYLE, FILTER_LABEL_FONT_SIZE));
+		lblFilter.setBounds(530, 16, 60, 16);
+		frmTodokoro.getContentPane().add(lblFilter);
+	}
+
+	/**
+	 * Setup status message text area.
+	 */
+	private void setupStatusMessageTextArea() {
+		taStatusMessage = new JTextArea(2, 20);
+		taStatusMessage.setBounds(12, 4, 738, 75);
+		taStatusMessage.setWrapStyleWord(true);
+		taStatusMessage.setLineWrap(true);
+		taStatusMessage.setOpaque(false);
+		taStatusMessage.setEditable(false);
+		taStatusMessage.setFocusable(false);
+		taStatusMessage.setBackground(UIManager.getColor("Label.background"));
+		taStatusMessage.setFont(generateFont(STATUS_TEXTAREA_FONT, STATUS_TEXTAREA_FONT_STYLE, STATUS_TEXTAREA_FONT_SIZE));
+		taStatusMessage.setBorder(new TitledBorder(createCompoundBorder(0, 5, 0, 5), "Status Message", 0, 0, generateFont("Dialog UI", Font.BOLD, 14)));
+		inputPanel.add(taStatusMessage);
+	}
+
+	/**
+	 * Initialise input history handler.
+	 */
+	private void setupInputHistoryHandler() {
+		history = InputHistoryHandler.getInstance();
+	}
+
+	/**
+	 * Setup input feedback references.
+	 */
+	private void setupInputFeedbackReferences() {
+		feedback = InputFeedbackListener.getInstance();
+		feedback.setupReferences(tpUserInput, taStatusMessage);
+	}
+
+	/**
+	 * Setup help list panel and add it to the main frame.
+	 */
+	private void setupHelpList() {
+		helpList = new HelpList();
+		helpList.setBounds(FRAME_WIDTH-10, 0, HELP_LIST_MODE_WIDTH, HELP_LIST_MODE_HEIGHT);
+		helpList.setVisible(true);
+		frmTodokoro.getContentPane().add(helpList);
+	}
+
+	/**
+	 * Setup key binds.
+	 */
 	@SuppressWarnings("serial")
 	private void setupKeyBinds() {
 		InputMap im = frmTodokoro.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
@@ -311,6 +481,20 @@ public class MainGUI extends Observable implements Observer {
 		});
 	}
 
+	/**
+	 * Send instance of UI to table models.
+	 */
+	private void sendInstanceToModels() {
+		dtm.setUIInstance(mainGUI);
+		etm.setUIInstance(mainGUI);
+		ttm.setUIInstance(mainGUI);
+	}
+
+	/**
+	 * Load next/previous input from input history.
+	 *
+	 * @param position	the position of the input
+	 */
 	private void loadInput(String position) {
 		String input = null;
 		if (position.equals("NEXT")) {
@@ -324,6 +508,9 @@ public class MainGUI extends Observable implements Observer {
 		}
 	}
 
+	/**
+	 * Toggle help list.
+	 */
 	private void toggleHelpList() {
 		if (isDisplayingHelpList) {
 			tpUserInput.requestFocusInWindow();
@@ -339,6 +526,9 @@ public class MainGUI extends Observable implements Observer {
 		isDisplayingHelpList = !isDisplayingHelpList;
 	}
 
+	/**
+	 * Toggle mini-mode.
+	 */
 	private void toggleMiniMode() {
 		if (isMiniMode) {
 			tabbedPane.setVisible(true);
@@ -360,6 +550,10 @@ public class MainGUI extends Observable implements Observer {
 		isMiniMode = !isMiniMode;
 	}
 
+	/**
+	 * Cycle through tabs.
+	 * Alternative hotkey to select tabs for Mac as Mnemonics are not supported.
+	 */
 	private void cycleTabs() {
 		if (tabbedPane.getSelectedIndex() == 2) {
 			tabbedPane.setSelectedIndex(0);
@@ -368,6 +562,9 @@ public class MainGUI extends Observable implements Observer {
 		}
 	}
 
+	/**
+	 * Cycle through themes.
+	 */
 	private void cycleThemes() {
 		themeIndex++;
 		themeIndex = themeIndex%themes.length;
@@ -392,6 +589,11 @@ public class MainGUI extends Observable implements Observer {
 		deadlinesTable.setRowHeight(TABLE_ROW_HEIGHT);
 	}
 
+	/**
+	 * Scroll up/down table entries.
+	 *
+	 * @param direction		the scrolling direction
+	 */
 	private void scrollTable(String direction) {
 		if (direction.equals("UP")) {
 			switch (tabbedPane.getSelectedIndex()) {
@@ -402,7 +604,7 @@ public class MainGUI extends Observable implements Observer {
 					todosScrollPane.getVerticalScrollBar().setValue(todosScrollPane.getVerticalScrollBar().getValue()+todosScrollPane.getHeight()-24);
 					break;
 				case 2:
-					deadlineTasksScrollPane.getVerticalScrollBar().setValue(deadlineTasksScrollPane.getVerticalScrollBar().getValue()+deadlineTasksScrollPane.getHeight()-24);
+					deadlinesScrollPane.getVerticalScrollBar().setValue(deadlinesScrollPane.getVerticalScrollBar().getValue()+deadlinesScrollPane.getHeight()-24);
 					break;
 				default:
 					// Impossible case
@@ -417,7 +619,7 @@ public class MainGUI extends Observable implements Observer {
 					todosScrollPane.getVerticalScrollBar().setValue(todosScrollPane.getVerticalScrollBar().getValue()-todosScrollPane.getHeight()-24);
 					break;
 				case 2:
-					deadlineTasksScrollPane.getVerticalScrollBar().setValue(deadlineTasksScrollPane.getVerticalScrollBar().getValue()-deadlineTasksScrollPane.getHeight()-24);
+					deadlinesScrollPane.getVerticalScrollBar().setValue(deadlinesScrollPane.getVerticalScrollBar().getValue()-deadlinesScrollPane.getHeight()-24);
 					break;
 				default:
 					// Impossible case
@@ -426,119 +628,9 @@ public class MainGUI extends Observable implements Observer {
 		}
 	}
 
-	private void setupPanels() {
-		inputPanel = new JPanel();
-		inputPanel.setBounds(MINI_MODE_X_LOC, MINI_MODE_Y_LOC, MINI_MODE_WIDTH, MINI_MODE_HEIGHT);
-		inputPanel.setLayout(null);
-		frmTodokoro.getContentPane().add(inputPanel);
-	}
-
-	private void setupTextPanes() {
-		tpUserInput = new JTextPane();
-		inputPanel.add(tpUserInput);
-		tpUserInput.setFont(generateFont(INPUT_TEXTPANE_FONT, INPUT_TEXTPANE_FONT_STYLE, INPUT_TEXTPANE_FONT_SIZE));
-		tpUserInput.setBounds(INPUT_TEXTPANE_X_LOC, INPUT_TEXTPANE_Y_LOC, INPUT_TEXTPANE_WIDTH, INPUT_TEXTPANE_HEIGHT);
-		tpUserInput.setBorder(getCompoundBorder(4, 4, 0, 4));
-		tpUserInput.setFocusAccelerator('e');
-		tpUserInput.getDocument().addDocumentListener(feedback);
-
-		tfFilter = new JTextField();
-		tfFilter.setBounds(594, 12, 156, 26);
-		frmTodokoro.getContentPane().add(tfFilter);
-		tfFilter.setColumns(10);
-		tfFilter.setBorder(getCompoundBorder(0, 4, 0, 4));
-		tfFilter.setFocusAccelerator('f');
-		tfFilter.getDocument().addDocumentListener(new DocumentListener() {
-			@Override
-			public void changedUpdate(DocumentEvent e) {
-				SwingUtilities.invokeLater(new Runnable() {
-				    public void run() {
-				    	filterTables();
-				    }
-			    });
-			}
-
-			@Override
-			public void insertUpdate(DocumentEvent e) {
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						filterTables();
-					}
-				});
-			}
-
-			@Override
-			public void removeUpdate(DocumentEvent e) {
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						filterTables();
-					}
-				});
-			}
-		});
-	}
-
-	private void setupFilterLabel() {
-		lblFilter = new JLabel("Filter:");
-		lblFilter.setHorizontalAlignment(SwingConstants.RIGHT);
-		lblFilter.setFont(generateFont(FILTER_LABEL_FONT, FILTER_LABEL_FONT_STYLE, FILTER_LABEL_FONT_SIZE));
-		lblFilter.setBounds(530, 16, 60, 16);
-		frmTodokoro.getContentPane().add(lblFilter);
-	}
-
-	private void setupStatusMessageTextArea() {
-		taStatusMessage = new JTextArea(2, 20);
-		taStatusMessage.setBounds(12, 4, 738, 75);
-		taStatusMessage.setWrapStyleWord(true);
-		taStatusMessage.setLineWrap(true);
-		taStatusMessage.setOpaque(false);
-		taStatusMessage.setEditable(false);
-		taStatusMessage.setFocusable(false);
-		taStatusMessage.setBackground(UIManager.getColor("Label.background"));
-		taStatusMessage.setFont(generateFont(STATUS_TEXTAREA_FONT, STATUS_TEXTAREA_FONT_STYLE, STATUS_TEXTAREA_FONT_SIZE));
-		taStatusMessage.setBorder(new TitledBorder(getCompoundBorder(0, 5, 0, 5), "Status Message", 0, 0, generateFont("Dialog UI", Font.BOLD, 14)));
-		inputPanel.add(taStatusMessage);
-	}
-
-	private void setupTableSorters() {
-		eventsSorter = new TableRowSorter<EventsTableModel>(etm);
-		eventsTable.setRowSorter(eventsSorter);
-		eventsSorter.toggleSortOrder(1);
-
-		todosSorter = new TableRowSorter<TodosTableModel>(ttm);
-		todosTable.setRowSorter(todosSorter);
-		todosSorter.toggleSortOrder(2);
-
-		deadlinesSorter = new TableRowSorter<DeadlinesTableModel>(dtm);
-		deadlinesTable.setRowSorter(deadlinesSorter);
-		deadlinesSorter.toggleSortOrder(1);
-	}
-
-	private void setupTabbedPane() {
-		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-		tabbedPane.setBorder(null);
-		tabbedPane.setBounds(12, 8, 738, 465);
-		eventsScrollPane = new JScrollPane();
-		todosScrollPane = new JScrollPane();
-		deadlineTasksScrollPane = new JScrollPane();
-		eventsScrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(0, 0));
-		todosScrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(0, 0));
-		deadlineTasksScrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(0, 0));
-		tabbedPane.addTab("<html><body leftmargin=15 topmargin=8 marginwidth=15 marginheight=5><b>Events (1)</b></body></html>", null, eventsScrollPane, null);
-		tabbedPane.addTab("<html><body leftmargin=15 topmargin=8 marginwidth=15 marginheight=5><b>Todos (2)</b></body></html>", null, todosScrollPane, null);
-		tabbedPane.addTab("<html><body leftmargin=15 topmargin=8 marginwidth=15 marginheight=5><b>Deadlines (3)</b></body></html>", null, deadlineTasksScrollPane, null);
-		tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
-		tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
-		tabbedPane.setMnemonicAt(2, KeyEvent.VK_3);
-		frmTodokoro.getContentPane().add(tabbedPane);
-	}
-
-	private void setupTables() {
-		setupDeadlineTasksTable();
-		setupTodosTable();
-		setupEventsTable();
-	}
-
+	/**
+	 * Setup events table.
+	 */
 	private void setupEventsTable() {
 		eventsTable = new JTable();
 		eventsTable.setName("Events");
@@ -549,6 +641,9 @@ public class MainGUI extends Observable implements Observer {
 		eventsScrollPane.setViewportView(eventsTable);
 	}
 
+	/**
+	 * Setup todos table.
+	 */
 	private void setupTodosTable() {
 		todosTable = new JTable();
 		todosTable.setName("Todos");
@@ -559,16 +654,24 @@ public class MainGUI extends Observable implements Observer {
 		todosScrollPane.setViewportView(todosTable);
 	}
 
-	private void setupDeadlineTasksTable() {
+	/**
+	 * Setup deadlines table.
+	 */
+	private void setupDeadlinesTable() {
 		deadlinesTable = new JTable();
 		deadlinesTable.setName("Deadlines");
 		deadlinesTable.setModel(dtm);
 		setupTableProperties(deadlinesTable);
 		setupRenderersAndEditors(deadlinesTable);
 		setupDimensions(deadlinesTable);
-		deadlineTasksScrollPane.setViewportView(deadlinesTable);
+		deadlinesScrollPane.setViewportView(deadlinesTable);
 	}
 
+	/**
+	 * Sets the up custom renderers and editors.
+	 *
+	 * @param table		the tables to assign renderers and editors
+	 */
 	private void setupRenderersAndEditors(JTable table) {
 		DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
 		CustomCellRenderer customRenderer = new CustomCellRenderer();
@@ -585,6 +688,12 @@ public class MainGUI extends Observable implements Observer {
 		}
 	}
 
+	/**
+	 * Filter row.
+	 *
+	 * @param sorter	the table sorter
+	 * @param index		the index of starting column to sort
+	 */
 	private void filterRow(TableRowSorter<?> sorter, int index) {
 		RowFilter<Object, Object> rowFilter = null;
 		List<RowFilter<Object, Object>> rowFilters = new ArrayList<RowFilter<Object, Object>>();
@@ -612,12 +721,22 @@ public class MainGUI extends Observable implements Observer {
 		sorter.setRowFilter(rowFilter);
 	}
 
+	/**
+	 * Filter tables.
+	 */
 	private void filterTables() {
 		filterRow(eventsSorter, 3);
 		filterRow(todosSorter, 1);
 		filterRow(deadlinesSorter, 2);
 	}
 
+	/**
+	 * Update tables.
+	 *
+	 * @param type				the type of task
+	 * @param tasks				the list of tasks
+	 * @param shouldFocusTab	the boolean to determine which tab to focus to after updating
+	 */
 	public void updateTables(EnumTypes.TASK_TYPE type, List<Task> tasks, boolean shouldFocusTab) {
 		switch (type) {
 			case EVENT:
@@ -647,6 +766,11 @@ public class MainGUI extends Observable implements Observer {
 		}
 	}
 
+	/**
+	 * Sets up the table dimensions.
+	 *
+	 * @param table		the table to specify dimensions
+	 */
 	private void setupDimensions(JTable table) {
 		table.setRowHeight(TABLE_ROW_HEIGHT);
 		table.getColumnModel().getColumn(0).setMaxWidth(45);
@@ -674,6 +798,11 @@ public class MainGUI extends Observable implements Observer {
 		}
 	}
 
+	/**
+	 * Sets up the table properties.
+	 *
+	 * @param table		the table to specify properties
+	 */
 	private void setupTableProperties(JTable table) {
 		table.getTableHeader().setReorderingAllowed(false);
 		table.setCellSelectionEnabled(true);
@@ -683,25 +812,55 @@ public class MainGUI extends Observable implements Observer {
 		table.setFillsViewportHeight(true);
 	}
 
+	/**
+	 * Generate font.
+	 *
+	 * @param font	the font
+	 * @param style	the style
+	 * @param size	the size
+	 * @return 		the font
+	 */
 	private Font generateFont(String font, int style, int size) {
 		return new Font(font, style, size);
 	}
 
-	private Border getCompoundBorder(int top, int left, int bottom, int up) {
+	/**
+	 * Create a rounded compound border.
+	 *
+	 * @param top		the top margin
+	 * @param left		the left margin
+	 * @param bottom	the bottom margin
+	 * @param right		the right margin
+	 * @return the compound border
+	 */
+	private Border createCompoundBorder(int top, int left, int bottom, int right) {
 		Border rounded = new LineBorder(new Color(210, 210, 210), 2, true);
-		Border empty = new EmptyBorder(top, left, bottom, up);
+		Border empty = new EmptyBorder(top, left, bottom, right);
 		return new CompoundBorder(rounded, empty);
 	}
 
+	/**
+	 * Update status message.
+	 *
+	 * @param msg	the new status message
+	 */
 	public void updateStatusMsg(String msg) {
     	taStatusMessage.setText(msg);
 	}
 
+	/**
+	 * Notify observers that input value has changed.
+	 *
+	 * @param command	the input command
+	 */
 	public void sendUserInput(String command) {
 		setChanged();
 		notifyObservers(new ObserverEvent(ObserverEvent.CHANGE_USER_INPUT_CODE, new ObserverEvent.EInput(command)));
 	}
 
+	/**
+	 * Update method that is called upon receiving change notification by observable
+	 */
 	@Override
 	public void update(Observable observable, Object event) {
 		ObserverEvent OEvent = (ObserverEvent) event;
@@ -717,6 +876,5 @@ public class MainGUI extends Observable implements Observer {
 			updateTables(eTasks.getTaskType(), eTasks.getTasks(), eTasks.shouldSwitch());
 			return;
 		}
-
 	}
 }

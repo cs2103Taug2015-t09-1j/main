@@ -20,12 +20,13 @@ import javax.swing.table.TableCellRenderer;
 import main.logic.Add;
 
 /**
- * @@author Dalton
+ * The Class CustomCellRenderer.
+ * Controls the rendering of the cells of the JTables
  *
+ * @@author Dalton
  */
 @SuppressWarnings("serial")
 public class CustomCellRenderer extends JTextArea implements TableCellRenderer {
-	private static final Logger logger = Logger.getLogger(CustomCellRenderer.class.getName());
 	private static final Color NON_EXPIRED_FONT_COLOR = Color.decode("0x009900");
 	private static final Color EXPIRED_FONT_COLOR = Color.RED;
 
@@ -49,6 +50,7 @@ public class CustomCellRenderer extends JTextArea implements TableCellRenderer {
 	        	this.setText(formatDate((Date)value));
 	        	setFontColour((Date)value);
 
+	        	// Hides the value of date if both from and to dates are equal. (Single Date Events)
         		if (table.getName().equals("Events")) {
         			int modelRow = table.getRowSorter().convertRowIndexToModel(row);
 	        		if (column == 2) {
@@ -71,6 +73,9 @@ public class CustomCellRenderer extends JTextArea implements TableCellRenderer {
         return this;
     }
 
+    /**
+	 * Render font size relative to OS.
+	 */
     private void renderFontSizeRelativeToOS() {
     	if (System.getProperty("os.name").startsWith("Mac")) {
         	this.setFont(new Font("Segoe UI Semibold", Font.PLAIN, 11));
@@ -79,12 +84,24 @@ public class CustomCellRenderer extends JTextArea implements TableCellRenderer {
         }
     }
 
+    /**
+	 * Format date.
+	 *
+	 * @param d		the date
+	 * @return 		the string
+	 */
     private String formatDate(Date d) {
     	SimpleDateFormat dateFmt = new SimpleDateFormat("EEE, dd MMM yyyy");
 		SimpleDateFormat dayFmt = new SimpleDateFormat("h:mm a");
 		return dateFmt.format(d) + "\n" + dayFmt.format(d);
     }
 
+    /**
+	 * Sets the font colour of the date to RED if it is expired
+	 * Sets the font colour of the date to GREEN if it is not expired
+	 *
+	 * @param d		the date to modify
+	 */
     private void setFontColour(Date d) {
     	Calendar now = Calendar.getInstance();
     	Calendar dateTime = Calendar.getInstance();

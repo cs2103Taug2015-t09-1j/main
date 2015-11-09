@@ -7,6 +7,7 @@ import java.awt.Color;
 import java.awt.TextArea;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -20,10 +21,13 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 
 import main.parser.Parser;
+import main.storage.LogFileHandler;
 
 /**
- * @author Dalton
+ * The listener for receiving inputFeedback events.
+ * Detects and highlights specific text input by the user and returns feedback.
  *
+ * @@author Dalton
  */
 public class InputFeedbackListener implements DocumentListener {
 	private JTextPane tpInput = null;
@@ -73,13 +77,22 @@ public class InputFeedbackListener implements DocumentListener {
 	private static final String DAY_MESSAGE = "Days in the Task Description may be parsed as dates. "
 											+ "Surround your Task Description with double quotes if you do not want it to be parsed. (e.g. \"Lunch with Wednesday\" from 12 to 1pm)";
 
+	/**
+	 * Instantiates a new input feedback listener and sets up the logger.
+	 */
 	private InputFeedbackListener() {
 		parser = Parser.getInstance();
 		StyleConstants.setForeground(defaultSet, NORMAL_FONT_COLOUR);
 		StyleConstants.setForeground(keywordSet, KEYWORD_FONT_COLOUR);
 		StyleConstants.setForeground(warningSet, WARNING_FONT_COLOUR);
+		LogFileHandler.getInstance().addLogFileHandler(logger);
 	}
 
+	/**
+	 * Gets the single instance of InputFeedbackListener.
+	 *
+	 * @return single instance of InputFeedbackListener
+	 */
 	public static InputFeedbackListener getInstance() {
 		if (feedbackListener == null) {
 			feedbackListener = new InputFeedbackListener();
@@ -87,11 +100,20 @@ public class InputFeedbackListener implements DocumentListener {
 		return feedbackListener;
 	}
 
-	public void setupPointers(JTextPane tpInput, JTextArea taMessage) {
+	/**
+	 * Setup References to the UI components.
+	 *
+	 * @param tpInput		reference of tpInput
+	 * @param taMessage		reference of taMessage
+	 */
+	public void setupReferences(JTextPane tpInput, JTextArea taMessage) {
 		this.tpInput = tpInput;
 		this.taMessage = taMessage;
 	}
 
+	/**
+	 * Highlight text of matching cases.
+	 */
 	public void highlightText() {
 		String input = tpInput.getText();
         tpInput.getStyledDocument().setCharacterAttributes(0, input.length(), defaultSet, true);
@@ -100,20 +122,23 @@ public class InputFeedbackListener implements DocumentListener {
         	taMessage.setText(null);
         }
 
-        String[][] commands = {parser.getCommandKeywordList("update"), parser.getCommandKeywordList("delete"),
-								parser.getCommandKeywordList("display"), parser.getCommandKeywordList("undo"),
-								parser.getCommandKeywordList("redo"), parser.getCommandKeywordList("exit"),
-								parser.getCommandKeywordList("undone"), parser.getCommandKeywordList("done")};
+        String[][] commandArrays = getCommandArrays();
 
-        highlightCommandKeyword(commands, input);
+        highlightCommandKeyword(commandArrays, input);
         highlightWarningCases(input, TIME_REGEX, TIME_MESSAGE);
         highlightWarningCases(input, MONTH_REGEX, MONTH_MESSAGE);
         highlightWarningCases(input, DAY_REGEX, DAY_MESSAGE);
     }
 
-	private void highlightCommandKeyword(String[][] commands, String input) {
-		for (int i = 0; i < commands.length; i++) {
-        	for (String keyword : commands[i]) {
+	/**
+	 * Search through the input string and highlight any keywords matching to the commands in the command arrays.
+	 *
+	 * @param commandArrays	the array of command arrays kept by the Parser
+	 * @param input			the input
+	 */
+	private void highlightCommandKeyword(String[][] commandArrays, String input) {
+		for (int i = 0; i < commandArrays.length; i++) {
+        	for (String keyword : commandArrays[i]) {
         		pattern = Pattern.compile("(?ui)^" + keyword + "\\s+");
                 matcher = pattern.matcher(input);
                 while (matcher.find()) {
@@ -124,6 +149,28 @@ public class InputFeedbackListener implements DocumentListener {
         }
 	}
 
+	/**
+	 * Retrieve command arrays from the Parser.
+	 *
+	 * @return 	array of command arrays
+	 */
+	private String[][] getCommandArrays() {
+		return new String[][] {parser.getCommandKeywordList("update"), parser.getCommandKeywordList("delete"),
+								parser.getCommandKeywordList("display"), parser.getCommandKeywordList("undo"),
+								parser.getCommandKeywordList("redo"), parser.getCommandKeywordList("exit"),
+								parser.getCommandKeywordList("undone"), parser.getCommandKeywordList("done")};
+	}
+
+	/**
+	 * Highlight warning cases.
+	 *
+	 * @param input
+	 *            the user input
+	 * @param regex
+	 *            the regex for parsing
+	 * @param message
+	 *            the message to display to the user
+	 */
 	private void highlightWarningCases(String input, String regex, String message) {
 		pattern = Pattern.compile("(?ui)" + regex);
         matcher = pattern.matcher(input);
@@ -134,13 +181,17 @@ public class InputFeedbackListener implements DocumentListener {
 	}
 
 	/**
-     * Invokes the changes later to prevent clashes with the event notification
-     */
+	 * Handle the change in text and invoke later to prevent clashes with other threads
+	 */
     private void handleTextChanged() {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-            	highlightText();
+            	try {
+            		highlightText();
+            	} catch (Exception e) {
+        			logger.log(Level.SEVERE, e.getMessage(), e);
+        		}
             }
         });
     }

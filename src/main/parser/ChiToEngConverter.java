@@ -7,10 +7,16 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * @author Dalton
+ * The Class ChiToEngConverter.
+ * Converts from Chinese Unicode to English.
  *
+ * @@author Dalton
  */
 public class ChiToEngConverter {
+
+	/**
+	 * Instantiates a new ChiToEngConverter.
+	 */
 	private ChiToEngConverter() {}
 
 	// Chinese To-Be-Converted Constants
@@ -237,6 +243,12 @@ public class ChiToEngConverter {
 													ENG_SEVEN, ENG_EIGHT, ENG_NINE, ENG_DATE, ENG_O_CLOCK};
 
 
+	/**
+	 * Convert Chinese Unicode to English.
+	 *
+	 * @param input		the user input string
+	 * @return 			the converted English string
+	 */
 	public static String convertChineseToEnglishUnicode(String input) {
 		for (int i = 0; i < chineseConstants.length; i++) {
 			Pattern pat = Pattern.compile("\\s*" + chineseConstants[i] + "\\s*", Pattern.UNICODE_CHARACTER_CLASS);
@@ -248,6 +260,12 @@ public class ChiToEngConverter {
 		return input;
 	}
 
+	/**
+	 * Checks string contains characters within Unicode range of Chinese characters
+	 *
+	 * @param input		the user input string
+	 * @return 				true, if is Chinese string
+	 */
 	public static boolean isChineseString(String input) {
 		if(input.matches("^[\u4E00-\u62FF\u6300-\u77FF\u7800-\u8CFF\u8D00-\u9FFF\\p{IsDigit}]+")) {
 			return true;
