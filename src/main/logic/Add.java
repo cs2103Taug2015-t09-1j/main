@@ -20,6 +20,8 @@ import main.storage.Storage;
 
 /**
  * The Class Add.
+ * Handles the add command based on the ParsedObject returned by the parser
+ * after being direct to from the controller.
  *
  * @@author Dalton
  */
