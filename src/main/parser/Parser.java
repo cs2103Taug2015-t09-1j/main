@@ -160,46 +160,21 @@ public class Parser {
 		return new SimpleDateFormat(format).format(d);
 	}
 
-	private void singleDateGroup(List<Date> dates) {
-		List<Date> parsedDates = new ArrayList<Date>();
-		Calendar tempCal = Calendar.getInstance();
-
-		// lunch with john at 1pm tomorrow
-		// lunch in 5 minutes with john
-		// at 1pm tomorrow lunch with john
-		// lunch at 1pm tomorrow with john
-		if (dates.size() == 1) {
-			tempCal.setTime(dates.get(0));
-
-			if (tempCal.compareTo(Calendar.getInstance()) == 0) {
-				setDateTime(tempCal, -1, -1, -1, 23, 59, 0);
-			}
-
-			parsedDates.add(tempCal.getTime());
-		} else {
-			// lunch at 1pm with john tomorrow
-			for (int i = 0; i < dates.size(); i++) {
-				parsedDates.add(dates.get(i));
-			}
-		}
-	}
-
 	public static boolean containsHanScript(String s) {
 	    return s.codePoints().anyMatch(
 	            codepoint ->
 	            Character.UnicodeScript.of(codepoint) == Character.UnicodeScript.HAN);
 	}
 
-	public List<Date> parseDateGroups(String input) {
+	private String removeTaskDescriptionFromInput(String input) {
 		String[] taskDescWords;
-		boolean isChinese = false;
-		if(ChiToEngUnicodeConverter.isChineseString(input)) {
-			input = ChiToEngUnicodeConverter.convertChineseToEnglishUnicode(input);
+
+		if(ChiToEngConverter.isChineseString(input)) {
+			input = ChiToEngConverter.convertChineseToEnglishUnicode(input);
 			taskDescWords = getTaskDesc(input).split("\\s+");
 			for (String word : taskDescWords) {
 				input = input.replaceAll("\\s*" + word + "\\s*", " ");
 			}
-			isChinese = true;
 		} else {
 			taskDescWords = getTaskDesc(input).split("\\s+");
 			for (String word : taskDescWords) {
@@ -211,33 +186,41 @@ public class Parser {
 		if (matcher.find()) {
 			input = input.substring(0, matcher.start()) +  input.substring(matcher.start()+5, input.length());
 		}
+
 		input = input.replaceAll("until", "till");
-		System.out.println(input);
+
+		return input;
+	}
+
+	public List<Date> parseDateGroups(String input) {
+		input = removeTaskDescriptionFromInput(input);
+
 		List<DateGroup> dGroups = getDateGroups(input);
-		List<Date> dates = new ArrayList<Date>();
-		Calendar temp1 = Calendar.getInstance();
-		DateGroup firstGroup;
-		List<Date> firstGroupDates;
+		List<Date> parsedDates = new ArrayList<Date>();
 
 		if (dGroups != null) {
-			firstGroup = dGroups.get(0);
-			firstGroupDates = firstGroup.getDates();
-			if (firstGroupDates.size() == 1) {
-				temp1.setTime(firstGroupDates.get(0));
+			for (int i = 0; i < dGroups.size(); i++) {
+				DateGroup dGroup = dGroups.get(0);
+				List<Date> dGroupDates = dGroup.getDates();
+				Calendar cal = Calendar.getInstance();
 
-				if (temp1.compareTo(Calendar.getInstance()) == 0) {
-					setDateTime(temp1, -1, -1, -1, 23, 59, 0);
-				}
+				if (dGroupDates.size() == 1) {
+					cal.setTime(dGroupDates.get(0));
 
-				dates.add(temp1.getTime());
-			} else {
-				for (int i = 0; i < firstGroupDates.size(); i++) {
-					dates.add(firstGroupDates.get(i));
+					if (cal.compareTo(Calendar.getInstance()) == 0) {
+						setDateTime(cal, -1, -1, -1, 23, 59, 0);
+					}
+
+					parsedDates.add(cal.getTime());
+				} else {
+					for (int j = 0; j < dGroupDates.size(); j++) {
+						parsedDates.add(dGroupDates.get(j));
+					}
 				}
 			}
 		}
 
-		return dates;
+		return parsedDates;
 	}
 
 	public List<DateGroup> getDateGroups(String input) {
@@ -272,7 +255,11 @@ public class Parser {
 			input = matcher.group().replace("\"", "");
 		} else {
 			input = input.replaceAll("until", "till");
-			input = ChiToEngUnicodeConverter.convertChineseToEnglishUnicode(input);
+
+			if (ChiToEngConverter.isChineseString(input)) {
+				input = ChiToEngConverter.convertChineseToEnglishUnicode(input);
+			}
+
 			List<DateGroup> dateGroup = ptParser.parseSyntax(input);
 
 			for (int i = 0; i < dateGroup.size(); i++) {
@@ -334,7 +321,7 @@ public class Parser {
 		List<Date> parsedInput = parseDateGroups(input);
 		ArrayList<CATEGORY> categories = new ArrayList<CATEGORY>();
 
-		if (parsedInput.size() != 0) {
+		if (parsedInput.size() == 0) {
 			ArrayList<String> categoriesRegexClone = new ArrayList<String>(Arrays.asList(categoriesRegex));
 			ArrayList<CATEGORY> categoriesArrClone = new ArrayList<CATEGORY>(Arrays.asList(categoriesArr));
 

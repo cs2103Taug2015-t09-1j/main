@@ -13,6 +13,9 @@ import java.util.regex.Pattern;
 
 import javax.swing.JTextArea;
 import javax.swing.JTextPane;
+import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 
@@ -22,11 +25,11 @@ import main.parser.Parser;
  * @author Dalton
  *
  */
-public class InputFeedbackListener {
+public class InputFeedbackListener implements DocumentListener {
 	private JTextPane tpInput = null;
 	private JTextArea taMessage = null;
 	private static Parser parser = null;
-	private static InputFeedbackListener feedbackHandler = null;
+	private static InputFeedbackListener feedbackListener = null;
 	private static Pattern pattern = null;
 	private static Matcher matcher = null;
 	private static final Logger logger = Logger.getLogger(InputFeedbackListener.class.getName());
@@ -78,10 +81,10 @@ public class InputFeedbackListener {
 	}
 
 	public static InputFeedbackListener getInstance() {
-		if (feedbackHandler == null) {
-			feedbackHandler = new InputFeedbackListener();
+		if (feedbackListener == null) {
+			feedbackListener = new InputFeedbackListener();
 		}
-		return feedbackHandler;
+		return feedbackListener;
 	}
 
 	public void setupPointers(JTextPane tpInput, JTextArea taMessage) {
@@ -128,5 +131,32 @@ public class InputFeedbackListener {
         	tpInput.getStyledDocument().setCharacterAttributes(matcher.start(), matcher.group().length(), warningSet, true);
         	taMessage.setText(message);
         }
+	}
+
+	/**
+     * Invokes the changes later to prevent clashes with the event notification
+     */
+    private void handleTextChanged() {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+            	highlightText();
+            }
+        });
+    }
+
+	@Override
+	public void insertUpdate(DocumentEvent e) {
+		handleTextChanged();
+	}
+
+	@Override
+	public void removeUpdate(DocumentEvent e) {
+		handleTextChanged();
+	}
+
+	@Override
+	public void changedUpdate(DocumentEvent e) {
+		// Not required
 	}
 }

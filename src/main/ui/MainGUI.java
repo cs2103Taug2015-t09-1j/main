@@ -76,41 +76,61 @@ public class MainGUI extends Observable implements Observer {
 	private JTable eventsTable, todosTable, deadlinesTable;
 	private JTabbedPane tabbedPane;
 	private JScrollPane eventsScrollPane, todosScrollPane, deadlineTasksScrollPane;
-	private TableRowSorter eventsSorter, todosSorter, deadlinesSorter;
+	private TableRowSorter<?> eventsSorter, todosSorter, deadlinesSorter;
 	private JTextArea taStatusMessage;
 
 	private static final Logger logger = Logger.getLogger(MainGUI.class.getName());
 	private static HelpList helpList = null;
-	private static InputHistoryListener history = null;
+	private static InputHistoryHandler history = null;
 	private static InputFeedbackListener feedback = null;
 	private static EventsTableModel etm = null;
 	private static TodosTableModel ttm = null;
 	private static DeadlinesTableModel dtm = null;
 
 	private static final int FRAME_WIDTH = 768;
-	//private static final int FRAME_WIDTH = 1024;
 	private static final int FRAME_HEIGHT = 640;
+	private static final int FRAME_X_LOC = 0;
+	private static final int FRAME_Y_LOC = 23;
 	private static final float FRAME_OPACITY = 1f;
 
-	private static final int INPUT_PANEL_HEIGHT = 137;
-	private static final int INPUT_PANEL_WIDTH = 762;
+	private static final int MINI_MODE_HEIGHT = 137;
+	private static final int MINI_MODE_WIDTH = 762;
+	private static final int MINI_MODE_X_LOC = 0;
+	private static final int MINI_MODE_Y_LOC = 475;
 
-	private static final int FRAME_MINI_MODE_WIDTH = 768;
-	private static final int FRAME_MINI_MODE_HEIGHT = 167;
-	private static final float FRAME_MINI_MODE_OPACITY = 0.9f;
+	private static final int MINI_MODE_FRAME_WIDTH = 768;
+	private static final int MINI_MODE_FRAME_HEIGHT = 167;
+	private static final float MINI_MODE_FRAME_OPACITY = 0.9f;
 
-	private static final int FRAME_HELP_LIST_WIDTH = 1044;
-	private static final int FRAME_HELP_LIST_HEIGHT = 640;
+	private static final int HELP_LIST_MODE_WIDTH = 270;
+	private static final int HELP_LIST_MODE_HEIGHT = 600;
 
-	private static final int HELP_LIST_WIDTH = 270;
-	private static final int HELP_LIST_HEIGHT = 600;
+	private static final int HELP_LIST_MODE_FRAME_WIDTH = 1044;
+	private static final int HELP_LIST_MODE_FRAME_HEIGHT = 640;
 
-	private static final int TABLE_FONT_SIZE = 14;
-	private static final int LABEL_FONT_SIZE = 15;
+	private static final int INPUT_TEXTPANE_HEIGHT = 38;
+	private static final int INPUT_TEXTPANE_WIDTH = 738;
+	private static final int INPUT_TEXTPANE_X_LOC = 12;
+	private static final int INPUT_TEXTPANE_Y_LOC = 87;
+
+	private static final String FILTER_LABEL_FONT = "Dialog UI";
+	private static final int FILTER_LABEL_FONT_STYLE = Font.BOLD;
+	private static final int FILTER_LABEL_FONT_SIZE = 14;
+
+	private static final String STATUS_TEXTAREA_FONT = "Dialog UI";
+	private static final int STATUS_TEXTAREA_FONT_STYLE = Font.BOLD;
+	private static final int STATUS_TEXTAREA_FONT_SIZE = 14;
+
+	private static final String INPUT_TEXTPANE_FONT = "Segoe UI Semibold";
+	private static final int INPUT_TEXTPANE_FONT_STYLE = Font.BOLD;
+	private static final int INPUT_TEXTPANE_FONT_SIZE = 20;
+
 	private static final int TABLE_ROW_HEIGHT = 50;
 
-	private static final String[] themes = {"bernstein.BernsteinLookAndFeel", "noire.NoireLookAndFeel", "smart.SmartLookAndFeel", "mint.MintLookAndFeel", "mcwin.McWinLookAndFeel"};
+	private static final String[] themes = {"bernstein.BernsteinLookAndFeel", "noire.NoireLookAndFeel",
+											"smart.SmartLookAndFeel", "mint.MintLookAndFeel", "mcwin.McWinLookAndFeel"};
 	private static int themeIndex = 0;
+
 	private static boolean isMiniMode = false;
 	private static boolean isDisplayingHelpList = false;
 
@@ -155,11 +175,11 @@ public class MainGUI extends Observable implements Observer {
 	private void initialise() throws Exception {
 		setupMainFrame();
 		setupPanels();
+		setupTextPanes();
 		setupTabbedPane();
 		setupTableModels();
 		setupTables();
 		setupTableSorters();
-		setupTextPane();
 		setupFilterLabel();
 		setupStatusMessageTextArea();
 		setupInputHistoryHandler();
@@ -170,13 +190,13 @@ public class MainGUI extends Observable implements Observer {
 
 	private void setupHelpList() {
 		helpList = new HelpList();
-		helpList.setBounds(FRAME_WIDTH-10, 0, HELP_LIST_WIDTH, HELP_LIST_HEIGHT);
+		helpList.setBounds(FRAME_WIDTH-10, 0, HELP_LIST_MODE_WIDTH, HELP_LIST_MODE_HEIGHT);
 		helpList.setVisible(true);
 		frmTodokoro.getContentPane().add(helpList);
 	}
 
 	private void setupInputHistoryHandler() {
-		history = InputHistoryListener.getInstance();
+		history = InputHistoryHandler.getInstance();
 	}
 
 	private void setupInputFeedbackPointers() {
@@ -201,17 +221,16 @@ public class MainGUI extends Observable implements Observer {
 		frmTodokoro.setAlwaysOnTop(true);
 		frmTodokoro.setTitle("Todokoro");
 		frmTodokoro.setResizable(false);
-		frmTodokoro.setBounds(0, 23, FRAME_WIDTH, FRAME_HEIGHT);
+		frmTodokoro.setBounds(FRAME_X_LOC, FRAME_Y_LOC, FRAME_WIDTH, FRAME_HEIGHT);
 		frmTodokoro.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frmTodokoro.getContentPane().setLayout(null);
+		frmTodokoro.setVisible(true);
 
 		frmTodokoro.addWindowListener(new WindowAdapter() {
 			public void windowOpened(WindowEvent e) {
 				tpUserInput.requestFocusInWindow();
 			}
 		});
-
-		frmTodokoro.setVisible(true);
 	}
 
 	@SuppressWarnings("serial")
@@ -247,24 +266,24 @@ public class MainGUI extends Observable implements Observer {
 			}
 		});
 
-		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_QUOTE, InputEvent.CTRL_DOWN_MASK), "Cycle Themes");
-		am.put("Cycle Themes", new AbstractAction() {
-			public void actionPerformed(ActionEvent e) {
-				cycleThemes();
-			}
-		});
-
-		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_F1, InputEvent.CTRL_DOWN_MASK), "Scroll Up");
+		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0), "Scroll Up");
 		am.put("Scroll Up", new AbstractAction() {
 			public void actionPerformed(ActionEvent e) {
 				scrollTable("UP");
 			}
 		});
 
-		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, InputEvent.CTRL_DOWN_MASK), "Scroll Down");
+		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0), "Scroll Down");
 		am.put("Scroll Down", new AbstractAction() {
 			public void actionPerformed(ActionEvent e) {
 				scrollTable("DOWN");
+			}
+		});
+
+		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_QUOTE, InputEvent.CTRL_DOWN_MASK), "Cycle Themes");
+		am.put("Cycle Themes", new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {
+				cycleThemes();
 			}
 		});
 
@@ -314,7 +333,7 @@ public class MainGUI extends Observable implements Observer {
 				toggleMiniMode();
 			}
 			helpList.getHelpListFocus();
-			frmTodokoro.setBounds(frmTodokoro.getX(), frmTodokoro.getY(), FRAME_HELP_LIST_WIDTH, FRAME_HELP_LIST_HEIGHT);
+			frmTodokoro.setBounds(frmTodokoro.getX(), frmTodokoro.getY(), HELP_LIST_MODE_FRAME_WIDTH, HELP_LIST_MODE_FRAME_HEIGHT);
 		}
 
 		isDisplayingHelpList = !isDisplayingHelpList;
@@ -327,14 +346,14 @@ public class MainGUI extends Observable implements Observer {
 			tfFilter.setVisible(true);
 			frmTodokoro.setBounds(frmTodokoro.getX(), frmTodokoro.getY(), FRAME_WIDTH, FRAME_HEIGHT);
 			frmTodokoro.setOpacity(FRAME_OPACITY);
-			inputPanel.setBounds(0, 475, INPUT_PANEL_WIDTH, INPUT_PANEL_HEIGHT);
+			inputPanel.setBounds(0, 475, MINI_MODE_WIDTH, MINI_MODE_HEIGHT);
 		} else {
 			tabbedPane.setVisible(false);
 			lblFilter.setVisible(false);
 			tfFilter.setVisible(false);
-			frmTodokoro.setBounds(frmTodokoro.getX(), frmTodokoro.getY(), FRAME_MINI_MODE_WIDTH, FRAME_MINI_MODE_HEIGHT);
-			frmTodokoro.setOpacity(FRAME_MINI_MODE_OPACITY);
-			inputPanel.setBounds(0, 0, INPUT_PANEL_WIDTH, INPUT_PANEL_HEIGHT);
+			frmTodokoro.setBounds(frmTodokoro.getX(), frmTodokoro.getY(), MINI_MODE_FRAME_WIDTH, MINI_MODE_FRAME_HEIGHT);
+			frmTodokoro.setOpacity(MINI_MODE_FRAME_OPACITY);
+			inputPanel.setBounds(0, 0, MINI_MODE_WIDTH, MINI_MODE_HEIGHT);
 			isDisplayingHelpList = false;
 		}
 
@@ -386,7 +405,8 @@ public class MainGUI extends Observable implements Observer {
 					deadlineTasksScrollPane.getVerticalScrollBar().setValue(deadlineTasksScrollPane.getVerticalScrollBar().getValue()+deadlineTasksScrollPane.getHeight()-24);
 					break;
 				default:
-					// impossible case
+					// Impossible case
+					assert false : tabbedPane.getSelectedIndex();
 			}
 		} else if (direction.equals("DOWN")) {
 			switch (tabbedPane.getSelectedIndex()) {
@@ -400,46 +420,27 @@ public class MainGUI extends Observable implements Observer {
 					deadlineTasksScrollPane.getVerticalScrollBar().setValue(deadlineTasksScrollPane.getVerticalScrollBar().getValue()-deadlineTasksScrollPane.getHeight()-24);
 					break;
 				default:
-					// impossible case
+					// Impossible case
+					assert false : tabbedPane.getSelectedIndex();
 			}
 		}
 	}
 
 	private void setupPanels() {
 		inputPanel = new JPanel();
-		inputPanel.setBounds(0, 475, INPUT_PANEL_WIDTH, INPUT_PANEL_HEIGHT);
+		inputPanel.setBounds(MINI_MODE_X_LOC, MINI_MODE_Y_LOC, MINI_MODE_WIDTH, MINI_MODE_HEIGHT);
 		inputPanel.setLayout(null);
 		frmTodokoro.getContentPane().add(inputPanel);
 	}
 
-	private void setupTextPane() {
+	private void setupTextPanes() {
 		tpUserInput = new JTextPane();
 		inputPanel.add(tpUserInput);
-		tpUserInput.setFont(new Font("Segoe UI Semibold", Font.BOLD, 20));
-		tpUserInput.setBounds(12, 87, 738, 38);
+		tpUserInput.setFont(generateFont(INPUT_TEXTPANE_FONT, INPUT_TEXTPANE_FONT_STYLE, INPUT_TEXTPANE_FONT_SIZE));
+		tpUserInput.setBounds(INPUT_TEXTPANE_X_LOC, INPUT_TEXTPANE_Y_LOC, INPUT_TEXTPANE_WIDTH, INPUT_TEXTPANE_HEIGHT);
 		tpUserInput.setBorder(getCompoundBorder(4, 4, 0, 4));
 		tpUserInput.setFocusAccelerator('e');
-		tpUserInput.getDocument().addDocumentListener(new DocumentListener() {
-			public void changedUpdate(DocumentEvent e) {
-
-			}
-
-			public void insertUpdate(DocumentEvent e) {
-				SwingUtilities.invokeLater(new Runnable() {
-				    public void run() {
-				    	InputFeedbackListener.getInstance().highlightText();
-			        }
-				});
-			}
-
-			public void removeUpdate(DocumentEvent e) {
-				SwingUtilities.invokeLater(new Runnable() {
-				    public void run() {
-				    	InputFeedbackListener.getInstance().highlightText();
-			        }
-				});
-			}
-		});
+		tpUserInput.getDocument().addDocumentListener(feedback);
 
 		tfFilter = new JTextField();
 		tfFilter.setBounds(594, 12, 156, 26);
@@ -448,37 +449,39 @@ public class MainGUI extends Observable implements Observer {
 		tfFilter.setBorder(getCompoundBorder(0, 4, 0, 4));
 		tfFilter.setFocusAccelerator('f');
 		tfFilter.getDocument().addDocumentListener(new DocumentListener() {
+			@Override
 			public void changedUpdate(DocumentEvent e) {
-				rowFilter(eventsSorter, 3);
-				rowFilter(todosSorter, 1);
-				rowFilter(deadlinesSorter, 2);
+				SwingUtilities.invokeLater(new Runnable() {
+				    public void run() {
+				    	filterTables();
+				    }
+			    });
 			}
 
+			@Override
 			public void insertUpdate(DocumentEvent e) {
-				rowFilter(eventsSorter, 3);
-				rowFilter(todosSorter, 1);
-				rowFilter(deadlinesSorter, 2);
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						filterTables();
+					}
+				});
 			}
 
+			@Override
 			public void removeUpdate(DocumentEvent e) {
-				rowFilter(eventsSorter, 3);
-				rowFilter(todosSorter, 1);
-				rowFilter(deadlinesSorter, 2);
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						filterTables();
+					}
+				});
 			}
 		});
-	}
-
-	private Border getCompoundBorder(int top, int left, int bottom, int up) {
-		Border rounded = new LineBorder(new Color(210, 210, 210), 2, true);
-		Border empty = new EmptyBorder(top, left, bottom, up);
-		return new CompoundBorder(rounded, empty);
 	}
 
 	private void setupFilterLabel() {
 		lblFilter = new JLabel("Filter:");
 		lblFilter.setHorizontalAlignment(SwingConstants.RIGHT);
-		//lblFilter.setFont(new Font("Segoe UI", Font.BOLD, 14));
-		lblFilter.setFont(new Font("Dialog UI", Font.BOLD, 14));
+		lblFilter.setFont(generateFont(FILTER_LABEL_FONT, FILTER_LABEL_FONT_STYLE, FILTER_LABEL_FONT_SIZE));
 		lblFilter.setBounds(530, 16, 60, 16);
 		frmTodokoro.getContentPane().add(lblFilter);
 	}
@@ -492,10 +495,8 @@ public class MainGUI extends Observable implements Observer {
 		taStatusMessage.setEditable(false);
 		taStatusMessage.setFocusable(false);
 		taStatusMessage.setBackground(UIManager.getColor("Label.background"));
-		//taStatusMessage.setFont(new Font("Segoe UI", Font.BOLD, 14));
-		taStatusMessage.setFont(new Font("Dialog UI", Font.BOLD, 14));
-		//taStatusMessage.setBorder(new TitledBorder(getCompoundBorder(0, 5, 0, 5), "Status Message", 0, 0, new Font("Segoe UI", Font.BOLD, 14)));
-		taStatusMessage.setBorder(new TitledBorder(getCompoundBorder(0, 5, 0, 5), "Status Message", 0, 0, new Font("Dialog UI", Font.BOLD, 14)));
+		taStatusMessage.setFont(generateFont(STATUS_TEXTAREA_FONT, STATUS_TEXTAREA_FONT_STYLE, STATUS_TEXTAREA_FONT_SIZE));
+		taStatusMessage.setBorder(new TitledBorder(getCompoundBorder(0, 5, 0, 5), "Status Message", 0, 0, generateFont("Dialog UI", Font.BOLD, 14)));
 		inputPanel.add(taStatusMessage);
 	}
 
@@ -524,10 +525,8 @@ public class MainGUI extends Observable implements Observer {
 		todosScrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(0, 0));
 		deadlineTasksScrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(0, 0));
 		tabbedPane.addTab("<html><body leftmargin=15 topmargin=8 marginwidth=15 marginheight=5><b>Events (1)</b></body></html>", null, eventsScrollPane, null);
-		tabbedPane.addTab("<html><body leftmargin=15 topmargin=8 marginwidth=15 marginheight=5><b>Todos (2)</b></body></html>",
-							null, todosScrollPane, null);
-		tabbedPane.addTab("<html><body leftmargin=15 topmargin=8 marginwidth=15 marginheight=5><b>Deadlines (3)</b></body></html>",
-							null, deadlineTasksScrollPane, null);
+		tabbedPane.addTab("<html><body leftmargin=15 topmargin=8 marginwidth=15 marginheight=5><b>Todos (2)</b></body></html>", null, todosScrollPane, null);
+		tabbedPane.addTab("<html><body leftmargin=15 topmargin=8 marginwidth=15 marginheight=5><b>Deadlines (3)</b></body></html>", null, deadlineTasksScrollPane, null);
 		tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
 		tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
 		tabbedPane.setMnemonicAt(2, KeyEvent.VK_3);
@@ -586,31 +585,37 @@ public class MainGUI extends Observable implements Observer {
 		}
 	}
 
-	private void rowFilter(TableRowSorter<?> sorter, int index) {
+	private void filterRow(TableRowSorter<?> sorter, int index) {
 		RowFilter<Object, Object> rowFilter = null;
-		List<RowFilter<Object, Object>> rowfilterList = new ArrayList<RowFilter<Object, Object>>();
+		List<RowFilter<Object, Object>> rowFilters = new ArrayList<RowFilter<Object, Object>>();
 
 		try {
-			String text = tfFilter.getText();
+			String searchTerms = tfFilter.getText();
 
-			if (text.equals("done")) {
+			if (searchTerms.equals("done")) {
 				rowFilter = RowFilter.regexFilter("^true$");
-			} else if (text.equals("!done") || text.equals("not done") || text.equals("undone")) {
+			} else if (searchTerms.equals("!done") || searchTerms.equals("not done") || searchTerms.equals("undone")) {
 				rowFilter = RowFilter.regexFilter("^false$");
 			} else {
-				String[] textArray = text.split(" ");
+				String[] termsArr = searchTerms.split(" ");
 
-				for (int i = 0; i < textArray.length; i++) {
-					rowfilterList.add(RowFilter.regexFilter("(?iu)" + textArray[i], index, index+1));
+				for (int i = 0; i < termsArr.length; i++) {
+					rowFilters.add(RowFilter.regexFilter("(?iu)" + termsArr[i], index, index+1));
 				}
 
-				rowFilter = RowFilter.andFilter(rowfilterList);
+				rowFilter = RowFilter.andFilter(rowFilters);
 			}
 		} catch (PatternSyntaxException e) {
 			logger.log(Level.SEVERE, e.getMessage(), e);
 		}
 
 		sorter.setRowFilter(rowFilter);
+	}
+
+	private void filterTables() {
+		filterRow(eventsSorter, 3);
+		filterRow(todosSorter, 1);
+		filterRow(deadlinesSorter, 2);
 	}
 
 	public void updateTables(EnumTypes.TASK_TYPE type, List<Task> tasks, boolean shouldFocusTab) {
@@ -637,7 +642,8 @@ public class MainGUI extends Observable implements Observer {
 				}
 				break;
 			default:
-				// impossible case
+				// Impossible case
+				assert false : type;
 		}
 	}
 
@@ -677,12 +683,18 @@ public class MainGUI extends Observable implements Observer {
 		table.setFillsViewportHeight(true);
 	}
 
+	private Font generateFont(String font, int style, int size) {
+		return new Font(font, style, size);
+	}
+
+	private Border getCompoundBorder(int top, int left, int bottom, int up) {
+		Border rounded = new LineBorder(new Color(210, 210, 210), 2, true);
+		Border empty = new EmptyBorder(top, left, bottom, up);
+		return new CompoundBorder(rounded, empty);
+	}
+
 	public void updateStatusMsg(String msg) {
-		SwingUtilities.invokeLater(new Runnable() {
-		    public void run() {
-	        	taStatusMessage.setText(msg);
-	        }
-		});
+    	taStatusMessage.setText(msg);
 	}
 
 	public void sendUserInput(String command) {
@@ -692,7 +704,6 @@ public class MainGUI extends Observable implements Observer {
 
 	@Override
 	public void update(Observable observable, Object event) {
-
 		ObserverEvent OEvent = (ObserverEvent) event;
 
 		if (OEvent.getCode() == ObserverEvent.CHANGE_MESSAGE_CODE) {

@@ -10,8 +10,8 @@ import java.util.regex.Pattern;
  * @author Dalton
  *
  */
-public class ChiToEngUnicodeConverter {
-	private ChiToEngUnicodeConverter() {}
+public class ChiToEngConverter {
+	private ChiToEngConverter() {}
 
 	// Chinese To-Be-Converted Constants
 	public static final String O_CLOCK = "\u70b9";
@@ -235,6 +235,7 @@ public class ChiToEngUnicodeConverter {
 													" 13 ", " 14 ", " 15 ", " 16 ", " 17 ", " 18 ", " 19 ",
 													ENG_TWELVE, ENG_ELEVEN, ENG_TEN, ENG_ONE, ENG_TWO, ENG_TWO, ENG_THREE, ENG_FOUR, ENG_FIVE, ENG_SIX,
 													ENG_SEVEN, ENG_EIGHT, ENG_NINE, ENG_DATE, ENG_O_CLOCK};
+
 
 	public static String convertChineseToEnglishUnicode(String input) {
 		for (int i = 0; i < chineseConstants.length; i++) {

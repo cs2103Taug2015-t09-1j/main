@@ -11,16 +11,16 @@ import main.logic.Logic;
  * @@author Dalton
  *
  */
-public class InputHistoryListener {
-	private static InputHistoryListener inputHistory = null;
+public class InputHistoryHandler {
+	private static InputHistoryHandler inputHistory = null;
 	private static ArrayList<String> history = null;
 	private static int pointer;
 
-	private InputHistoryListener() { }
+	private InputHistoryHandler() { }
 
-	public static InputHistoryListener getInstance() {
+	public static InputHistoryHandler getInstance() {
 		if (inputHistory == null) {
-			inputHistory = new InputHistoryListener();
+			inputHistory = new InputHistoryHandler();
 			history = new ArrayList<String>();
 			pointer = 0;
 		}
