@@ -3849,22 +3849,22 @@ public class MainGUI extends Observable implements Observer {
 
 		switch (table.getName()) {
 		case "Events":
-			table.getColumnModel().getColumn(1).setMinWidth(130);
-			table.getColumnModel().getColumn(1).setMaxWidth(130);
-			table.getColumnModel().getColumn(2).setMinWidth(130);
-			table.getColumnModel().getColumn(2).setMaxWidth(130);
-			table.getColumnModel().getColumn(3).setMinWidth(379);
-			table.getColumnModel().getColumn(3).setMaxWidth(684);
+			table.getColumnModel().getColumn(1).setMinWidth(132);
+			table.getColumnModel().getColumn(1).setMaxWidth(132);
+			table.getColumnModel().getColumn(2).setMinWidth(132);
+			table.getColumnModel().getColumn(2).setMaxWidth(132);
+			table.getColumnModel().getColumn(3).setMinWidth(377);
+			table.getColumnModel().getColumn(3).setMaxWidth(682);
 			table.getColumnModel().getColumn(4).setMaxWidth(50);
 			break;
 		case "Todos":
-			table.getColumnModel().getColumn(1).setMinWidth(639);
+			table.getColumnModel().getColumn(1).setMinWidth(641);
 			table.getColumnModel().getColumn(2).setMaxWidth(50);
 			break;
 		case "Deadlines":
-			table.getColumnModel().getColumn(1).setMinWidth(130);
-			table.getColumnModel().getColumn(1).setMaxWidth(130);
-			table.getColumnModel().getColumn(2).setMinWidth(507);
+			table.getColumnModel().getColumn(1).setMinWidth(132);
+			table.getColumnModel().getColumn(1).setMaxWidth(132);
+			table.getColumnModel().getColumn(2).setMinWidth(509);
 			table.getColumnModel().getColumn(3).setMaxWidth(50);
 			break;
 		}

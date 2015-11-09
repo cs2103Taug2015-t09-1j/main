@@ -252,7 +252,22 @@ public class MainGUI extends Observable implements Observer {
 		tpUserInput.setBounds(INPUT_TEXTPANE_X_LOC, INPUT_TEXTPANE_Y_LOC, INPUT_TEXTPANE_WIDTH, INPUT_TEXTPANE_HEIGHT);
 		tpUserInput.setBorder(createCompoundBorder(4, 4, 0, 4));
 		tpUserInput.setFocusAccelerator('e');
-		tpUserInput.getDocument().addDocumentListener(feedback);
+		tpUserInput.getDocument().addDocumentListener(new DocumentListener() {
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				// Not used
+			}
+
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				handleTextChanged();
+			}
+
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				handleTextChanged();
+			}
+		});
 
 		tfFilter = new JTextField();
 		tfFilter.setBounds(594, 12, 156, 26);
@@ -263,29 +278,17 @@ public class MainGUI extends Observable implements Observer {
 		tfFilter.getDocument().addDocumentListener(new DocumentListener() {
 			@Override
 			public void changedUpdate(DocumentEvent e) {
-				SwingUtilities.invokeLater(new Runnable() {
-				    public void run() {
-				    	filterTables();
-				    }
-			    });
+		    	filterTables();
 			}
 
 			@Override
 			public void insertUpdate(DocumentEvent e) {
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						filterTables();
-					}
-				});
+				filterTables();
 			}
 
 			@Override
 			public void removeUpdate(DocumentEvent e) {
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						filterTables();
-					}
-				});
+				filterTables();
 			}
 		});
 	}
@@ -725,9 +728,13 @@ public class MainGUI extends Observable implements Observer {
 	 * Filter tables.
 	 */
 	private void filterTables() {
-		filterRow(eventsSorter, 3);
-		filterRow(todosSorter, 1);
-		filterRow(deadlinesSorter, 2);
+		SwingUtilities.invokeLater(new Runnable() {
+		    public void run() {
+		    	filterRow(eventsSorter, 3);
+				filterRow(todosSorter, 1);
+				filterRow(deadlinesSorter, 2);
+		    }
+	    });
 	}
 
 	/**
@@ -877,4 +884,20 @@ public class MainGUI extends Observable implements Observer {
 			return;
 		}
 	}
+
+	/**
+	 * Handle the change in text and invoke later to prevent clashes with other threads
+	 */
+    private void handleTextChanged() {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+            	try {
+            		feedback.highlightText();
+            	} catch (Exception e) {
+        			logger.log(Level.SEVERE, e.getMessage(), e);
+        		}
+            }
+        });
+    }
 }

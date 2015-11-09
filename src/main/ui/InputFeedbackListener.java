@@ -6,17 +6,13 @@ package main.ui;
 import java.awt.Color;
 import java.awt.TextArea;
 import java.util.Observable;
-import java.util.Observer;
-import java.util.logging.Level;
+
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.JTextArea;
 import javax.swing.JTextPane;
-import javax.swing.SwingUtilities;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 
@@ -29,7 +25,7 @@ import main.storage.LogFileHandler;
  *
  * @@author Dalton
  */
-public class InputFeedbackListener implements DocumentListener {
+public class InputFeedbackListener {
 	private JTextPane tpInput = null;
 	private JTextArea taMessage = null;
 	private static Parser parser = null;
@@ -46,22 +42,22 @@ public class InputFeedbackListener implements DocumentListener {
 	private static final SimpleAttributeSet keywordSet = new SimpleAttributeSet();
 	private static final SimpleAttributeSet warningSet = new SimpleAttributeSet();
 
-	private static final String[] commandSyntaxPrompt = {"Command aliases: update, modify, edit, /u, /m, /e  change\n"
-														+ "Command syntax( | means OR, * means OPTIONAL ): update {taskID} {columnID} {value}",
-														  "Command aliases: delete, del, remove, /d, /r\n"
-														+ "Command syntax( | means OR, * means OPTIONAL ): delete {taskID} *((to|-) {taskID})",
-														  "Command aliases: display, show, view, /sh, /v (| means OR, * means OPTIONAL )\n"
-														+ "Command syntax: display (expired|!expired|completed|!completed) | {date} *(to {date})",
-														  "Command aliases: undo, back\n"
-														+ "Command syntax( | means OR, * means OPTIONAL ): undo *{numberOfCommands}",
-														  "Command aliases: redo, forward\n"
-														+ "Command syntax( | means OR, * means OPTIONAL ): redo *{numberOfCommands}",
+	private static final String[] commandSyntaxPrompt = {"Command aliases: update, modify, edit, /u, /m, /e  change     Legend: | means OR, * means OPTIONAL\n"
+														+ "Command syntax: update {taskID} {columnID} {value}",
+														  "Command aliases: delete, del, remove, /d, /r     Legend: | means OR, * means OPTIONAL\n"
+														+ "Command syntax: delete {taskID} *((to|-) {taskID}) | *(!)expired | *(!)completed",
+														  "Command aliases: display, show, view, /sh, /v     Legend: | means OR, * means OPTIONAL\n"
+														+ "Command syntax: display {date} *(to {date}) | time {date time} to {date time} | *(!)expired | *(!)completed",
+														  "Command aliases: undo, back     Legend: | means OR, * means OPTIONAL\n"
+														+ "Command syntax: undo *{numberOfCommands}",
+														  "Command aliases: redo, forward     Legend: | means OR, * means OPTIONAL\n"
+														+ "Command syntax: redo *{numberOfCommands}",
 														  "Command aliases: exit, quit\n"
-														+ "Command syntax( | means OR, * means OPTIONAL ): exit",
-														  "Command aliases: undone, !done, incomplete\n"
-														+ "Command Syntax( | means OR, * means OPTIONAL ): undone {taskID} *((to|-) {taskID})",
-														  "Command aliases: done, complete\n"
-														+ "Command syntax( | means OR, * means OPTIONAL ): done {taskID} *((to|-) {taskID})"};
+														+ "Command syntax: exit",
+														  "Command aliases: undone, !done, incomplete     Legend: | means OR, * means OPTIONAL\n"
+														+ "Command Syntax: undone {taskID} *((to|-) {taskID}) | *(!)expired | *(!)completed",
+														  "Command aliases: done, complete     Legend: | means OR, * means OPTIONAL\n"
+														+ "Command syntax: done {taskID} *((to|-) {taskID}) | *(!)expired | *(!)completed"};
 
 	private static final String TIME_REGEX = "\\s*(((\\d+\\s+(minutes|min|seconds|sec|hours))|[0-9](am|pm|a.m.|p.m.)?|1[0-2](am|pm|a.m.|p.m.)?)|"
 											+ "(0[0-9]|1[0-9]|2[0-3])\\:?([0-5][0-9]))\\:?([0-5][0-9])?(am|pm|a.m.|p.m.|h|\\shours)?\\s*";
@@ -164,12 +160,9 @@ public class InputFeedbackListener implements DocumentListener {
 	/**
 	 * Highlight warning cases.
 	 *
-	 * @param input
-	 *            the user input
-	 * @param regex
-	 *            the regex for parsing
-	 * @param message
-	 *            the message to display to the user
+	 * @param input		the user input
+	 * @param regex		the regex for parsing
+	 * @param message	the message to display to the user
 	 */
 	private void highlightWarningCases(String input, String regex, String message) {
 		pattern = Pattern.compile("(?ui)" + regex);
@@ -178,36 +171,5 @@ public class InputFeedbackListener implements DocumentListener {
         	tpInput.getStyledDocument().setCharacterAttributes(matcher.start(), matcher.group().length(), warningSet, true);
         	taMessage.setText(message);
         }
-	}
-
-	/**
-	 * Handle the change in text and invoke later to prevent clashes with other threads
-	 */
-    private void handleTextChanged() {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-            	try {
-            		highlightText();
-            	} catch (Exception e) {
-        			logger.log(Level.SEVERE, e.getMessage(), e);
-        		}
-            }
-        });
-    }
-
-	@Override
-	public void insertUpdate(DocumentEvent e) {
-		handleTextChanged();
-	}
-
-	@Override
-	public void removeUpdate(DocumentEvent e) {
-		handleTextChanged();
-	}
-
-	@Override
-	public void changedUpdate(DocumentEvent e) {
-		// Not required
 	}
 }
