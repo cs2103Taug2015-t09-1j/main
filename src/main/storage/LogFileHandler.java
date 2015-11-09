@@ -13,14 +13,19 @@ import java.util.logging.SimpleFormatter;
 import main.logic.Add;
 
 /**
- * @author Dalton
+ * The Class LogFileHandler.
+ * Handles the logger and writes to 'debug.log'
  *
+ * @@author Dalton
  */
 public class LogFileHandler {
 	public static LogFileHandler lfHandler = null;
 	private static final Logger logger = Logger.getLogger(LogFileHandler.class.getName());
 	private static Handler fileHandler = null;
 
+	/**
+	 * Instantiates a new log file handler.
+	 */
 	public LogFileHandler() {
 		try {
 			fileHandler = new FileHandler("debug.log", true);
@@ -34,6 +39,11 @@ public class LogFileHandler {
 		}
 	}
 
+	/**
+	 * Gets the single instance of LogFileHandler.
+	 *
+	 * @return single instance of LogFileHandler
+	 */
 	public static LogFileHandler getInstance() {
 		if (lfHandler == null) {
 			lfHandler = new LogFileHandler();
@@ -41,6 +51,11 @@ public class LogFileHandler {
 		return lfHandler;
 	}
 
+	/**
+	 * Adds the log file handler.
+	 *
+	 * @param l		the logger
+	 */
 	public void addLogFileHandler(Logger l) {
 		l.addHandler(fileHandler);
 	}

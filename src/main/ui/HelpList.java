@@ -171,16 +171,8 @@ public class HelpList extends JPanel {
 		return new CompoundBorder(rounded, empty);
 	}
 
-	/**
-	 * The Class SharedListSelectionHandler.
-	 *
-	 * @@author Yan Mingwei, Dalton
-	 */
 	class SharedListSelectionHandler implements ListSelectionListener {
 
-		/* (non-Javadoc)
-		 * @see javax.swing.event.ListSelectionListener#valueChanged(javax.swing.event.ListSelectionEvent)
-		 */
 		public void valueChanged(ListSelectionEvent e) {
 			ListSelectionModel lsm = (ListSelectionModel) e.getSource();
 
