@@ -52,13 +52,11 @@ public class HelpList extends JPanel {
 	private static final String COMMAND_DETAIL_LABEL = "Command Details";
 	private static final String WELCOME_DOC_MESSAGE = "Welcome to TodoKoro Help List!";
 	private static final String EMPTY_STRING = "";
-
-
 	private static final String SCROLL_UP_HELP_KEY = "Scroll Up Help List";
 	private static final String SROLL_DOWN_HELP_KEY = "Scroll Down Help List";
 
 	/**
-	 * Create the frame.
+	 * Instantiates a new help list.
 	 */
 	public HelpList() {
 
@@ -145,18 +143,44 @@ public class HelpList extends JPanel {
 		});
 	}
 
+	/**
+	 * Gets the help list focus.
+	 *
+	 * @return the help list focus
+	 */
 	public void getHelpListFocus() {
 		list.requestFocusInWindow();
 	}
 
+	/**
+	 * Gets the compound border.
+	 *
+	 * @param top
+	 *            the top
+	 * @param left
+	 *            the left
+	 * @param bottom
+	 *            the bottom
+	 * @param up
+	 *            the up
+	 * @return the compound border
+	 */
 	private Border getCompoundBorder(int top, int left, int bottom, int up) {
 		Border rounded = new LineBorder(new Color(210, 210, 210), 2, true);
 		Border empty = new EmptyBorder(top, left, bottom, up);
 		return new CompoundBorder(rounded, empty);
 	}
 
+	/**
+	 * The Class SharedListSelectionHandler.
+	 *
+	 * @@author Yan Mingwei, Dalton
+	 */
 	class SharedListSelectionHandler implements ListSelectionListener {
 
+		/* (non-Javadoc)
+		 * @see javax.swing.event.ListSelectionListener#valueChanged(javax.swing.event.ListSelectionEvent)
+		 */
 		public void valueChanged(ListSelectionEvent e) {
 			ListSelectionModel lsm = (ListSelectionModel) e.getSource();
 

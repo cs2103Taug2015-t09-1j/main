@@ -1,3 +1,6 @@
+/*
+ *
+ */
 package main.model.tableModels;
 
 import java.util.ArrayList;
@@ -10,8 +13,11 @@ import main.model.taskModels.Todo;
 import main.ui.MainGUI;
 
 /**
- * @@author Dalton
+ * The Class TodosTableModel.
+ * The table model for the Todos Table.
+ * Handles the user UI interactions of the JTable.
  *
+ * @@author Dalton
  */
 @SuppressWarnings("serial")
 public class TodosTableModel extends AbstractTableModel {
@@ -21,11 +27,19 @@ public class TodosTableModel extends AbstractTableModel {
 	private final String[] columnNames = { "ID", "Task Description (2)", "Done" };
 	private final Class<?>[] columnTypes = { Integer.class, String.class, Boolean.class };
 
+	/**
+	 * Instantiates a new todos table model.
+	 */
 	private TodosTableModel() {
 		super();
 		todos = new ArrayList<Task>();
 	}
 
+	/**
+	 * Gets the single instance of TodosTableModel.
+	 *
+	 * @return single instance of TodosTableModel
+	 */
 	public static TodosTableModel getInstance() {
 		if (ttm == null) {
 			ttm = new TodosTableModel();
@@ -33,11 +47,21 @@ public class TodosTableModel extends AbstractTableModel {
 		return ttm;
 	}
 
+	/**
+	 * Sets the UI instance.
+	 *
+	 * @param ui	the new UI instance
+	 */
 	public void setUIInstance(MainGUI ui) {
 		assert ui != null;
 		mainGUI = ui;
 	}
 
+	/**
+	 * Sets the tasks.
+	 *
+	 * @param tasks	the new tasks
+	 */
 	public void setTasks(List<Task> tasks) {
 		assert tasks != null;
 		todos = tasks;
@@ -86,8 +110,10 @@ public class TodosTableModel extends AbstractTableModel {
 				break;
 			default:
 				// impossible case
+				assert false : col;
 		}
 
+		// Sends a simulated command if the user updates from the table directly
 		if (!updatedValue.trim().equals(originalValue)) {
 			mainGUI.sendUserInput(simulatedCommand + updatedValue);
 		}
@@ -104,6 +130,7 @@ public class TodosTableModel extends AbstractTableModel {
 				return todo.isDone();
 			default:
 				// impossible case
+				assert false : col;
 		}
 
 		return new String();

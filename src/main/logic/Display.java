@@ -1,3 +1,6 @@
+/*
+ *
+ */
 package main.logic;
 
 import main.model.ParsedObject;
@@ -16,8 +19,9 @@ import main.model.EnumTypes.TASK_TYPE;
 import main.storage.Storage;
 
 /**
- * @@author Hiep
+ * The Class Display.
  *
+ * @@author Hiep
  */
 public class Display extends Command {
 
@@ -25,10 +29,19 @@ public class Display extends Command {
 	private static Storage storage = null;
 	private TASK_TYPE taskType;
 
+	/**
+	 * Instantiates a new display.
+	 */
 	private Display() {
 		storage = Storage.getInstance();
 	}
 
+	/**
+	 * Gets the single instance of Display.
+	 *
+	 * @param type		the type
+	 * @return 			single instance of Display
+	 */
 	public static Display getInstance(TASK_TYPE type) {
 		if (display == null) {
 			display = new Display();
@@ -46,6 +59,12 @@ public class Display extends Command {
 		return true;
 	}
 
+	/**
+	 * Process.
+	 *
+	 * @param obj	the obj
+	 * @return 		the list
+	 */
 	public List<List<Task>> process(ParsedObject obj) {
 		List<List<Task>> result = new ArrayList<List<Task>>();
 		List<Task> tasks = storage.getAllTask(TASK_TYPE.ALL);
@@ -68,6 +87,14 @@ public class Display extends Command {
 		return result;
 	}
 
+	/**
+	 * Display by categories.
+	 *
+	 * @param obj		the obj
+	 * @param todos		the todos
+	 * @param events	the events
+	 * @param deadlines	the deadlines
+	 */
 	public void displayByCategories(ParsedObject obj, List<Task> todos, List<Task> events, List<Task> deadlines) {
 		List<Integer> ids = storage.getIdByCategory(obj.getObjects());
 		for (int id : ids) {
@@ -90,6 +117,16 @@ public class Display extends Command {
 		message = "Tasks are displayed.";
 	}
 
+	/**
+	 * Display by time.
+	 *
+	 * @param obj		the obj
+	 * @param tasks		the tasks
+	 * @param todos		the todos
+	 * @param events	the events
+	 * @param deadlines	the deadlines
+	 * @return 			true, if successful
+	 */
 	public boolean displayByTime(ParsedObject obj, List<Task> tasks, List<Task> todos, List<Task> events, List<Task> deadlines) {
 		Date fromDate, toDate;
 		switch (obj.getCommandType()) {
@@ -172,6 +209,14 @@ public class Display extends Command {
 		return true;
 	}
 
+	/**
+	 * Checks if is on between.
+	 *
+	 * @param left	the left
+	 * @param right	the right
+	 * @param cur	the cur
+	 * @return 		true, if is on between
+	 */
 	private boolean isOnBetween(Date left, Date right, Date cur) {
 		Date startDate = resetTime((Date)left.clone(), true);
 		Date endDate = resetTime((Date)right.clone(), false);
@@ -183,10 +228,25 @@ public class Display extends Command {
 		}
 	}
 
+	/**
+	 * Checks if is between.
+	 *
+	 * @param left	the left
+	 * @param right	the right
+	 * @param cur	the cur
+	 * @return 		true, if is between
+	 */
 	private boolean isBetween(Date left, Date right, Date cur) {
 		return (left.compareTo(cur) <= 0 && cur.compareTo(right) <= 0);
 	}
 
+	/**
+	 * Checks if is on.
+	 *
+	 * @param date	the date
+	 * @param cur	the cur
+	 * @return 		true, if is on
+	 */
 	private boolean isOn(Date date, Date cur) {
 		Date currentDate = resetTime((Date)cur.clone(), true);
 		Date comparedDate = resetTime((Date)date.clone(), true);
@@ -198,8 +258,13 @@ public class Display extends Command {
 		}
 	}
 
-	/*
-	 *  @@author Dalton
+	/**
+	 * Reset time.
+	 * @@author Dalton
+	 *
+	 * @param d				the d
+	 * @param isStartOfDay	the is start of day
+	 * @return 				the date
 	 */
 	private Date resetTime(Date d, boolean isStartOfDay) {
 		Calendar date = Calendar.getInstance();

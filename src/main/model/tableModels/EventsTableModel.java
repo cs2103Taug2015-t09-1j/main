@@ -1,3 +1,6 @@
+/*
+ *
+ */
 package main.model.tableModels;
 
 import java.util.ArrayList;
@@ -11,8 +14,11 @@ import main.model.taskModels.Task;
 import main.ui.MainGUI;
 
 /**
- * @@author Dalton
+ * The Class EventsTableModel.
+ * The table model for the Events Table.
+ * Handles the user UI interactions of the JTable.
  *
+ * @@author Dalton
  */
 @SuppressWarnings("serial")
 public class EventsTableModel extends AbstractTableModel {
@@ -22,11 +28,19 @@ public class EventsTableModel extends AbstractTableModel {
 	private final String[] columnNames = {"ID", "Start Date (2)", "End Date (3)", "Task Description (4)", "Done"};
 	private final Class<?>[] columnTypes = {Integer.class, Date.class, Date.class, String.class, Boolean.class};
 
+	/**
+	 * Instantiates a new events table model.
+	 */
 	private EventsTableModel() {
 		super();
 		events = new ArrayList<Task>();
 	}
 
+	/**
+	 * Gets the single instance of EventsTableModel.
+	 *
+	 * @return single instance of EventsTableModel
+	 */
 	public static EventsTableModel getInstance() {
 		if (etm == null) {
 			etm = new EventsTableModel();
@@ -34,11 +48,21 @@ public class EventsTableModel extends AbstractTableModel {
 		return etm;
 	}
 
+	/**
+	 * Sets the UI instance.
+	 *
+	 * @param ui	the new UI instance
+	 */
 	public void setUIInstance(MainGUI ui) {
 		assert ui != null;
 		mainGUI = ui;
 	}
 
+	/**
+	 * Sets the tasks.
+	 *
+	 * @param tasks	the new tasks
+	 */
 	public void setTasks(List<Task> tasks) {
 		assert tasks != null;
 		events = tasks;
@@ -99,8 +123,10 @@ public class EventsTableModel extends AbstractTableModel {
 				break;
 			default:
 				// impossible case
+				assert false : col;
 		}
 
+		// Sends a simulated command if the user updates from the table directly
 		if (!updatedValue.trim().equals(originalValue)) {
 			mainGUI.sendUserInput(simulatedCommand + updatedValue);
 		}
@@ -121,6 +147,7 @@ public class EventsTableModel extends AbstractTableModel {
 				return evt.isDone();
 			default:
 				// impossible case
+				assert false : col;
 		}
 
 		return new String();

@@ -16,8 +16,11 @@ import main.storage.LogFileHandler;
 import main.storage.Storage;
 
 /**
- * @@author Dalton
+ * The Class Delete.
+ * Handles the delete command based on the ParsedObject returned by the parser
+ * after being direct to from the controller.
  *
+ * @@author Dalton
  */
 public class Delete extends Command {
 	private static Delete delete = null;
@@ -26,12 +29,20 @@ public class Delete extends Command {
 	private static final Logger logger = Logger.getLogger(Delete.class.getName());
 	private static final boolean DEBUG = true;
 
+	/**
+	 * Instantiates a new delete.
+	 */
 	private Delete() {
 		storage = Storage.getInstance();
 		vControl = VersionControl.getInstance();
 		LogFileHandler.getInstance().addLogFileHandler(logger);
 	}
 
+	/**
+	 * Gets the single instance of Delete.
+	 *
+	 * @return single instance of Delete
+	 */
 	public static Delete getInstance() {
 		if (delete == null) {
 			delete = new Delete();
@@ -39,6 +50,12 @@ public class Delete extends Command {
 		return delete;
 	}
 
+	/**
+	 * Executes the Delete command
+	 *
+	 * @param ParsedObject	the ParsedObject containing command information from the Parser
+	 * @return 				true if successfully deleted
+	 */
 	@Override
 	public boolean execute(ParsedObject obj) {
 		assert obj != null;
@@ -46,6 +63,7 @@ public class Delete extends Command {
 
 		List<Integer> taskIDs = new ArrayList<Integer>();
 		List<Task> deletedTasks = new ArrayList<Task>();
+
 		if (obj.getParamType() != null) {
 			switch (obj.getParamType()) {
 				case ID:
@@ -94,6 +112,14 @@ public class Delete extends Command {
 		return false;
 	}
 
+	/**
+	 * Undo Delete.
+	 *
+	 * @@author Hiep
+	 *
+	 * @param tasks		the tasks
+	 * @return 			true, if successful
+	 */
 	public boolean undo(List<Task> tasks) {
 		for (Task task : tasks) {
 			storage.addTask(task);
@@ -101,6 +127,14 @@ public class Delete extends Command {
 		return true;
 	}
 
+	/**
+	 * Redo Delete.
+	 *
+	 * @@author Hiep
+	 *
+	 * @param tasks		the tasks
+	 * @return 			true, if successful
+	 */
 	public boolean redo(List<Task> tasks) {
 		for (Task task : tasks) {
 			storage.delete(task.getTaskID());
@@ -108,7 +142,15 @@ public class Delete extends Command {
 		return true;
 	}
 
-	// @@author Dalton
+	/**
+	 * Delete all tasks based on the list of task IDs.
+	 *
+	 * @@author Dalton
+	 *
+	 * @param taskIDs	the task IDs
+	 * @param deletedTasks	the deleted tasks
+	 * @return 				the list of deleted tasks
+	 */
 	private List<Task> deleteTasks(List<Integer> taskIDs, List<Task> deletedTasks) {
 		for (int i = 0; i < taskIDs.size(); i++) {
 			Task task = storage.getTaskByID(taskIDs.get(i));

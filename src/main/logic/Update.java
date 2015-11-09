@@ -18,8 +18,11 @@ import main.parser.Parser;
 import main.storage.Storage;
 
 /**
- * @@author Dalton
+ * The Class Update.
+ * Handles the update command based on the ParsedObject returned by the parser
+ * after being direct to from the controller.
  *
+ * @@author Dalton
  */
 public class Update extends Command {
 	private static Update update = null;
@@ -29,12 +32,20 @@ public class Update extends Command {
 	private static final Logger logger = Logger.getLogger(Update.class.getName());
 	private static final boolean DEBUG = true;
 
+	/**
+	 * Instantiates a new update.
+	 */
 	private Update() {
 		parser = Parser.getInstance();
 		storage = Storage.getInstance();
 		vControl = VersionControl.getInstance();
 	}
 
+	/**
+	 * Gets the single instance of Update.
+	 *
+	 * @return single instance of Update
+	 */
 	public static Update getInstance() {
 		if (update == null) {
 			update = new Update();
@@ -42,6 +53,12 @@ public class Update extends Command {
 		return update;
 	}
 
+	/**
+	 * Executes the Update command
+	 *
+	 * @param ParsedObject	the ParsedObject containing command information from the Parser
+	 * @return 				true if successfully deleted
+	 */
 	@Override
 	public boolean execute(ParsedObject obj) {
 		assert obj != null;
@@ -70,6 +87,13 @@ public class Update extends Command {
 		return false;
 	}
 
+	/**
+	 * Update event.
+	 *
+	 * @param evt		the evt
+	 * @param params	the params
+	 * @return 			true, if successful
+	 */
 	private boolean updateEvent(Event evt, ArrayList<String> params) {
 		Task oldEvt = evt.clone();
 
@@ -117,6 +141,13 @@ public class Update extends Command {
 		return true;
 	}
 
+	/**
+	 * Update todo.
+	 *
+	 * @param t			the t
+	 * @param params	the params
+	 * @return 			true, if successful
+	 */
 	private boolean updateTodo(Todo t, ArrayList<String> params) {
 		Task oldTodo = t.clone();
 
@@ -140,6 +171,13 @@ public class Update extends Command {
 		return true;
 	}
 
+	/**
+	 * Update deadline.
+	 *
+	 * @param d			the d
+	 * @param params	the params
+	 * @return 			true, if successful
+	 */
 	private boolean updateDeadline(Deadline d, ArrayList<String> params) {
 		Task oldDeadline = d.clone();
 
@@ -174,17 +212,38 @@ public class Update extends Command {
 		return true;
 	}
 
-	// @@author Hiep
+	/**
+	 * Adds the new update model.
+	 *
+	 * @@author Hiep
+	 *
+	 * @param oldTask	the old task
+	 * @param newTask	the new task
+	 */
 	private void addNewUpdateModel(Task oldTask, Task newTask) {
 		vControl.addNewData(new VersionModel.UpdateModel(oldTask, newTask));
 	}
 
-	// @@author Hiep
+	/**
+	 * Undo.
+	 *
+	 * @@author Hiep
+	 *
+	 * @param oldTask	the old task
+	 * @return 			true, if successful
+	 */
 	public static boolean undo(Task oldTask) {
 		return storage.updateTask(oldTask);
 	}
 
-	// @@author Hiep
+	/**
+	 * Redo.
+	 *
+	 * @@author Hiep
+	 *
+	 * @param newTask	the new task
+	 * @return 			true, if successful
+	 */
 	public static boolean redo(Task newTask) {
 		return storage.updateTask(newTask);
 	}

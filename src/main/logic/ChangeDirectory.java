@@ -12,14 +12,22 @@ import javax.swing.JFrame;
 
 import main.storage.LogFileHandler;
 import main.storage.Storage;
+
 /**
- * @@author Dalton
+ * The Class ChangeDirectory.
+ * Handles the 'F3' hotkey to change save directory for the files
  *
+ * @@author Dalton
  */
 public class ChangeDirectory extends JFrame {
 	private static final Storage storage = Storage.getInstance();
 	private static final Logger logger = Logger.getLogger(ChangeDirectory.class.getName());
 
+	/**
+	 * Instantiates a new change directory.
+	 *
+	 * @param frame	 the frame
+	 */
 	public ChangeDirectory(JFrame frame) {
 		LogFileHandler.getInstance().addLogFileHandler(logger);
 		JFileChooser dirChooser = new JFileChooser();
@@ -34,7 +42,7 @@ public class ChangeDirectory extends JFrame {
 	    if (dirChooser.showOpenDialog(frame) == JFileChooser.APPROVE_OPTION) {
 	    	storage.setStoreDir(dirChooser.getSelectedFile().getPath());
 	    }
-	    
+
 	    try {
 	    	this.dispose();
 	    } catch (Exception e) {

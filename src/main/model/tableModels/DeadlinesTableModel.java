@@ -1,3 +1,6 @@
+/*
+ *
+ */
 package main.model.tableModels;
 
 import java.util.ArrayList;
@@ -11,8 +14,11 @@ import main.model.taskModels.Task;
 import main.ui.MainGUI;
 
 /**
- * @@author Dalton
+ * The Class DeadlinesTableModel.
+ * The table model for the Deadlines Table.
+ * Handles the user UI interactions of the JTable.
  *
+ * @@author Dalton
  */
 @SuppressWarnings("serial")
 public class DeadlinesTableModel extends AbstractTableModel {
@@ -23,11 +29,19 @@ public class DeadlinesTableModel extends AbstractTableModel {
 	private final Class<?>[] columnTypes = { Integer.class, Date.class, String.class, Boolean.class };
 
 
+	/**
+	 * Instantiates a new deadlines table model.
+	 */
 	private DeadlinesTableModel() {
 		super();
 		deadlines = new ArrayList<Task>();
 	}
 
+	/**
+	 * Gets the single instance of DeadlinesTableModel.
+	 *
+	 * @return single instance of DeadlinesTableModel
+	 */
 	public static DeadlinesTableModel getInstance() {
 		if (dtm == null) {
 			dtm = new DeadlinesTableModel();
@@ -35,11 +49,21 @@ public class DeadlinesTableModel extends AbstractTableModel {
 		return dtm;
 	}
 
+	/**
+	 * Sets the UI instance.
+	 *
+	 * @param ui	the new UI instance
+	 */
 	public void setUIInstance(MainGUI ui) {
 		assert ui != null;
 		mainGUI = ui;
 	}
 
+	/**
+	 * Sets the tasks.
+	 *
+	 * @param tasks	the new tasks
+	 */
 	public void setTasks(List<Task> tasks) {
 		assert tasks != null;
 		deadlines = tasks;
@@ -94,8 +118,10 @@ public class DeadlinesTableModel extends AbstractTableModel {
 				break;
 			default:
 				// impossible case
+				assert false : col;
 		}
 
+		// Sends a simulated command if the user updates from the table directly
 		if (!updatedValue.trim().equals(originalValue)) {
 			mainGUI.sendUserInput(simulatedCommand + updatedValue);
 		}
@@ -114,6 +140,7 @@ public class DeadlinesTableModel extends AbstractTableModel {
 				return deadline.isDone();
 			default:
 				// impossible case
+				assert false : col;
 		}
 
 		return new String();

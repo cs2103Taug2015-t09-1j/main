@@ -9,15 +9,15 @@ import main.model.VersionModel;
 import main.storage.Storage;
 
 /**
- * 
+ *
  * @author Hiep
  * This class is used to manipulate undo/redo command
  */
 public class VersionControl extends Command {
-	
-	// store necessary data for each function for undo/redo function 
+
+	// store necessary data for each function for undo/redo function
 	private List<VersionModel> vList = new ArrayList<>();
-	
+
 	// store current position in vList which user is inside
 	private int curPosition = -1;
 
@@ -43,7 +43,7 @@ public class VersionControl extends Command {
 		case UNDO:
 			count = undo(numOfExec);
 			if (count > 0) {
-				message = "The previous " + count + " commands have been reversed.";
+				message = "The previous " + count + ((count > 1) ? " commands have" : " command has") + " been reversed.";
 			} else {
 				message = "There are no available tasks to undo.";
 				taskType = EnumTypes.TASK_TYPE.INVALID;
@@ -53,7 +53,7 @@ public class VersionControl extends Command {
 		case REDO:
 			count = redo(numOfExec);
 			if (count > 0) {
-				message = "The previous " + count + " commands have been reversed.";
+				message = "The previous " + count + ((count > 1) ? " commands have" : " command has") + " been reversed.";
 			} else {
 				message = "There are no available tasks to redo.";
 				taskType = EnumTypes.TASK_TYPE.INVALID;
@@ -61,7 +61,7 @@ public class VersionControl extends Command {
 			}
 			break;
 		}
-			
+
 		Storage.getInstance().saveAllTask();
 		return true;
 	}

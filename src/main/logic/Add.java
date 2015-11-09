@@ -1,3 +1,6 @@
+/*
+ *
+ */
 package main.logic;
 
 import java.util.ArrayList;
@@ -16,8 +19,9 @@ import main.storage.LogFileHandler;
 import main.storage.Storage;
 
 /**
- * @@author Dalton
+ * The Class Add.
  *
+ * @@author Dalton
  */
 public class Add extends Command {
 	private static Add add = null;
@@ -27,6 +31,9 @@ public class Add extends Command {
 	private static final Logger logger = Logger.getLogger(Add.class.getName());
 	private static final boolean DEBUG = true;
 
+	/**
+	 * Instantiates a new add.
+	 */
 	private Add() {
 		storage = Storage.getInstance();
 		parser = Parser.getInstance();
@@ -34,6 +41,11 @@ public class Add extends Command {
 		LogFileHandler.getInstance().addLogFileHandler(logger);
 	}
 
+	/**
+	 * Gets the single instance of Add.
+	 *
+	 * @return single instance of Add
+	 */
 	public static Add getInstance() {
 		if (add == null) {
 			add = new Add();
@@ -41,6 +53,12 @@ public class Add extends Command {
 		return add;
 	}
 
+	/**
+	 * Executes the Add command
+	 *
+	 * @param ParsedObject	the ParsedObject containing command information from the Parser
+	 * @return 				true if successfully deleted
+	 */
 	@Override
 	public boolean execute(ParsedObject obj) {
 		assert obj != null;
@@ -112,20 +130,43 @@ public class Add extends Command {
 		return false;
 	}
 
+	/**
+	 * Undo Add.
+	 *
+	 * @param task	the task
+	 * @return 		true, if successful
+	 */
 	public boolean undo(Task task) {
 		return storage.delete(task.getTaskID());
 	}
 
+	/**
+	 * Redo Add.
+	 *
+	 * @param task		the task
+	 * @return 			true, if successful
+	 */
 	public boolean redo(Task task) {
 		return storage.addTask(task);
 	}
 
+	/**
+	 * Adds the new task.
+	 *
+	 * @param task	the task
+	 */
 	private void addNewTask(Task task) {
 		storage.addTask(task);
 		storage.saveTaskType(taskType);
 		vControl.addNewData(new VersionModel.AddModel(task));
 	}
 
+	/**
+	 * Sets the feedback message.
+	 *
+	 * @param task			the task
+	 * @param specficType		the specfic type
+	 */
 	private void setMessage(Task task, EnumTypes.TASK_TYPE specficType) {
 		switch (specficType) {
 			case SINGLE_DATE_EVENT:

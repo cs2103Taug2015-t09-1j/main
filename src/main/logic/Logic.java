@@ -1,3 +1,6 @@
+/*
+ *
+ */
 package main.logic;
 
 import java.util.List;
@@ -14,8 +17,11 @@ import main.storage.Storage;
 import main.ui.MainGUI;
 
 /**
- * @@author Dalton
+ * The Class Logic.
+ * The Controller portion of the Logic.
+ * Directs the flow of information based on what is parsed by the Parser through the user input.
  *
+ * @@author Dalton
  */
 public class Logic extends Observable implements Observer {
 	private static Logic logic = null;
@@ -23,8 +29,14 @@ public class Logic extends Observable implements Observer {
 	private static Parser parser = null;
 	private final Logger logger = Logger.getLogger(Logic.class.getName());
 
+	/**
+	 * Instantiates a new logic.
+	 */
 	private Logic() {}
 
+	/**
+	 * Initialise.
+	 */
 	private static void initialise() {
 		logic = new Logic();
 		logic.addObserver(MainGUI.getInstance());
@@ -37,6 +49,11 @@ public class Logic extends Observable implements Observer {
 		logic.updateModelData(TASK_TYPE.EVENT, true);
 	}
 
+	/**
+	 * Gets the single instance of Logic.
+	 *
+	 * @return single instance of Logic
+	 */
 	public static Logic getInstance() {
 		if (logic == null) {
 			initialise();
@@ -44,6 +61,11 @@ public class Logic extends Observable implements Observer {
 		return logic;
 	}
 
+	/**
+	 * Process command.
+	 *
+	 * @param input		the input
+	 */
 	public void processCommand(String input) {
 		switch (parser.determineCommandType(input)) {
 		case ADD:
@@ -77,6 +99,11 @@ public class Logic extends Observable implements Observer {
 		}
 	}
 
+	/**
+	 * Process add command.
+	 *
+	 * @param input		the input
+	 */
 	private void processAddCommand(String input) {
 		Add addCmd = Add.getInstance();
 		if (addCmd.execute(parser.getAddParsedObject(input))) {
@@ -85,6 +112,11 @@ public class Logic extends Observable implements Observer {
 		updateMessage(addCmd.getMessage());
 	}
 
+	/**
+	 * Process update command.
+	 *
+	 * @param input		the input
+	 */
 	private void processUpdateCommand(String input) {
 		Update updateCmd = Update.getInstance();
 		if (updateCmd.execute(parser.getUpdateParsedObject(input))) {
@@ -93,6 +125,11 @@ public class Logic extends Observable implements Observer {
 		updateMessage(updateCmd.getMessage());
 	}
 
+	/**
+	 * Process delete command.
+	 *
+	 * @param input		the input
+	 */
 	private void processDeleteCommand(String input) {
 		Delete deleteCmd = Delete.getInstance();
 		if (deleteCmd.execute(parser.getDeleteParsedObject(input))) {
@@ -103,6 +140,12 @@ public class Logic extends Observable implements Observer {
 		updateMessage(deleteCmd.getMessage());
 	}
 
+	/**
+	 * Process change status command.
+	 *
+	 * @param input			the input
+	 * @param newStatus		the new status
+	 */
 	private void processChangeStatusCommand(String input, boolean newStatus) {
 		ChangeStatus changeStatus = ChangeStatus.getInstance(newStatus);
 		if (changeStatus.execute(parser.getChangeStatusParsedObject(input, newStatus))) {
@@ -113,6 +156,11 @@ public class Logic extends Observable implements Observer {
 		updateMessage(changeStatus.getMessage());
 	}
 
+	/**
+	 * Process undo command.
+	 *
+	 * @param input		the input
+	 */
 	private void processUndoCommand(String input) {
 		VersionControl vControl = VersionControl.getInstance();
 		if (vControl.execute(parser.getUndoRedoParsedObject(input, COMMAND_TYPE.UNDO))) {
@@ -123,6 +171,11 @@ public class Logic extends Observable implements Observer {
 		updateMessage(vControl.getMessage());
 	}
 
+	/**
+	 * Process redo command.
+	 *
+	 * @param input		the input
+	 */
 	private void processRedoCommand(String input) {
 		VersionControl vControl = VersionControl.getInstance();
 		if (vControl.execute(parser.getUndoRedoParsedObject(input, COMMAND_TYPE.REDO))) {
@@ -133,6 +186,11 @@ public class Logic extends Observable implements Observer {
 		updateMessage(vControl.getMessage());
 	}
 
+	/**
+	 * Process display command.
+	 *
+	 * @param input		the input
+	 */
 	private void processDisplayCommand(String input) {
 		Display displayCmd = Display.getInstance(TASK_TYPE.DEADLINE);
 		List<List<Task>> temp = displayCmd.process(parser.getDisplayParsedObject(input));
@@ -144,16 +202,34 @@ public class Logic extends Observable implements Observer {
 		updateMessage(displayCmd.getMessage());
 	}
 
+	/**
+	 * Update model data.
+	 *
+	 * @param type			the type
+	 * @param shouldSwitch	the should switch
+	 */
 	private void updateModelData(TASK_TYPE type, boolean shouldSwitch) {
 		setChanged();
 		notifyObservers(new ObserverEvent(ObserverEvent.CHANGE_TABLE_CODE, new ObserverEvent.ETasks(storage.getAllTask(type), type, shouldSwitch)));
 	}
 
+	/**
+	 * Update model data.
+	 *
+	 * @param type	the type
+	 * @param tasks	the tasks
+	 * @param shouldSwitch	the should switch
+	 */
 	private void updateModelData(TASK_TYPE type, List<Task> tasks, boolean shouldSwitch) {
 		setChanged();
 		notifyObservers(new ObserverEvent(ObserverEvent.CHANGE_TABLE_CODE, new ObserverEvent.ETasks(tasks, type, shouldSwitch)));
 	}
 
+	/**
+	 * Update message.
+	 *
+	 * @param message	the message
+	 */
 	private void updateMessage(String message) {
 		setChanged();
 		notifyObservers(new ObserverEvent(ObserverEvent.CHANGE_MESSAGE_CODE, new ObserverEvent.EMessage(message)));
