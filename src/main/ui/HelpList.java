@@ -40,8 +40,6 @@ import javax.swing.text.StyleConstants;
 public class HelpList extends JPanel {
 
 	private static final long serialVersionUID = 1L;
-
-	// JPanel contentPane;
 	private ListSelectionModel listSelectionModel;
 	private JTextPane text;
 	private JList<String> list;
