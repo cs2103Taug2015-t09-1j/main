@@ -1,306 +1,367 @@
 # Jia Qi
-###### main\ui\GetHelpList.java
+###### main\ui\HelpList.java
 ``` java
- *
  */
-public class GetHelpList extends JPanel {
-    JTextPane output;
-    JList list;
-    JLabel label;
-    String newline = "\n";
-    ListSelectionModel listSelectionModel;
+public class HelpList extends JPanel {
 
-    public void requestListFocus() {
-    	list.requestFocusInWindow();
-    }
+	private static final long serialVersionUID = 1L;
+	private ListSelectionModel listSelectionModel;
+	private JTextPane text;
+	private JList<String> list;
+	private final String[] featureList = { "Adding a task", "Deleting task(s)", "Updating task information",
+			"Viewing task(s) on a date", "Marking a task as done/undone", "Undo-ing/Redo-ing the previous action(s)",
+			"Hotkeys" };
 
-    public GetHelpList() {
-        super(new BorderLayout());
+	private static final String WELCOME_MESSAGE = "Welcome to Todokoro";
+	private static final String COMMAND_LIST_LABEL = "Command List";
+	private static final String COMMAND_DETAIL_LABEL = "Command Details";
+	private static final String WELCOME_DOC_MESSAGE = "Welcome to TodoKoro Help List!";
+	private static final String EMPTY_STRING = "";
+	private static final String SCROLL_UP_HELP_KEY = "Scroll Up Help List";
+	private static final String SROLL_DOWN_HELP_KEY = "Scroll Down Help List";
 
-        String[] listData = {"Adding a task", "Deleting a task", "Updating task information", "Marking a task as done",
-                              "Masking a task as undone", "Undo-ing the previous action", "Redo-ing the action after undo" };
+	/**
+	 * Instantiates a new help list.
+	 */
+	public HelpList() {
 
-        list = new JList(listData);
-        list.setSelectedIndex(-1);
-        list.requestFocus();
+		setLayout(null);
 
+		JScrollPane listPane = new JScrollPane();
+		listPane.setBounds(6, 30, 259, 138);
+		listPane.setBorder(getCompoundBorder(4, 4, 4, 4));
+		this.add(listPane);
+		// contentPane.add(listPane);
 
+		list = new JList<String>();
+		list.setFont(new Font("Avenir Next", Font.PLAIN, 12));
+		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		list.setModel(new AbstractListModel<String>() {
 
-        listSelectionModel = list.getSelectionModel();
-        listSelectionModel.addListSelectionListener(
-                new SharedListSelectionHandler());
-        JScrollPane listPane = new JScrollPane(list);
+			private static final long serialVersionUID = 1L;
+			String[] featureList = HelpList.this.featureList;
 
-
-
-        JPanel controlPane = new JPanel();
-        JLabel label = new JLabel();
-        controlPane.add(label);
-        label.setText("TodoKoro Help List:");
-        label.setFont(new Font("San Serif", Font.BOLD, 14));
-
-
-        //Build output area.
-        output = new JTextPane();
-        output.setEditable(false);
-        output.setMargin(new Insets(5, 5, 5, 5));
-        output.setText("WELCOME TO TODOKORO!");
-        JScrollPane outputPane = new JScrollPane(output,
-                         ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
-                         ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-
-
-        //Do the layout.
-        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-        add(splitPane, BorderLayout.CENTER);
-
-        JPanel topHalf = new JPanel();
-        topHalf.setLayout(new BoxLayout(topHalf, BoxLayout.LINE_AXIS));
-        JPanel listContainer = new JPanel(new GridLayout(1,1));
-        listContainer.setBorder(BorderFactory.createTitledBorder(
-                                                "Featrue List"));
-        listContainer.add(listPane);
-
-        topHalf.setBorder(BorderFactory.createEmptyBorder(5,5,0,5));
-        topHalf.add(listContainer);
-
-
-        //topHalf.setPreferredSize(new Dimension(100, 170));
-        splitPane.add(topHalf);
-
-        JPanel bottomHalf = new JPanel(new BorderLayout());
-        bottomHalf.add(controlPane, BorderLayout.PAGE_START);
-        bottomHalf.add(outputPane, BorderLayout.CENTER);
-
-        //bottomHalf.setPreferredSize(new Dimension(350, 565));
-        splitPane.add(bottomHalf);
-    }
-
-
-
-        //Create the GUI and show it
-    public static void createAndShowGUI(int x, int y) {
-        //Create and set up the window.
-        JFrame frame = new JFrame("TodoKoro Help");
-
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        //Create and set up the content pane.
-        GetHelpList demo = new GetHelpList();
-        //demo.setOpaque(true);
-        frame.setContentPane(demo);
-
-        //Display the window.
-        frame.pack();
-        frame.setVisible(true);
-    }
- /*
-    public static void main(String[] args) {
-
-        //creating and showing this Help List frame.
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                createAndShowGUI();
-            }
-        });
-    }*/
-
-    class SharedListSelectionHandler extends JFrame implements ListSelectionListener {
-       public void valueChanged(ListSelectionEvent e) {
-
-    	    ListSelectionModel lsm = (ListSelectionModel)e.getSource();
-
-        	SimpleAttributeSet highlight = new SimpleAttributeSet();
-        	SimpleAttributeSet highlight_1 = new SimpleAttributeSet();
-
-        	highlight = new SimpleAttributeSet();
-            StyleConstants.setBold(highlight, true);
-            StyleConstants.setForeground(highlight, Color.red);
-
-            highlight_1 = new SimpleAttributeSet();
-            StyleConstants.setBold(highlight_1, true);
-            StyleConstants.setForeground(highlight_1, Color.blue);
-
-            Document doc = output.getStyledDocument();
-
-       if (lsm.isSelectionEmpty()) {
-
-    		   output.setText("");
-
-        } else {
-             // Find out which indexes are selected.
-             int minIndex = lsm.getMinSelectionIndex();
-             int maxIndex = lsm.getMaxSelectionIndex();
-          for (int i = minIndex; i <= maxIndex; i++) {
-               if(lsm.isSelectedIndex(i)) {
-
-           switch(i){
-              case -1:
-            	  output.setText("Welcome to TodoKoro Help List!");
-            	  break;
-
-              case 0:
-            	output.setText("");
-			try {
-				doc.insertString(doc.getLength(), "Add Events:" +newline, highlight);
-				doc.insertString(doc.getLength(), "Add a task with a specific date/time"+newline, null);
-				doc.insertString(doc.getLength(), "Syntax:"+newline, highlight_1);
-				doc.insertString(doc.getLength(), "task description + date/time" +newline, null);
-				doc.insertString(doc.getLength(), "Examples:"+newline, highlight_1);
-				doc.insertString(doc.getLength(), "watch movie on wed ;"+newline, null);
-				doc.insertString(doc.getLength(), "watch movie 30 sept ;"+newline, null);
-				doc.insertString(doc.getLength(), "watch movie from 3pm to 5pm ;"+newline+newline,null);
-
-				doc.insertString(doc.getLength(), "Add Todos"  + newline, highlight);
-				doc.insertString(doc.getLength(), "Add a task without a specific date/time" +newline, null);
-				doc.insertString(doc.getLength(), "Syntax:"+newline, highlight_1);
-				doc.insertString(doc.getLength(), "task description" +newline, null);
-				doc.insertString(doc.getLength(), "Examples:"+newline, highlight_1);
-				doc.insertString(doc.getLength(), "watch movie ;"+newline, null);
-				doc.insertString(doc.getLength(), "do past year exam paper ;"+newline+newline,null);
-
-				doc.insertString(doc.getLength(), "Deadlines: "  + newline, highlight);
-				doc.insertString(doc.getLength(), "Add a task with a specific due-date/time" +newline, null);
-				doc.insertString(doc.getLength(), "Syntax:"+newline, highlight_1);
-				doc.insertString(doc.getLength(), "task description + due/due on/due by/by + due-date/time" +newline, null);
-				doc.insertString(doc.getLength(), "Examples:"+newline, highlight_1);
-				doc.insertString(doc.getLength(), "pay utility fee by fri ;"+newline, null);
-				doc.insertString(doc.getLength(), "Final Report due by 30 sep ;"+newline+newline,null);
-
-				doc.insertString(doc.getLength(), "Notes: "  + newline, highlight);
-				doc.insertString(doc.getLength(), " if Task Description has number (e.g: CS2103 tutorial), task description should add double quotation marks. " +newline, null);
-				doc.insertString(doc.getLength(), "Syntax Examples:"+newline, highlight_1);
-				doc.insertString(doc.getLength(), "\"CS2103 tutorial\"  due/due on/due by/by  wed ;"+newline, null);
-				doc.insertString(doc.getLength(), "\"CS2103 tutorial\"  on wed ;",null);
-
-
-
-
-
-			} catch (BadLocationException e1) {
-				e1.printStackTrace();
+			public int getSize() {
+				return featureList.length;
 			}
 
-                   break;
+			public String getElementAt(int index) {
+				return featureList[index];
+			}
+		});
 
-              case 1:
-            	  output.setText("");
-            	  try {
+		list.setSelectedIndex(-1);
+		list.requestFocus();
 
-      				doc.insertString(doc.getLength(), "Single Delete: "  + newline, highlight);
-      				doc.insertString(doc.getLength(), "delete a task"  +newline, null);
-      				doc.insertString(doc.getLength(), "Syntax:"+newline, highlight_1);
-      				doc.insertString(doc.getLength(), "delete + taskId"  +newline, null);
-      				doc.insertString(doc.getLength(), "Examples:"+newline, highlight_1);
-      				doc.insertString(doc.getLength(), "delete 5"+newline+newline, null);
+		listSelectionModel = list.getSelectionModel();
+		listSelectionModel.addListSelectionListener(new SharedListSelectionHandler());
+		listPane.setViewportView(list);
 
-      				doc.insertString(doc.getLength(), "Multiple Delete:" + newline, highlight);
-      				doc.insertString(doc.getLength(), "delete several tasks in one time"  +newline, null);
-      				doc.insertString(doc.getLength(), "Syntax:"+newline, highlight_1);
-      				doc.insertString(doc.getLength(), "delete + taskId + taskId +..." +newline, null);
-      				doc.insertString(doc.getLength(), "Examples:"+newline, highlight_1);
-      				doc.insertString(doc.getLength(), "delete 5 8 9 23"+newline+newline, null);
+		JScrollPane textPane = new JScrollPane();
+		textPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+		textPane.setBounds(6, 194, 259, 406);
+		textPane.setBorder(getCompoundBorder(4, 4, 4, 4));
 
+		this.add(textPane);
 
-      			} catch (BadLocationException e1) {
-      				e1.printStackTrace();
-      			}
+		text = new JTextPane();
+		text.setBounds(6, 194, 259, 406);
+		text.setEditable(false);
+		text.setFont(new Font("Dialog", Font.PLAIN, 12));
+		text.setText(WELCOME_MESSAGE);
 
-                   break;
+		textPane.setViewportView(text);
 
-              case 2:
-            	  output.setText("");
-            	  try {
+		JLabel lblCommandList = new JLabel(COMMAND_LIST_LABEL);
+		lblCommandList.setFont(new Font("Dialog", Font.BOLD, 14));
+		lblCommandList.setBounds(6, 11, 250, 14);
 
-        				doc.insertString(doc.getLength(), "Update: "  + newline, highlight);
-        				doc.insertString(doc.getLength(), "update a task information"  +newline, null);
-        				doc.insertString(doc.getLength(), "Syntax:"+newline, highlight_1);
-        				doc.insertString(doc.getLength(), "update + taskId + update column number + update infromarion"  +newline, null);
-        				doc.insertString(doc.getLength(), "Examples:"+newline, highlight_1);
-        				doc.insertString(doc.getLength(), "update 2 4 watch movie with Jason ;"+newline, null);
-        				doc.insertString(doc.getLength(), "update 2 1 Oct 23 ;"+newline, null);
+		this.add(lblCommandList);
 
-        			} catch (BadLocationException e1) {
-        				e1.printStackTrace();
-        			}
+		JLabel lblNewLabel = new JLabel(COMMAND_DETAIL_LABEL);
+		lblNewLabel.setFont(new Font("Dialog", Font.BOLD, 14));
+		lblNewLabel.setBounds(6, 172, 250, 21);
+		add(lblNewLabel);
+		// this.add(label);
 
-                   break;
+		InputMap im = list.getInputMap(JComponent.WHEN_FOCUSED);
+		ActionMap am = list.getActionMap();
 
-              case 3:
-            	  output.setText("");
-            	  try {
+		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0), SCROLL_UP_HELP_KEY);
+		am.put(SCROLL_UP_HELP_KEY, new AbstractAction() {
 
-      				doc.insertString(doc.getLength(), "Done: "  + newline, highlight);
-      				doc.insertString(doc.getLength(), "mark a undone task as done"  +newline, null);
-      				doc.insertString(doc.getLength(), "Syntax:"+newline, highlight_1);
-      				doc.insertString(doc.getLength(), "done + taskId"  +newline, null);
-      				doc.insertString(doc.getLength(), "Examples:"+newline, highlight_1);
-      				doc.insertString(doc.getLength(), "done 1"+newline, null);
+			private static final long serialVersionUID = 1L;
 
-      			} catch (BadLocationException e1) {
-      				e1.printStackTrace();
-      			}
+			public void actionPerformed(ActionEvent e) {
+				textPane.getVerticalScrollBar().setValue(textPane.getVerticalScrollBar().getValue() - 100);
+			}
+		});
 
-            	  break;
+		im.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), SROLL_DOWN_HELP_KEY);
+		am.put(SROLL_DOWN_HELP_KEY, new AbstractAction() {
 
-              case 4:
-            	  output.setText("");
-            	  try {
+			private static final long serialVersionUID = 1L;
 
-        				doc.insertString(doc.getLength(), "Undone: " + newline, highlight);
-        				doc.insertString(doc.getLength(), "mark a done task as undone"  +newline, null);
-        				doc.insertString(doc.getLength(), "Syntax:"+newline, highlight_1);
-        				doc.insertString(doc.getLength(), "undone + taskId"+newline, null);
-        				doc.insertString(doc.getLength(), "Examples:"+newline, highlight_1);
-        				doc.insertString(doc.getLength(), "undone 1"+newline, null);
+			public void actionPerformed(ActionEvent e) {
+				textPane.getVerticalScrollBar().setValue(textPane.getVerticalScrollBar().getValue() + 100);
+			}
+		});
+	}
 
-        			} catch (BadLocationException e1) {
-        				e1.printStackTrace();
-        			}
+	/**
+	 * Gets the help list focus.
+	 *
+	 * @return the help list focus
+	 */
+	public void getHelpListFocus() {
+		list.requestFocusInWindow();
+	}
 
-            	  break;
+	/**
+	 * Gets the compound border.
+	 *
+	 * @param top
+	 *            the top
+	 * @param left
+	 *            the left
+	 * @param bottom
+	 *            the bottom
+	 * @param up
+	 *            the up
+	 * @return the compound border
+	 */
+	private Border getCompoundBorder(int top, int left, int bottom, int up) {
+		Border rounded = new LineBorder(new Color(210, 210, 210), 2, true);
+		Border empty = new EmptyBorder(top, left, bottom, up);
+		return new CompoundBorder(rounded, empty);
+	}
 
-              case 5:
-            	  output.setText("");
-            	  try {
+	class SharedListSelectionHandler implements ListSelectionListener {
 
-      				doc.insertString(doc.getLength(), "Undo: " + newline, highlight);
-      				doc.insertString(doc.getLength(), "undo the privious action"  +newline, null);
-      				doc.insertString(doc.getLength(), "Syntax:"+newline, highlight_1);
-      				doc.insertString(doc.getLength(), "undo"+newline, null);
-      				doc.insertString(doc.getLength(), "Examples:"+newline, highlight_1);
-      				doc.insertString(doc.getLength(), "undo"+newline, null);
+		public void valueChanged(ListSelectionEvent e) {
+			ListSelectionModel lsm = (ListSelectionModel) e.getSource();
 
-      			} catch (BadLocationException e1) {
-      				e1.printStackTrace();
-      			}
+			SimpleAttributeSet highlight = new SimpleAttributeSet();
+			SimpleAttributeSet highlight_1 = new SimpleAttributeSet();
 
-            	  break;
+			highlight = new SimpleAttributeSet();
+			StyleConstants.setBold(highlight, true);
+			StyleConstants.setForeground(highlight, Color.red);
 
-              case 6:
-            	  output.setText("");
-            	  try {
+			highlight_1 = new SimpleAttributeSet();
+			StyleConstants.setBold(highlight_1, true);
+			StyleConstants.setForeground(highlight_1, Color.blue);
 
-        				doc.insertString(doc.getLength(), "Redo: " + newline, highlight);
-        				doc.insertString(doc.getLength(), "redo the action after executing undo command"  +newline, null);
-        				doc.insertString(doc.getLength(), "Syntax:"+newline, highlight_1);
-        				doc.insertString(doc.getLength(), "redo"+newline, null);
-        				doc.insertString(doc.getLength(), "Examples:"+newline, highlight_1);
-        				doc.insertString(doc.getLength(), "redo"+newline, null);
+			Document doc = text.getStyledDocument();
 
-        			} catch (BadLocationException e1) {
-        				e1.printStackTrace();
-        			}
+			if (lsm.isSelectionEmpty()) {
 
-            	  break;
+				text.setText(EMPTY_STRING);
 
-          }
+			} else {
+				// Find out which indexes are selected.
+				int minIndex = lsm.getMinSelectionIndex();
+				int maxIndex = lsm.getMaxSelectionIndex();
+				for (int i = minIndex; i <= maxIndex; i++) {
+					if (lsm.isSelectedIndex(i)) {
 
+						switch (i) {
+						case -1:
+							text.setText(WELCOME_DOC_MESSAGE);
+							break;
 
-       }
-      }
-     }
-    }
-   }
- }
+						case 0:
+							text.setText(EMPTY_STRING);
+							try {
+								doc.insertString(doc.getLength(), "Add Events:\n", highlight);
+								doc.insertString(doc.getLength(), "Add a task with a specific date/time\n", null);
+								doc.insertString(doc.getLength(), "Syntax:\n", highlight_1);
+								doc.insertString(doc.getLength(), "task description + date/time\n", null);
+								doc.insertString(doc.getLength(), "Examples:\n", highlight_1);
+								doc.insertString(doc.getLength(), "watch movie on wed;\n"
+																 + "watch movie 30 sept;\n"
+																 + "tomorrow watch movie at 3pm;\n"
+																 + "watch movie from 3pm to 5pm;\n\n", null);
+								doc.insertString(doc.getLength(), "Add Todos\n", highlight);
+								doc.insertString(doc.getLength(), "Add a task without a specific date/time\n", null);
+								doc.insertString(doc.getLength(), "Syntax:\n", highlight_1);
+								doc.insertString(doc.getLength(), "task description\n", null);
+								doc.insertString(doc.getLength(), "Examples:\n", highlight_1);
+								doc.insertString(doc.getLength(), "watch movie;\n", null);
+								doc.insertString(doc.getLength(), "do past year exam paper;\n\n", null);
+								doc.insertString(doc.getLength(), "Add Deadlines: \n", highlight);
+								doc.insertString(doc.getLength(), "Add a task with a specific due-date/time\n", null);
+								doc.insertString(doc.getLength(), "Syntax:\n", highlight_1);
+								doc.insertString(doc.getLength(), "task description + due/due on/due by/by + due-date/time\n", null);
+								doc.insertString(doc.getLength(), "Examples:\n", highlight_1);
+								doc.insertString(doc.getLength(), "pay utility fee by fri;\n", null);
+								doc.insertString(doc.getLength(), "Final Report due by 30 sep ;", null);
+
+							} catch (BadLocationException e1) {
+								e1.printStackTrace();
+							}
+
+							break;
+
+						case 1:
+							text.setText(EMPTY_STRING);
+							try {
+
+								doc.insertString(doc.getLength(), "Single Delete:\n", highlight);
+								doc.insertString(doc.getLength(), "delete a task\n", null);
+								doc.insertString(doc.getLength(), "Syntax:\n", highlight_1);
+								doc.insertString(doc.getLength(), "delete/del + taskId\n", null);
+								doc.insertString(doc.getLength(), "Examples:\n", highlight_1);
+								doc.insertString(doc.getLength(), "delete 5\n", null);
+								doc.insertString(doc.getLength(), "del 5\n\n", null);
+
+								doc.insertString(doc.getLength(), "Multiple Delete:\n", highlight);
+								doc.insertString(doc.getLength(), "delete several tasks in one time\n", null);
+								doc.insertString(doc.getLength(), "Syntax:\n", highlight_1);
+								doc.insertString(doc.getLength(), "delete + taskId + taskId +...\n", null);
+								doc.insertString(doc.getLength(), "delete + taskId-taskId\n", null);
+								doc.insertString(doc.getLength(), "delete + all\n", null);
+								doc.insertString(doc.getLength(), "Examples:\n", highlight_1);
+								doc.insertString(doc.getLength(), "delete 5 8 9 23\n", null);
+								doc.insertString(doc.getLength(), "delete 5-23\n", null);
+								doc.insertString(doc.getLength(), "delete all\n\n", null);
+
+							} catch (BadLocationException e1) {
+								e1.printStackTrace();
+							}
+
+							break;
+
+						case 2:
+							text.setText(EMPTY_STRING);
+							try {
+
+								doc.insertString(doc.getLength(), "Update:\n", highlight);
+								doc.insertString(doc.getLength(), "update a task information\n", null);
+								doc.insertString(doc.getLength(), "Syntax:\n", highlight_1);
+								doc.insertString(doc.getLength(), "update + taskId + update column number + update infromarion\n", null);
+								doc.insertString(doc.getLength(), "Examples:\n", highlight_1);
+								doc.insertString(doc.getLength(), "update 2 4 watch movie with Jason;\n", null);
+								doc.insertString(doc.getLength(), "update 2 1 Oct 23;\n", null);
+
+							} catch (BadLocationException e1) {
+								e1.printStackTrace();
+							}
+
+							break;
+
+						case 3:
+							text.setText(EMPTY_STRING);
+							try {
+
+								doc.insertString(doc.getLength(), "View task(s) on one day: \n", highlight);
+								doc.insertString(doc.getLength(), "view task(s) on a specific date/view all tasks\n", null);
+								doc.insertString(doc.getLength(), "Syntax:\n", highlight_1);
+								doc.insertString(doc.getLength(), "view + date / view + all\n", null);
+								doc.insertString(doc.getLength(), "Examples:\n", highlight_1);
+								doc.insertString(doc.getLength(), "view today;\n", null);
+								doc.insertString(doc.getLength(), "view nov 3;\n\n", null);
+
+								doc.insertString(doc.getLength(), "View all tasks: \n", highlight);
+								doc.insertString(doc.getLength(), "view all Event tasks (if you are on Events Tag) / view all Deadline tasks (if you are on Deadlines Tag)\n", null);
+								doc.insertString(doc.getLength(), "Syntax:", highlight_1);
+								doc.insertString(doc.getLength(), "view + all\n", null);
+								doc.insertString(doc.getLength(), "Examples:\n", highlight_1);
+								doc.insertString(doc.getLength(), "view all;\n", null);
+
+							} catch (BadLocationException e1) {
+								e1.printStackTrace();
+							}
+
+							break;
+
+						case 4:
+							text.setText(EMPTY_STRING);
+							try {
+
+								doc.insertString(doc.getLength(), "Done/Undone: \n", highlight);
+								doc.insertString(doc.getLength(), "mark a done task as undone\n", null);
+								doc.insertString(doc.getLength(), "Syntax:\n", highlight_1);
+								doc.insertString(doc.getLength(), "done/undone + taskId\n", null);
+								doc.insertString(doc.getLength(), "Examples:\n", highlight_1);
+								doc.insertString(doc.getLength(), "done 1\nundone 1\n", null);
+
+							} catch (BadLocationException e1) {
+								e1.printStackTrace();
+							}
+
+							break;
+
+						case 5:
+							text.setText(EMPTY_STRING);
+							try {
+
+								doc.insertString(doc.getLength(), "Undo-ing/Redo-ing a single action: \n", highlight);
+								doc.insertString(doc.getLength(), "undo/redo the privious action\n", null);
+								doc.insertString(doc.getLength(), "Syntax:\n", highlight_1);
+								doc.insertString(doc.getLength(), "undo/redo\n" , null);
+								doc.insertString(doc.getLength(), "Examples:\n", highlight_1);
+								doc.insertString(doc.getLength(), "undo\nredu\n", null);
+
+								doc.insertString(doc.getLength(), "Undo-ing/Redo-ing multiple actions: \n", highlight);
+								doc.insertString(doc.getLength(), "undo/redo the privious actions\n", null);
+								doc.insertString(doc.getLength(), "Syntax:\n", highlight_1);
+								doc.insertString(doc.getLength(), "undo/redo + number\n", null);
+								doc.insertString(doc.getLength(), "Examples:\n", highlight_1);
+								doc.insertString(doc.getLength(), "undo 20\nredo 10\n", null);
+							} catch (BadLocationException e1) {
+								e1.printStackTrace();
+							}
+
+							break;
+
+						case 6:
+							text.setText(EMPTY_STRING);
+							try {
+								doc.insertString(doc.getLength(), "Switching within task tags: \n", highlight);
+								doc.insertString(doc.getLength(), "Events Tag: \n", highlight_1);
+								doc.insertString(doc.getLength(), "Ctrl+1", null);
+								doc.insertString(doc.getLength(), "Todos Tag: \n", highlight_1);
+								doc.insertString(doc.getLength(), "Ctrl+2\n", null);
+								doc.insertString(doc.getLength(), "Deadlines Tag: \n", highlight_1);
+								doc.insertString(doc.getLength(), "Ctrl+3\n\n", null);
+
+								doc.insertString(doc.getLength(), "Getting help list: \n", highlight);
+								doc.insertString(doc.getLength(), "F1\n\n", null);
+
+								doc.insertString(doc.getLength(), "Switching to simple mode: \n", highlight);
+								doc.insertString(doc.getLength(), "F2\n\n", null);
+
+								doc.insertString(doc.getLength(), "Choosing save direction: \n", highlight);
+								doc.insertString(doc.getLength(), "F3\n\n", null);
+
+								doc.insertString(doc.getLength(), "Switching tables: \n", highlight);
+								doc.insertString(doc.getLength(), "F4\n\n", null);
+
+								doc.insertString(doc.getLength(), "Exiting save direction: \n", highlight);
+								doc.insertString(doc.getLength(), "Esc\n\n", null);
+
+								doc.insertString(doc.getLength(), "Switching between themes: \n", highlight);
+								doc.insertString(doc.getLength(), "Crtrl + ~\n\n", null);
+
+								doc.insertString(doc.getLength(), "Scrolling down the task screen: \n", highlight);
+								doc.insertString(doc.getLength(), "F5\n\n", null);
+
+								doc.insertString(doc.getLength(), "Scrolling up the task screen: \n", highlight);
+								doc.insertString(doc.getLength(), "F6\n\n", null);
+
+							} catch (BadLocationException e1) {
+								e1.printStackTrace();
+							}
+
+							break;
+
+						}
+						text.setCaretPosition(0);
+					}
+				}
+			}
+		}
+	}
+}
 ```
