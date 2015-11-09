@@ -55,7 +55,6 @@ public class FileHandler {
 				// error occurs
 			}
 		}
-		System.out.println(result.toString());
 		return result.toString();
 	}
 
